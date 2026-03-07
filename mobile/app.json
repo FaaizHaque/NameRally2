@@ -7,15 +7,15 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/logo-main.png",
+    "icon": "./src/assets/logo-main.png",
     "splash": {
-      "image": "./assets/logo-main.png",
+      "image": "./src/assets/logo-main.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a1a2e"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.faaizihaque.namerally",
+      "bundleIdentifier": "com.haquegames.napt",
       "buildNumber": "1",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
@@ -24,7 +24,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.faaizihaque.namerally"
+      "package": "com.haquegames.napt"
     },
     "plugins": [
       "expo-router",
