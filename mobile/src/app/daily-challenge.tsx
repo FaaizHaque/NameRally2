@@ -1,0 +1,790 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, Modal, ActivityIndicator, Share, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withRepeat,
+  withSequence,
+  withDelay,
+  withSpring,
+} from 'react-native-reanimated';
+import {
+  Clock,
+  User,
+  MapPin,
+  Cat,
+  Box,
+  Trophy,
+  Apple,
+  ShoppingBag,
+  Check,
+  LogOut,
+  X,
+  HeartPulse,
+  Gamepad2,
+  Globe,
+  Film,
+  Music,
+  Briefcase,
+  Utensils,
+  Landmark,
+  Zap,
+  ChevronLeft,
+  Share2,
+  Home,
+  Sparkles,
+} from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGameStore, CategoryType } from '@/lib/state/game-store';
+import { validateWithFallback } from '@/lib/word-validation';
+import type { DailyChallenge, DailyChallengeAnswer, DailyChallengeResult } from '@/lib/daily-challenge-types';
+import { calculateAnswerScore, SPEED_BONUS_THRESHOLD_MS, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
+
+const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
+  names: <User size={18} color="#D4A84B" />,
+  places: <MapPin size={18} color="#3BA99C" />,
+  animal: <Cat size={18} color="#FF6B6B" />,
+  thing: <Box size={18} color="#6EC4B8" />,
+  sports_games: <Gamepad2 size={18} color="#5B8DEF" />,
+  brands: <ShoppingBag size={18} color="#D874A6" />,
+  health_issues: <HeartPulse size={18} color="#E85555" />,
+  countries: <Globe size={18} color="#3B82F6" />,
+  movies: <Film size={18} color="#8B5CF6" />,
+  songs: <Music size={18} color="#EC4899" />,
+  professions: <Briefcase size={18} color="#F59E0B" />,
+  food_dishes: <Utensils size={18} color="#EF4444" />,
+  famous_people: <Landmark size={18} color="#6366F1" />,
+  music_artists: <Music size={18} color="#F97316" />,
+  fruits_vegetables: <Apple size={18} color="#50B840" />,
+};
+
+
+
+const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent: string }> = {
+  names: { bg: 'rgba(212,168,75,0.12)', border: 'rgba(212,168,75,0.25)', accent: '#D4A84B' },
+  places: { bg: 'rgba(59,169,156,0.12)', border: 'rgba(59,169,156,0.25)', accent: '#3BA99C' },
+  animal: { bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.25)', accent: '#FF6B6B' },
+  thing: { bg: 'rgba(110,196,184,0.12)', border: 'rgba(110,196,184,0.25)', accent: '#6EC4B8' },
+  sports_games: { bg: 'rgba(91,141,239,0.12)', border: 'rgba(91,141,239,0.25)', accent: '#5B8DEF' },
+  brands: { bg: 'rgba(216,116,166,0.12)', border: 'rgba(216,116,166,0.25)', accent: '#D874A6' },
+  health_issues: { bg: 'rgba(232,85,85,0.12)', border: 'rgba(232,85,85,0.25)', accent: '#E85555' },
+  countries: { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', accent: '#3B82F6' },
+  movies: { bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', accent: '#8B5CF6' },
+  songs: { bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)', accent: '#EC4899' },
+  professions: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)', accent: '#F59E0B' },
+  food_dishes: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', accent: '#EF4444' },
+  famous_people: { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', accent: '#6366F1' },
+  music_artists: { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.25)', accent: '#F97316' },
+  fruits_vegetables: { bg: 'rgba(80,184,64,0.12)', border: 'rgba(80,184,64,0.25)', accent: '#50B840' },
+};
+
+const CATEGORY_NAMES: Record<CategoryType, string> = {
+  names: 'Names',
+  places: 'Places',
+  animal: 'Animal',
+  thing: 'Thing',
+  sports_games: 'Sports & Games',
+  brands: 'Brands',
+  health_issues: 'Health Issues',
+  countries: 'Countries',
+  movies: 'Movies',
+  songs: 'Songs',
+  professions: 'Professions',
+  food_dishes: 'Food & Dishes',
+  famous_people: 'Famous People',
+  music_artists: 'Music Artists/Bands',
+  fruits_vegetables: 'Fruits & Vegetables',
+};
+
+type GamePhase = 'loading' | 'playing' | 'results' | 'already_completed';
+
+export default function DailyChallengeScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const currentUser = useGameStore((s) => s.currentUser);
+
+  const [phase, setPhase] = useState<GamePhase>('loading');
+  const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
+  const [result, setResult] = useState<DailyChallengeResult | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  // Game state
+  const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
+  const [categoryStartTimes, setCategoryStartTimes] = useState<Record<CategoryType, number>>({} as Record<CategoryType, number>);
+  const [answerTimes, setAnswerTimes] = useState<Record<CategoryType, number>>({} as Record<CategoryType, number>);
+  const [gameStartTime, setGameStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Animation values
+  const trophyScale = useSharedValue(0);
+  const confettiOpacity = useSharedValue(0);
+
+  // Load challenge and check if already completed
+  useEffect(() => {
+    const loadChallenge = async () => {
+      try {
+        // Fetch today's challenge
+        const response = await fetch(`${BACKEND_URL}/api/daily-challenge`);
+        if (!response.ok) throw new Error('Failed to fetch challenge');
+
+        const challengeData: DailyChallenge = await response.json();
+        setChallenge(challengeData);
+
+        // Check if already completed
+        const storedResult = await AsyncStorage.getItem(`daily_challenge_result_${challengeData.date}`);
+        if (storedResult) {
+          setResult(JSON.parse(storedResult));
+          setPhase('already_completed');
+          return;
+        }
+
+        // Start the game immediately
+        const initialAnswers: Record<CategoryType, string> = {} as Record<CategoryType, string>;
+        challengeData.categories.forEach((category) => {
+          initialAnswers[category] = challengeData.letter;
+        });
+        setAnswers(initialAnswers);
+        setGameStartTime(Date.now());
+        setPhase('playing');
+      } catch (err) {
+        console.error('Error loading challenge:', err);
+      }
+    };
+
+    loadChallenge();
+  }, []);
+
+  // Game timer
+  useEffect(() => {
+    if (phase !== 'playing' || !gameStartTime) return;
+
+    timerRef.current = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - gameStartTime) / 1000));
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase, gameStartTime]);
+
+  // Results animations
+  useEffect(() => {
+    if (phase === 'results' || phase === 'already_completed') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      trophyScale.value = withDelay(300, withSpring(1, { damping: 8, stiffness: 100 }));
+      confettiOpacity.value = withDelay(
+        500,
+        withRepeat(withSequence(withTiming(1, { duration: 1000 }), withTiming(0.5, { duration: 1000 })), -1, true)
+      );
+    }
+  }, [phase]);
+
+  const trophyAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: trophyScale.value }],
+  }));
+
+  const confettiStyle = useAnimatedStyle(() => ({
+    opacity: confettiOpacity.value,
+  }));
+
+  const handleAnswerChange = (category: CategoryType, text: string) => {
+    if (!challenge) return;
+
+    // Start timing when user starts typing (beyond just the letter)
+    if (text.length > challenge.letter.length && !categoryStartTimes[category]) {
+      setCategoryStartTimes(prev => ({
+        ...prev,
+        [category]: Date.now(),
+      }));
+    }
+
+    setAnswers(prev => ({
+      ...prev,
+      [category]: text.toUpperCase(),
+    }));
+  };
+
+  const handleAnswerComplete = (category: CategoryType) => {
+    if (categoryStartTimes[category] && !answerTimes[category]) {
+      const timeTaken = Date.now() - categoryStartTimes[category];
+      setAnswerTimes(prev => ({
+        ...prev,
+        [category]: timeTaken,
+      }));
+    }
+  };
+
+  const allAnswersFilled = challenge?.categories.every((category) => {
+    const answer = answers[category]?.trim();
+    if (!answer || answer.length <= challenge.letter.length) return false;
+    return answer.toLowerCase().startsWith(challenge.letter.toLowerCase());
+  }) ?? false;
+
+  const handleSubmit = async () => {
+    if (!challenge || !currentUser || isSubmitting) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setIsSubmitting(true);
+
+    try {
+      const totalTimeMs = gameStartTime ? Date.now() - gameStartTime : 0;
+
+      // Validate all answers
+      const validationPromises = challenge.categories.map(async (category) => {
+        const answer = answers[category]?.trim() || '';
+        const timeTaken = answerTimes[category] || (categoryStartTimes[category] ? Date.now() - categoryStartTimes[category] : totalTimeMs);
+
+        if (!answer || answer.length <= challenge.letter.length) {
+          return {
+            category,
+            letter: challenge.letter,
+            answer: '',
+            isValid: false,
+            score: 0,
+            timeMs: timeTaken,
+            hasSpeedBonus: false,
+          } as DailyChallengeAnswer;
+        }
+
+        const validation = await validateWithFallback(answer, challenge.letter, category);
+        const { score, hasSpeedBonus } = calculateAnswerScore(validation.isValid, timeTaken);
+
+        return {
+          category,
+          letter: challenge.letter,
+          answer,
+          isValid: validation.isValid,
+          score,
+          timeMs: timeTaken,
+          hasSpeedBonus,
+        } as DailyChallengeAnswer;
+      });
+
+      const validatedAnswers = await Promise.all(validationPromises);
+      const totalScore = validatedAnswers.reduce((sum, a) => sum + a.score, 0);
+
+      // Generate share code
+      let shareCode = '';
+      try {
+        const shareCodeResponse = await fetch(`${BACKEND_URL}/api/daily-challenge/generate-share-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            challengeId: challenge.id,
+            username: currentUser.username,
+          }),
+        });
+        if (shareCodeResponse.ok) {
+          const data = await shareCodeResponse.json();
+          shareCode = data.shareCode;
+        }
+      } catch (e) {
+        console.log('Failed to generate share code:', e);
+      }
+
+      const newResult: DailyChallengeResult = {
+        id: `result-${Date.now()}`,
+        challengeId: challenge.id,
+        date: challenge.date,
+        username: currentUser.username,
+        answers: validatedAnswers,
+        totalScore,
+        totalTimeMs,
+        completedAt: Date.now(),
+        shareCode,
+      };
+
+      // Save result
+      await AsyncStorage.setItem(`daily_challenge_result_${challenge.date}`, JSON.stringify(newResult));
+      await AsyncStorage.setItem(`daily_challenge_data_${challenge.date}`, JSON.stringify(challenge));
+
+      setResult(newResult);
+      setPhase('results');
+    } catch (error) {
+      console.error('Error submitting challenge:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!result || !challenge) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    const shareMessage = generateShareMessage(result, challenge);
+
+    // On web, try the Web Share API first (only works with user gesture and HTTPS)
+    if (Platform.OS === 'web') {
+      // Check if Web Share API is available and we're in a secure context
+      if (typeof navigator !== 'undefined' && navigator.share && window.isSecureContext) {
+        try {
+          await navigator.share({
+            title: 'NPAT Daily Challenge',
+            text: shareMessage,
+          });
+          return;
+        } catch (error: any) {
+          // User cancelled or share failed - fall through to clipboard
+          if (error?.name !== 'AbortError') {
+            console.log('Web Share failed, using clipboard:', error);
+          } else {
+            // User cancelled, don't show clipboard fallback
+            return;
+          }
+        }
+      }
+      // Fallback to clipboard for web
+      try {
+        await Clipboard.setStringAsync(shareMessage);
+        Alert.alert('Copied!', 'Results copied to clipboard.');
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+      }
+      return;
+    }
+
+    // Native platforms - use Share API
+    try {
+      await Share.share({ message: shareMessage });
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback to clipboard on native too if share fails
+      try {
+        await Clipboard.setStringAsync(shareMessage);
+        Alert.alert('Copied!', 'Results copied to clipboard.');
+      } catch (clipError) {
+        console.error('Error copying to clipboard:', clipError);
+      }
+    }
+  };
+
+  const handleGoHome = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.replace('/');
+  };
+
+  const handleExit = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowExitModal(false);
+    router.replace('/game-mode');
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimeMs = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+  };
+
+  // Loading state
+  if (phase === 'loading' || !challenge) {
+    return (
+      <View className="flex-1">
+        <LinearGradient
+          colors={['#0D1F0D', '#1C3A1C', '#0D1F0D']}
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color="#4ADE80" />
+          <Text style={{ color: 'rgba(74,222,128,0.6)', marginTop: 16 }}>Loading today's challenge...</Text>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  // Results state (both new results and already completed)
+  if (phase === 'results' || phase === 'already_completed') {
+    const correctCount = result?.answers.filter(a => a.isValid).length ?? 0;
+    const speedBonusCount = result?.answers.filter(a => a.hasSpeedBonus).length ?? 0;
+
+    return (
+      <View className="flex-1">
+        <LinearGradient
+          colors={['#0D1F0D', '#1C3A1C', '#0D1F0D']}
+          style={{ flex: 1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={{ paddingTop: insets.top }} className="flex-1">
+            {/* Confetti */}
+            <Animated.View style={[confettiStyle, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]}>
+              <View className="absolute top-20 left-10"><Sparkles size={24} color="#4ADE80" /></View>
+              <View className="absolute top-32 right-8"><Sparkles size={20} color="#86EFAC" /></View>
+              <View className="absolute top-48 left-6"><Sparkles size={16} color="#D4A84B" /></View>
+            </Animated.View>
+
+            <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 20 }}>
+              {/* Header */}
+              <Animated.View entering={FadeInDown.duration(500)} className="items-center pt-4 pb-2">
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <View style={{ height: 2, flex: 1, backgroundColor: '#4ADE8040' }} />
+                  <Text style={{ color: '#4ADE80', fontSize: 11, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' }}>
+                    {phase === 'already_completed' ? "Today's Result" : 'Challenge Complete'}
+                  </Text>
+                  <View style={{ height: 2, flex: 1, backgroundColor: '#4ADE8040' }} />
+                </View>
+                <Text style={{ color: '#E8FFE8', fontSize: 28, fontWeight: '900', textAlign: 'center' }}>
+                  {phase === 'already_completed' ? 'Already Played Today!' : 'Well done! 🎉'}
+                </Text>
+              </Animated.View>
+
+              {/* Trophy & Score */}
+              <Animated.View entering={FadeInUp.duration(600).delay(200)} className="items-center mb-6">
+                <Animated.View style={trophyAnimStyle}>
+                  <LinearGradient
+                    colors={['#2A5A2A', '#3A8A3A', '#2A5A2A']}
+                    style={{
+                      width: 96, height: 96, borderRadius: 24,
+                      justifyContent: 'center', alignItems: 'center',
+                      borderWidth: 2, borderColor: '#4ADE80',
+                    }}
+                  >
+                    <Trophy size={48} color="#4ADE80" />
+                  </LinearGradient>
+                </Animated.View>
+                <Text style={{ color: '#E8FFE8', fontSize: 56, fontWeight: '900', marginTop: 12, lineHeight: 60 }}>{result?.totalScore}</Text>
+                <Text style={{ color: '#4ADE8080', fontSize: 14 }}>points today</Text>
+
+                {/* Stats row */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                  gap: 20, marginTop: 16,
+                  backgroundColor: 'rgba(74,222,128,0.08)',
+                  paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20,
+                  borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
+                }}>
+                  <View className="items-center">
+                    <View className="flex-row items-center gap-1">
+                      <Check size={16} color="#4ADE80" strokeWidth={2.5} />
+                      <Text style={{ color: '#E8FFE8', fontWeight: '800', fontSize: 16 }}>{correctCount}/6</Text>
+                    </View>
+                    <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11, marginTop: 2 }}>Correct</Text>
+                  </View>
+                  <View style={{ width: 1, height: 32, backgroundColor: 'rgba(74,222,128,0.2)' }} />
+                  <View className="items-center">
+                    <View className="flex-row items-center gap-1">
+                      <Zap size={16} color="#D4A84B" strokeWidth={2.5} />
+                      <Text style={{ color: '#E8FFE8', fontWeight: '800', fontSize: 16 }}>{speedBonusCount}</Text>
+                    </View>
+                    <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11, marginTop: 2 }}>Speed Bonus</Text>
+                  </View>
+                  <View style={{ width: 1, height: 32, backgroundColor: 'rgba(74,222,128,0.2)' }} />
+                  <View className="items-center">
+                    <View className="flex-row items-center gap-1">
+                      <Clock size={16} color="#86EFAC" strokeWidth={2.5} />
+                      <Text style={{ color: '#E8FFE8', fontWeight: '800', fontSize: 16 }}>{formatTimeMs(result?.totalTimeMs ?? 0)}</Text>
+                    </View>
+                    <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11, marginTop: 2 }}>Total Time</Text>
+                  </View>
+                </View>
+              </Animated.View>
+
+              {/* Answer Details */}
+              <Animated.View entering={FadeIn.duration(400).delay(500)} className="mb-4">
+                <Text style={{ color: 'rgba(74,222,128,0.6)', fontSize: 12, textAlign: 'center', marginBottom: 10, letterSpacing: 1, textTransform: 'uppercase', fontWeight: '700' }}>
+                  Your Answers · Letter "{challenge.letter}"
+                </Text>
+                <View style={{ backgroundColor: 'rgba(74,222,128,0.05)', borderRadius: 16, padding: 10, borderWidth: 1, borderColor: 'rgba(74,222,128,0.12)' }}>
+                  {result?.answers.map((answer, index) => {
+                    const colors = CATEGORY_COLORS[answer.category];
+                    const isEmptyAnswer = !answer.answer || answer.answer.length <= challenge.letter.length;
+
+                    return (
+                      <Animated.View
+                        key={answer.category}
+                        entering={FadeIn.duration(300).delay(600 + index * 80)}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center',
+                          padding: 12, borderRadius: 12, marginBottom: 8,
+                          backgroundColor: 'rgba(255,255,255,0.04)',
+                          borderWidth: 1, borderColor: 'rgba(74,222,128,0.1)',
+                        }}
+                      >
+                        <View style={{
+                          width: 40, height: 40, borderRadius: 10,
+                          alignItems: 'center', justifyContent: 'center',
+                          marginRight: 12, backgroundColor: `${colors.accent}20`,
+                        }}>
+                          {CATEGORY_ICONS[answer.category]}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11 }}>{CATEGORY_NAMES[answer.category]}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={{ color: isEmptyAnswer ? 'rgba(255,255,255,0.25)' : '#E8FFE8', fontSize: 15, fontWeight: '700', fontStyle: isEmptyAnswer ? 'italic' : 'normal' }} numberOfLines={1}>
+                              {isEmptyAnswer ? 'No answer' : answer.answer}
+                            </Text>
+                            {answer.hasSpeedBonus && (
+                              <View style={{ backgroundColor: 'rgba(212,168,75,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                <Zap size={10} color="#D4A84B" strokeWidth={2.5} />
+                                <Text style={{ color: '#D4A84B', fontSize: 10, fontWeight: '800' }}>+2</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <View style={{
+                            width: 28, height: 28, borderRadius: 14,
+                            alignItems: 'center', justifyContent: 'center',
+                            backgroundColor: answer.isValid ? '#4ADE80' : 'rgba(255,107,107,0.4)',
+                          }}>
+                            {answer.isValid
+                              ? <Check size={16} color="#0D1F0D" strokeWidth={3} />
+                              : <X size={16} color="#fff" strokeWidth={3} />
+                            }
+                          </View>
+                          <Text style={{ color: answer.score > 0 ? '#4ADE80' : 'rgba(255,255,255,0.2)', fontWeight: '800', fontSize: 18 }}>
+                            +{answer.score}
+                          </Text>
+                        </View>
+                      </Animated.View>
+                    );
+                  })}
+                </View>
+              </Animated.View>
+
+              {/* Actions */}
+              <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ paddingBottom: insets.bottom + 16 }}>
+                <Pressable onPress={handleShare} style={{ marginBottom: 10 }} className="active:scale-95">
+                  <LinearGradient
+                    colors={['#3A8A3A', '#4ADE80']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 16, paddingVertical: 18,
+                      shadowColor: '#4ADE80', shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.35, shadowRadius: 12, elevation: 8,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                      <Share2 size={22} color="#0D1F0D" strokeWidth={2.5} />
+                      <Text style={{ color: '#0D1F0D', fontWeight: '900', fontSize: 18 }}>Share Results</Text>
+                    </View>
+                  </LinearGradient>
+                </Pressable>
+                <Pressable onPress={handleGoHome} className="active:scale-95">
+                  <View style={{
+                    backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14,
+                    paddingVertical: 16, flexDirection: 'row', alignItems: 'center',
+                    justifyContent: 'center', gap: 8,
+                    borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
+                  }}>
+                    <Home size={20} color="#4ADE80" strokeWidth={2.5} />
+                    <Text style={{ color: '#E8FFE8', fontWeight: '700', fontSize: 16 }}>Back to Home</Text>
+                  </View>
+                </Pressable>
+                <Text style={{ color: 'rgba(74,222,128,0.35)', textAlign: 'center', fontSize: 12, marginTop: 14 }}>
+                  Come back tomorrow for a new challenge!
+                </Text>
+              </Animated.View>
+            </ScrollView>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  // Playing state
+  return (
+    <View className="flex-1">
+      {/* Exit Modal */}
+      <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
+          <View style={{
+            backgroundColor: '#0D2A0D', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360,
+            borderWidth: 1.5, borderColor: 'rgba(74,222,128,0.2)',
+          }}>
+            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(255,107,107,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <LogOut size={32} color="#FF6B6B" strokeWidth={2} />
+              </View>
+              <Text style={{ color: '#E8FFE8', fontSize: 20, fontWeight: '800', textAlign: 'center' }}>Quit Challenge?</Text>
+              <Text style={{ color: 'rgba(74,222,128,0.5)', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
+                You only get one attempt per day.{'\n'}Your progress will be lost.
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+              <Pressable onPress={() => setShowExitModal(false)} style={{ flex: 1, backgroundColor: 'rgba(74,222,128,0.1)', paddingVertical: 16, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(74,222,128,0.25)' }}>
+                <Text style={{ color: '#4ADE80', fontWeight: '700', textAlign: 'center' }}>Keep Playing</Text>
+              </Pressable>
+              <Pressable onPress={handleExit} style={{ flex: 1, backgroundColor: '#FF6B6B', paddingVertical: 16, borderRadius: 14 }}>
+                <Text style={{ color: '#fff', fontWeight: '700', textAlign: 'center' }}>Quit</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <LinearGradient colors={['#0D1F0D', '#1C3A1C', '#0D2A0D']} style={{ flex: 1 }} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+        {/* Subtle top accent line */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundColor: '#4ADE80' }} />
+
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1" keyboardVerticalOffset={0}>
+          <View style={{ paddingTop: insets.top }} className="flex-1">
+            {/* Header */}
+            <Animated.View entering={FadeInDown.duration(400)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 }}>
+              <Pressable
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowExitModal(true); }}
+                style={{ backgroundColor: 'rgba(74,222,128,0.1)', padding: 10, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)' }}
+              >
+                <X size={20} color="#4ADE80" strokeWidth={2.5} />
+              </Pressable>
+
+              {/* Letter Display — bold green badge */}
+              <View style={{
+                width: 60, height: 60, borderRadius: 16,
+                alignItems: 'center', justifyContent: 'center',
+                backgroundColor: '#4ADE80',
+                shadowColor: '#4ADE80', shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.5, shadowRadius: 12, elevation: 10,
+              }}>
+                <Text style={{ color: '#0D1F0D', fontSize: 26, fontWeight: '900' }}>{challenge.letter}</Text>
+              </View>
+
+              {/* Timer */}
+              <View style={{
+                backgroundColor: 'rgba(74,222,128,0.1)', paddingHorizontal: 14, paddingVertical: 10,
+                borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6,
+                borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
+              }}>
+                <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
+                <Text style={{ color: '#4ADE80', fontWeight: '800', fontSize: 15 }}>{formatTime(elapsedTime)}</Text>
+              </View>
+            </Animated.View>
+
+            {/* Speed Bonus Info */}
+            <Animated.View entering={FadeInDown.duration(400).delay(100)} style={{ marginHorizontal: 16, marginBottom: 10 }}>
+              <View style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                backgroundColor: 'rgba(212,168,75,0.12)', paddingHorizontal: 16, paddingVertical: 8,
+                borderRadius: 12, borderWidth: 1, borderColor: 'rgba(212,168,75,0.25)',
+              }}>
+                <Zap size={13} color="#D4A84B" strokeWidth={2.5} />
+                <Text style={{ color: '#D4A84B', fontSize: 12, fontWeight: '600' }}>
+                  Answer within 5 seconds for <Text style={{ fontWeight: '900' }}>+2 bonus</Text> points
+                </Text>
+              </View>
+            </Animated.View>
+
+            {/* Categories Input */}
+            <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">
+              <Animated.View entering={FadeInUp.duration(500).delay(100)}>
+                <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 12, marginBottom: 12, textAlign: 'center', letterSpacing: 1, textTransform: 'uppercase', fontWeight: '700' }}>
+                  Fill words starting with "{challenge.letter}"
+                </Text>
+              </Animated.View>
+
+              <View className="gap-3">
+                {challenge.categories.map((category, index) => {
+                  const answer = answers[category] || '';
+                  const startsWithLetter = answer.trim().toLowerCase().startsWith(challenge.letter.toLowerCase());
+                  const hasAnswer = answer.trim().length > challenge.letter.length;
+                  const colors = CATEGORY_COLORS[category];
+                  const startTime = categoryStartTimes[category];
+                  const isWithinSpeedBonus = startTime && (Date.now() - startTime) <= SPEED_BONUS_THRESHOLD_MS;
+
+                  return (
+                    <Animated.View
+                      key={category}
+                      entering={FadeInUp.duration(400).delay(150 + index * 50)}
+                      style={{
+                        borderRadius: 16, padding: 14,
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                        borderWidth: 1.5,
+                        borderColor: hasAnswer && startsWithLetter ? '#4ADE8050' : 'rgba(74,222,128,0.15)',
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <View style={{
+                          width: 32, height: 32, borderRadius: 8,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: `${colors.accent}20`,
+                        }}>
+                          {CATEGORY_ICONS[category]}
+                        </View>
+                        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 14 }}>{CATEGORY_NAMES[category]}</Text>
+                        {hasAnswer && startsWithLetter && (
+                          <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
+                            <Check size={12} color="#4ADE80" strokeWidth={3} />
+                          </View>
+                        )}
+                      </View>
+                      <TextInput
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.06)',
+                          borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
+                          color: '#E8FFE8', fontSize: 18, fontWeight: '700',
+                          borderWidth: 1,
+                          borderColor: hasAnswer && startsWithLetter ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)',
+                        }}
+                        placeholder={`${challenge.letter}...`}
+                        placeholderTextColor="rgba(255,255,255,0.2)"
+                        value={answer}
+                        onChangeText={(text) => handleAnswerChange(category, text)}
+                        onBlur={() => handleAnswerComplete(category)}
+                        autoCapitalize="characters"
+                        autoCorrect={false}
+                      />
+                      {hasAnswer && !startsWithLetter && (
+                        <Text style={{ color: '#F87171', fontSize: 11, marginTop: 6 }}>Must start with "{challenge.letter}"</Text>
+                      )}
+                    </Animated.View>
+                  );
+                })}
+              </View>
+
+              {/* Submit Button */}
+              <Animated.View entering={FadeInUp.duration(500).delay(400)} style={{ marginTop: 20, paddingHorizontal: 0 }}>
+                <Pressable onPress={handleSubmit} disabled={!allAnswersFilled || isSubmitting} className="active:scale-95">
+                  <LinearGradient
+                    colors={allAnswersFilled && !isSubmitting ? ['#3A8A3A', '#4ADE80'] : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.08)']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 20, padding: 18,
+                      shadowColor: allAnswersFilled && !isSubmitting ? '#4ADE80' : 'transparent',
+                      shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                      {isSubmitting ? <ActivityIndicator color="#0D1F0D" /> : (
+                        <>
+                          <Check size={24} color={allAnswersFilled ? '#0D1F0D' : 'rgba(255,255,255,0.3)'} strokeWidth={2.5} />
+                          <Text style={{ fontSize: 20, fontWeight: '900', color: allAnswersFilled ? '#0D1F0D' : 'rgba(255,255,255,0.3)' }}>
+                            Submit Challenge
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  </LinearGradient>
+                </Pressable>
+                {!allAnswersFilled && (
+                  <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 11, textAlign: 'center', marginTop: 6 }}>
+                    Fill all categories with valid words to submit
+                  </Text>
+                )}
+              </Animated.View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
+  );
+}
