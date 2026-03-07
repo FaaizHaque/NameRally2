@@ -1,0 +1,430 @@
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Pressable, ScrollView, Share, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
+import {
+  ChevronLeft,
+  Copy,
+  Share2,
+  Crown,
+  Play,
+  Users,
+  User,
+  MapPin,
+  Cat,
+  Box,
+  Gamepad2,
+  Apple,
+  ShoppingBag,
+  HeartPulse,
+  Globe,
+  Film,
+  Music,
+  Briefcase,
+  Utensils,
+  Landmark,
+} from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import * as Clipboard from 'expo-clipboard';
+import { useGameStore, CategoryType } from '@/lib/state/game-store';
+import { getCategoryName } from '@/lib/word-validation';
+import { NotebookBackground } from '@/components/NotebookBackground';
+
+// OG notebook palette
+const P = {
+  paper:      '#F2EAD0',
+  paperDark:  '#E8DDB8',
+  paperLine:  '#8A7040',
+  paperDeep:  '#C4A870',
+  marginRed:  'rgba(190,80,65,0.28)',
+  ink:        '#1C120A',
+  inkMed:     '#40301A',
+  inkFaint:   '#8A7050',
+  amber:      '#D09010',
+  amberBg:    '#FEF0B0',
+  wire:       '#8A7055',
+};
+
+// OG sketch category colors
+const CATEGORY_COLORS: Record<CategoryType, { tab: string; border: string; icon: string }> = {
+  names:              { tab: '#FFF3C0', border: '#E8C030', icon: '#7A5000' },
+  places:             { tab: '#D0F5DF', border: '#40C870', icon: '#106030' },
+  animal:             { tab: '#FFE0DA', border: '#F06060', icon: '#801818' },
+  thing:              { tab: '#D8EAFF', border: '#5090E0', icon: '#183880' },
+  sports_games:       { tab: '#E0D8FF', border: '#8060E0', icon: '#381880' },
+  brands:             { tab: '#FFD8F5', border: '#D050A0', icon: '#680050' },
+  health_issues:      { tab: '#FFE8D0', border: '#F07830', icon: '#702010' },
+  countries:          { tab: '#D0F0FF', border: '#2890D0', icon: '#084870' },
+  movies:             { tab: '#F0D8FF', border: '#9050C8', icon: '#480878' },
+  songs:              { tab: '#FFD8EC', border: '#E05080', icon: '#700030' },
+  professions:        { tab: '#FFF0D0', border: '#D09030', icon: '#604808' },
+  food_dishes:        { tab: '#FFE5D0', border: '#E07840', icon: '#702010' },
+  famous_people:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010' },
+  music_artists:      { tab: '#FFF0E0', border: '#F97316', icon: '#7A3000' },
+  fruits_vegetables:  { tab: '#E8FFE0', border: '#50B840', icon: '#205010' },
+};
+
+const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
+  names:              <User size={13} color="#7A5000" strokeWidth={2.5} />,
+  places:             <MapPin size={13} color="#106030" strokeWidth={2.5} />,
+  animal:             <Cat size={13} color="#801818" strokeWidth={2.5} />,
+  thing:              <Box size={13} color="#183880" strokeWidth={2.5} />,
+  sports_games:       <Gamepad2 size={13} color="#381880" strokeWidth={2.5} />,
+  brands:             <ShoppingBag size={13} color="#680050" strokeWidth={2.5} />,
+  health_issues:      <HeartPulse size={13} color="#702010" strokeWidth={2.5} />,
+  countries:          <Globe size={13} color="#084870" strokeWidth={2.5} />,
+  movies:             <Film size={13} color="#480878" strokeWidth={2.5} />,
+  songs:              <Music size={13} color="#700030" strokeWidth={2.5} />,
+  professions:        <Briefcase size={13} color="#604808" strokeWidth={2.5} />,
+  food_dishes:        <Utensils size={13} color="#702010" strokeWidth={2.5} />,
+  famous_people:      <Landmark size={13} color="#305010" strokeWidth={2.5} />,
+  music_artists:      <Music size={13} color="#7A3000" strokeWidth={2.5} />,
+  fruits_vegetables:  <Apple size={13} color="#205010" strokeWidth={2.5} />,
+};
+
+export default function LobbyScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const session = useGameStore((s) => s.session);
+  const currentUser = useGameStore((s) => s.currentUser);
+  const startGame = useGameStore((s) => s.startGame);
+  const leaveGame = useGameStore((s) => s.leaveGame);
+  const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
+  const refreshSession = useGameStore((s) => s.refreshSession);
+
+  // Poll for updates as fallback
+  useEffect(() => {
+    if (session) {
+      pollingRef.current = setInterval(() => { refreshSession(); }, 2000);
+    }
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+  }, [session?.id]);
+
+  // Navigate to game when status changes to 'playing' or 'picking_letter'
+  useEffect(() => {
+    if (session?.status === 'playing' || session?.status === 'picking_letter') {
+      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
+      setTimeRemaining(session.settings.roundDuration);
+      router.replace('/game');
+    }
+  }, [session?.status]);
+
+  if (!session || !currentUser) return null;
+
+  const isHost = session.hostId === currentUser.id;
+  const canStart = session.players.length >= 1;
+
+  const handleCopyCode = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await Clipboard.setStringAsync(session.code);
+    Alert.alert('Copied!', 'Game code copied to clipboard');
+  };
+
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({ message: `Join my NAPT game! Use code: ${session.code}` });
+    } catch { /* ignore */ }
+  };
+
+  const handleStartGame = async () => {
+    if (!canStart) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    await startGame();
+  };
+
+  const handleLeaveGame = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await leaveGame();
+    router.replace('/');
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: P.paper }}>
+      <NotebookBackground lineStartY={0} lineSpacing={28} lineCount={50} marginX={58} showMargin={true}>
+        <View style={{ paddingTop: insets.top, flex: 1 }}>
+
+          {/* ── Header ── */}
+          <Animated.View entering={FadeInDown.duration(400)} style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 16, paddingVertical: 10,
+            borderBottomWidth: 2, borderBottomColor: P.paperDeep,
+          }}>
+            <Pressable
+              onPress={handleLeaveGame}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? P.paperDark : P.paperDark,
+                padding: 8, borderRadius: 8,
+                borderWidth: 1.5, borderColor: P.paperLine + '80',
+              })}
+            >
+              <ChevronLeft size={20} color={P.inkMed} strokeWidth={2.5} />
+            </Pressable>
+
+            <Text style={{
+              fontSize: 20, fontWeight: '900', color: P.inkMed,
+              letterSpacing: 0.5,
+            }}>
+              Game Lobby
+            </Text>
+
+            <View style={{ width: 36 }} />
+          </Animated.View>
+
+          <ScrollView
+            style={{ flex: 1, paddingHorizontal: 16 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20, paddingTop: 16, gap: 14 }}
+          >
+
+            {/* ── Room Code Card ── */}
+            <Animated.View entering={FadeInUp.duration(500).delay(100)}>
+              <View style={{
+                backgroundColor: P.amberBg,
+                borderRadius: 12, padding: 18,
+                borderWidth: 2, borderColor: P.amber,
+                shadowColor: P.ink, shadowOffset: { width: 2, height: 4 },
+                shadowOpacity: 0.12, shadowRadius: 0,
+                transform: [{ rotate: '-0.3deg' }],
+              }}>
+                {/* Tape piece */}
+                <View style={{
+                  position: 'absolute', top: -8, alignSelf: 'center',
+                  width: 52, height: 16,
+                  backgroundColor: 'rgba(205,190,120,0.65)',
+                  borderRadius: 2,
+                  transform: [{ rotate: '0.5deg' }],
+                }} />
+
+                <Text style={{ fontWeight: '500',fontSize: 13, color: P.inkFaint, marginBottom: 4 }}>
+                  Room Code
+                </Text>
+                <Text style={{
+                  fontWeight: '900', fontSize: 42,
+                  color: P.inkMed, letterSpacing: 6, marginBottom: 8,
+                }} numberOfLines={1} adjustsFontSizeToFit>
+                  {session.code}
+                </Text>
+
+                <Text style={{
+                  fontSize: 12, color: P.inkFaint, fontStyle: 'italic',
+                  textAlign: 'center', marginBottom: 12,
+                }}>
+                  Share this code to invite friends
+                </Text>
+
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <Pressable
+                    onPress={handleCopyCode}
+                    style={({ pressed }) => ({
+                      flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      backgroundColor: pressed ? P.paperDark : P.paper,
+                      paddingVertical: 10, borderRadius: 8,
+                      borderWidth: 1.5, borderColor: P.paperLine + '60',
+                    })}
+                  >
+                    <Copy size={16} color={P.inkMed} strokeWidth={2.5} />
+                    <Text style={{ fontWeight: '700', fontSize: 15, color: P.inkMed }}>Copy</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleShare}
+                    style={({ pressed }) => ({
+                      flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      backgroundColor: pressed ? P.paperDark : P.paper,
+                      paddingVertical: 10, borderRadius: 8,
+                      borderWidth: 1.5, borderColor: P.paperLine + '60',
+                    })}
+                  >
+                    <Share2 size={16} color={P.inkMed} strokeWidth={2.5} />
+                    <Text style={{ fontWeight: '700', fontSize: 15, color: P.inkMed }}>Share</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Animated.View>
+
+            {/* ── Game Settings ── */}
+            <Animated.View entering={FadeInUp.duration(500).delay(200)}>
+              <View style={{
+                backgroundColor: P.paper,
+                borderRadius: 10, padding: 16,
+                borderWidth: 1.5, borderColor: P.paperLine + '50',
+                shadowColor: P.ink, shadowOffset: { width: 1, height: 2 },
+                shadowOpacity: 0.08, shadowRadius: 0,
+              }}>
+                <Text style={{ fontWeight: '700', fontSize: 16, color: P.inkMed, marginBottom: 10 }}>
+                  Game Settings
+                </Text>
+
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+                  <View style={{
+                    flex: 1, alignItems: 'center', paddingVertical: 10,
+                    backgroundColor: P.paperDark, borderRadius: 8,
+                    borderWidth: 1, borderColor: P.paperLine + '40',
+                  }}>
+                    <Text style={{ fontWeight: '900', fontSize: 26, color: P.inkMed }}>{session.settings.totalRounds}</Text>
+                    <Text style={{ fontWeight: '500',fontSize: 12, color: P.inkFaint }}>Rounds</Text>
+                  </View>
+                  <View style={{
+                    flex: 1, alignItems: 'center', paddingVertical: 10,
+                    backgroundColor: P.paperDark, borderRadius: 8,
+                    borderWidth: 1, borderColor: P.paperLine + '40',
+                  }}>
+                    <Text style={{ fontWeight: '900', fontSize: 26, color: P.inkMed }}>{session.settings.selectedCategories.length}</Text>
+                    <Text style={{ fontWeight: '500',fontSize: 12, color: P.inkFaint }}>Categories</Text>
+                  </View>
+                </View>
+
+                {/* Category chips */}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {session.settings.selectedCategories.map((cat) => {
+                    const colors = CATEGORY_COLORS[cat];
+                    return (
+                      <View
+                        key={cat}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 4,
+                          paddingHorizontal: 9, paddingVertical: 4,
+                          backgroundColor: colors?.tab || P.paperDark,
+                          borderRadius: 6, borderWidth: 1, borderColor: colors?.border || P.paperLine,
+                        }}
+                      >
+                        {CATEGORY_ICONS[cat]}
+                        <Text style={{ fontWeight: '500',fontSize: 12, color: colors?.icon || P.ink }}>
+                          {getCategoryName(cat)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </Animated.View>
+
+            {/* ── Players ── */}
+            <Animated.View entering={FadeInUp.duration(500).delay(300)}>
+              <View style={{
+                backgroundColor: P.paper,
+                borderRadius: 10, padding: 16,
+                borderWidth: 1.5, borderColor: P.paperLine + '50',
+                shadowColor: P.ink, shadowOffset: { width: 1, height: 2 },
+                shadowOpacity: 0.08, shadowRadius: 0,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Users size={16} color={P.amber} strokeWidth={2.5} />
+                    <Text style={{ fontWeight: '700', fontSize: 16, color: P.inkMed }}>Players</Text>
+                  </View>
+                  <View style={{
+                    backgroundColor: P.amberBg, paddingHorizontal: 10, paddingVertical: 3,
+                    borderRadius: 20, borderWidth: 1, borderColor: P.amber,
+                  }}>
+                    <Text style={{ fontWeight: '700', fontSize: 13, color: P.amber }}>
+                      {session.players.length}/10
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ gap: 8 }}>
+                  {session.players.map((player, index) => {
+                    const isCurrentPlayer = player.visibleId === currentUser.id;
+                    return (
+                      <Animated.View
+                        key={player.id}
+                        entering={FadeIn.duration(400).delay(400 + index * 80)}
+                      >
+                        <View style={{
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                          padding: 12, borderRadius: 8,
+                          backgroundColor: isCurrentPlayer ? '#FEF9EC' : P.paperDark,
+                          borderWidth: 1.5,
+                          borderColor: isCurrentPlayer ? P.amber : P.paperLine + '40',
+                        }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            <View style={{
+                              width: 34, height: 34, borderRadius: 17,
+                              backgroundColor: player.isHost ? P.amberBg : P.paperDark,
+                              borderWidth: 1.5, borderColor: player.isHost ? P.amber : P.paperLine,
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {player.isHost
+                                ? <Crown size={16} color={P.amber} strokeWidth={2.5} />
+                                : <User size={16} color={P.inkFaint} strokeWidth={2.5} />
+                              }
+                            </View>
+                            <View>
+                              <Text style={{ fontWeight: '700', fontSize: 15, color: P.inkMed }}>
+                                {player.username}{isCurrentPlayer ? ' (You)' : ''}
+                              </Text>
+                              <Text style={{ fontWeight: '500',fontSize: 11, color: player.isHost ? P.amber : P.inkFaint }}>
+                                {player.isHost ? 'Host' : 'Player'}
+                              </Text>
+                            </View>
+                          </View>
+                          {/* Ready dot */}
+                          <View style={{
+                            width: 10, height: 10, borderRadius: 5,
+                            backgroundColor: player.isReady ? '#22C55E' : '#EF4444',
+                          }} />
+                        </View>
+                      </Animated.View>
+                    );
+                  })}
+                </View>
+
+              </View>
+            </Animated.View>
+
+          </ScrollView>
+
+          {/* ── Start / Waiting button ── */}
+          {isHost ? (
+            <Animated.View
+              entering={FadeInUp.duration(500).delay(500)}
+              style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16 }}
+            >
+              <Pressable
+                onPress={handleStartGame}
+                disabled={!canStart}
+                style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}
+              >
+                <View style={{
+                  borderRadius: 14, paddingVertical: 18,
+                  backgroundColor: canStart ? P.amberBg : P.paperDark,
+                  borderWidth: 2.5, borderColor: canStart ? P.amber : P.paperLine,
+                  shadowColor: P.ink, shadowOffset: { width: 2, height: 4 },
+                  shadowOpacity: canStart ? 0.18 : 0.08, shadowRadius: 0,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                }}>
+                  <Play size={22} color={canStart ? P.inkMed : P.inkFaint} fill={canStart ? P.inkMed : 'transparent'} strokeWidth={2} />
+                  <Text style={{
+                    fontWeight: '700', fontSize: 20,
+                    color: canStart ? P.inkMed : P.inkFaint,
+                  }}>
+                    Start Game
+                  </Text>
+                </View>
+              </Pressable>
+            </Animated.View>
+          ) : (
+            <Animated.View
+              entering={FadeInUp.duration(500).delay(500)}
+              style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16 }}
+            >
+              <View style={{
+                borderRadius: 12, paddingVertical: 14,
+                backgroundColor: P.paperDark, borderWidth: 1.5, borderColor: P.paperLine + '60',
+              }}>
+                <Text style={{ fontWeight: '500',fontSize: 14, color: P.inkFaint, textAlign: 'center', fontStyle: 'italic' }}>
+                  Waiting for host to start the game...
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+
+        </View>
+      </NotebookBackground>
+    </View>
+  );
+}

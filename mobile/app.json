@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "NameRally",
+    "slug": "namerally",
+    "scheme": "namerally",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/logo-main.png",
+    "splash": {
+      "image": "./assets/logo-main.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.faaizihaque.namerally",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
+        "UIBackgroundModes": ["audio"]
+      }
+    },
+    "android": {
+      "edgeToEdgeEnabled": true,
+      "package": "com.faaizihaque.namerally"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "NameRally uses the microphone for audio features."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
