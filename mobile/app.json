@@ -19,6 +19,9 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
+        "NSCalendarsUsageDescription": "NameRally needs access to your calendar.",
+        "NSCalendarsFullAccessUsageDescription": "NameRally needs full calendar access.",
+        "NSRemindersUsageDescription": "NameRally needs access to reminders.",
         "UIBackgroundModes": ["audio"]
       }
     },
