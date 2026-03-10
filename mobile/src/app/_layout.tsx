@@ -30,6 +30,8 @@ function RootLayoutNav() {
         <Stack.Screen name="round-results" options={{ gestureEnabled: false }} />
         <Stack.Screen name="final-results" options={{ gestureEnabled: false }} />
         <Stack.Screen name="daily-challenge" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="how-to-play" />
+        <Stack.Screen name="level-select" />
       </Stack>
     </ThemeProvider>
   );
