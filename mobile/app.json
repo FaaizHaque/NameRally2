@@ -18,6 +18,7 @@
       "bundleIdentifier": "com.haquegames.napt",
       "buildNumber": "3",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
         "NSCalendarsUsageDescription": "NameRally needs access to your calendar.",
         "NSCalendarsFullAccessUsageDescription": "NameRally needs full calendar access.",
