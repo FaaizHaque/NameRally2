@@ -20,11 +20,16 @@ import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
 
 // Build normalized Sets for O(1) lookup — normalized to lowercase, no accents
+// Also adds dot-free variants (e.g. "E.T." → "et") so players can type either form.
 function buildSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
     if (entry && entry.trim().length > 0) {
-      s.add(normalizeForComparison(entry));
+      const norm = normalizeForComparison(entry);
+      s.add(norm);
+      // dot-free variant: "e.t." → "et"
+      const noDots = norm.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+      if (noDots !== norm) s.add(noDots);
     }
   }
   return s;
@@ -136,6 +141,27 @@ function existsInLocalSet(set: Set<string>, word: string, ignoreArticles: boolea
   // berries → berry
   if (norm.endsWith('ies') && norm.length > 4 && set.has(norm.slice(0, -3) + 'y')) return true;
 
+  // Dot removal: "ET" matches "E.T." entries stored without dots, and vice versa
+  const noDots = norm.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  if (noDots !== norm) {
+    if (set.has(noDots)) return true;
+    if (set.has(noDots.replace(/\s+/g, '-'))) return true;
+    if (set.has(noDots.replace(/-/g, ' '))) return true;
+  }
+
+  // Abbreviation expansion: "St. Petersburg" / "St Petersburg" → "Saint Petersburg"
+  const expandAbbrev = (s: string) =>
+    s.replace(/\bst\.?\s+/g, 'saint ').replace(/\bmt\.?\s+/g, 'mount ').replace(/\bft\.?\s+/g, 'fort ').trim();
+  const expanded = expandAbbrev(norm);
+  if (expanded !== norm) {
+    if (set.has(expanded)) return true;
+    if (set.has(expanded.replace(/\s+/g, '-'))) return true;
+  }
+  const expandedNoDots = expandAbbrev(noDots);
+  if (expandedNoDots !== expanded && expandedNoDots !== noDots) {
+    if (set.has(expandedNoDots)) return true;
+  }
+
   // Article-stripping: try matching the user's input (without article) against
   // dataset entries that start with an article, and vice versa.
   if (ignoreArticles) {
@@ -166,16 +192,15 @@ function existsInLocalSet(set: Set<string>, word: string, ignoreArticles: boolea
   return false;
 }
 
-// ─── Public API (same signatures as before) ───────────────────────────────────
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Validates a word against the local dataset for a category.
- * Replaces the old Supabase query — same return shape.
  */
-export async function validateWordInSupabase(
+export async function validateWordLocally(
   word: string,
   category: CategoryType
-): Promise<{ found: boolean; source: 'supabase' | 'countries' | 'not_found' }> {
+): Promise<{ found: boolean; source: 'local' | 'countries' | 'not_found' }> {
   if (category === 'countries') {
     const norm = normalizeForComparison(word);
     const found = COUNTRIES_LIST.some(c => normalizeForComparison(c) === norm);
@@ -187,14 +212,13 @@ export async function validateWordInSupabase(
 
   const ignoreArticles = category === 'movies' || category === 'songs';
   const found = existsInLocalSet(set, word, ignoreArticles);
-  return { found, source: found ? 'supabase' : 'not_found' };
+  return { found, source: found ? 'local' : 'not_found' };
 }
 
 /**
  * Returns hint words from local data starting with `letter`.
- * Replaces the old Supabase query — same return shape.
  */
-export async function getHintsFromSupabase(
+export async function getHintsLocally(
   category: CategoryType,
   letter: string,
   limit: number = 20
@@ -218,9 +242,8 @@ export async function getHintsFromSupabase(
 
 /**
  * Fuzzy-validates a word against local data.
- * Replaces the old Supabase fuzzy query — same return shape.
  */
-export async function validateWordFuzzyInSupabase(
+export async function validateWordFuzzy(
   word: string,
   category: CategoryType
 ): Promise<{ found: boolean; matchedWord?: string }> {
@@ -262,15 +285,8 @@ export async function validateWordFuzzyInSupabase(
 }
 
 /**
- * Clears any caches (no-op now — kept for API compatibility).
- */
-export function clearSupabaseCache(): void {
-  // Nothing to clear with local data
-}
-
-/**
  * Returns true if the category has a local dataset.
  */
-export function hasSupabaseSupport(category: CategoryType): boolean {
+export function hasCategorySupport(category: CategoryType): boolean {
   return category in LOCAL_SETS || category === 'countries';
 }

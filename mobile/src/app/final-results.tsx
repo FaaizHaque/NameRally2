@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { Sounds } from '@/lib/sounds';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { calculateStars, didPassLevel } from '@/lib/level-types';
 import { getCategoryName } from '@/lib/word-validation';
@@ -105,8 +106,11 @@ export default function FinalResultsScreen() {
   useEffect(() => {
     if (isLevelMode) {
       Haptics.notificationAsync(levelPassed ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error);
+      if (levelPassed) Sounds.success();
+      else Sounds.fail();
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Sounds.success();
     }
     trophyScale.value = withDelay(300, withSpring(1, { damping: 8, stiffness: 100 }));
     confettiOpacity.value = withDelay(500, withRepeat(withSequence(withTiming(1, { duration: 1000 }), withTiming(0.5, { duration: 1000 })), -1, true));
@@ -338,8 +342,8 @@ export default function FinalResultsScreen() {
                               {isEmpty ? 'No answer' : answer}
                             </Text>
                             {hasBonus && (
-                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: '#f59e0b' }}>
-                                <Zap size={8} color="#fcd34d" strokeWidth={2.5} />
+                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: '#f59e0b' }}>
+                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '900' }}>ABC</Text>
                                 <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
                               </View>
                             )}
@@ -422,57 +426,69 @@ export default function FinalResultsScreen() {
                 </LinearGradient>
 
                 {/* Action Buttons */}
-                <View style={{ gap: 10 }}>
+                <View style={{ gap: 12 }}>
+                  {/* Primary CTA — next level or retry */}
                   {levelPassed ? (
-                    <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                    <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
                       <LinearGradient
-                        colors={['#4090e8', '#4090e8']}
-                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                        colors={['#5aa0f0', '#3070d8']}
+                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                         style={{
-                          borderRadius: 16, paddingVertical: 20,
-                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                          shadowColor: '#4090e8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 10,
+                          borderRadius: 18, paddingVertical: 22, paddingHorizontal: 24,
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                          shadowColor: '#4090e8', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.55, shadowRadius: 18, elevation: 12,
                         }}
                       >
-                        {isLoadingNextLevel ? <ActivityIndicator color="#ffffff" /> : (
+                        {isLoadingNextLevel ? <ActivityIndicator color="#ffffff" size="small" /> : (
                           <>
-                            <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
-                            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 18, letterSpacing: 0.5 }}>
-                              {currentLevel.level < 500 ? `Play Level ${currentLevel.level + 1}` : 'All Levels Complete!'}
+                            <Play size={24} color="#fff" fill="#fff" strokeWidth={2} />
+                            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 20, letterSpacing: 0.5 }}>
+                              {currentLevel.level < 500 ? `Next Level  ${currentLevel.level + 1}` : 'All Levels Complete!'}
                             </Text>
-                            <ChevronRight size={22} color="#fff" strokeWidth={2.5} />
                           </>
                         )}
                       </LinearGradient>
                     </Pressable>
                   ) : (
-                    <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                    <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
                       <View style={{
-                        borderRadius: 16, paddingVertical: 20,
+                        borderRadius: 18, paddingVertical: 22, paddingHorizontal: 24,
                         backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
-                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                        shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                        shadowColor: '#ef4444', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 10,
                       }}>
-                        {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" /> : (
+                        {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
                           <>
-                            <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
-                            <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 18 }}>Retry Level {currentLevel.level}</Text>
+                            <RotateCcw size={24} color="#ef4444" strokeWidth={2.5} />
+                            <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 20 }}>Try Again</Text>
                           </>
                         )}
                       </View>
                     </Pressable>
                   )}
-                  <View style={{ flexDirection: 'row', gap: 10 }}>
+
+                  {/* Secondary row — Home + Menu, equal width, centered */}
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
                     <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                      <View style={{ backgroundColor: '#0e2040', borderRadius: 14, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.15)' }}>
-                        <Home size={18} color="#4090e8" strokeWidth={2.5} />
-                        <Text style={{ color: '#90c0ff', fontWeight: '700', fontSize: 15 }}>Home</Text>
+                      <View style={{
+                        backgroundColor: '#0e2040', borderRadius: 16,
+                        paddingVertical: 18,
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.25)',
+                      }}>
+                        <Home size={20} color="#6090d0" strokeWidth={2.5} />
+                        <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 16 }}>Home</Text>
                       </View>
                     </Pressable>
                     <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                      <View style={{ backgroundColor: '#0e2040', borderRadius: 14, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.15)' }}>
-                        <RotateCcw size={18} color="#4090e8" strokeWidth={2.5} />
-                        <Text style={{ color: '#90c0ff', fontWeight: '700', fontSize: 15 }}>Menu</Text>
+                      <View style={{
+                        backgroundColor: '#0e2040', borderRadius: 16,
+                        paddingVertical: 18,
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.25)',
+                      }}>
+                        <RotateCcw size={20} color="#6090d0" strokeWidth={2.5} />
+                        <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 16 }}>Menu</Text>
                       </View>
                     </Pressable>
                   </View>

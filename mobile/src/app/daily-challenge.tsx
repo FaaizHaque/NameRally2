@@ -43,11 +43,13 @@ import {
   Sparkles,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { Sounds } from '@/lib/sounds';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { validateWithFallback } from '@/lib/word-validation';
 import type { DailyChallenge, DailyChallengeAnswer, DailyChallengeResult } from '@/lib/daily-challenge-types';
 import { calculateAnswerScore, SPEED_BONUS_THRESHOLD_MS, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
+import { supabase, type DbDailyChallengeScore } from '@/lib/supabase';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
@@ -121,6 +123,9 @@ export default function DailyChallengeScreen() {
   const [result, setResult] = useState<DailyChallengeResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   // Game state
   const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
@@ -146,9 +151,27 @@ export default function DailyChallengeScreen() {
 
         // Check if already completed
         const storedResult = await AsyncStorage.getItem(`daily_challenge_result_${challengeData.date}`);
+        // Calculate streak (count consecutive past days with saved results)
+        const calcStreak = async (todayDate: string) => {
+          let count = 0;
+          let d = new Date(todayDate);
+          // Walk backwards through dates
+          for (let i = 0; i < 365; i++) {
+            const dateStr = d.toISOString().split('T')[0];
+            const key = `daily_challenge_result_${dateStr}`;
+            const stored = await AsyncStorage.getItem(key);
+            if (!stored) break;
+            count++;
+            d.setDate(d.getDate() - 1);
+          }
+          setStreak(count);
+        };
+
         if (storedResult) {
           setResult(JSON.parse(storedResult));
           setPhase('already_completed');
+          fetchLeaderboard(challengeData.date);
+          calcStreak(challengeData.date);
           return;
         }
 
@@ -185,6 +208,7 @@ export default function DailyChallengeScreen() {
   useEffect(() => {
     if (phase === 'results' || phase === 'already_completed') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Sounds.success();
       trophyScale.value = withDelay(300, withSpring(1, { damping: 8, stiffness: 100 }));
       confettiOpacity.value = withDelay(
         500,
@@ -238,6 +262,7 @@ export default function DailyChallengeScreen() {
     if (!challenge || !currentUser || isSubmitting) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Sounds.roundEnd();
     setIsSubmitting(true);
 
     try {
@@ -308,17 +333,64 @@ export default function DailyChallengeScreen() {
         shareCode,
       };
 
-      // Save result
+      // Save result locally
       await AsyncStorage.setItem(`daily_challenge_result_${challenge.date}`, JSON.stringify(newResult));
       await AsyncStorage.setItem(`daily_challenge_data_${challenge.date}`, JSON.stringify(challenge));
 
+      // Submit to global Supabase leaderboard (non-blocking, best effort)
+      const correctCount = validatedAnswers.filter(a => a.isValid).length;
+      supabase
+        .from('daily_challenge_scores')
+        .upsert(
+          {
+            challenge_date: challenge.date,
+            username: currentUser.username,
+            total_score: totalScore,
+            total_time_ms: totalTimeMs,
+            correct_count: correctCount,
+            completed_at: Date.now(),
+          },
+          { onConflict: 'challenge_date,username' }
+        )
+        .then(() => { /* ignore errors — leaderboard is best-effort */ });
+
       setResult(newResult);
       setPhase('results');
+      fetchLeaderboard(challenge.date);
+      // Recalculate streak now that today is complete
+      let streakCount = 0;
+      let d2 = new Date(challenge.date);
+      for (let i = 0; i < 365; i++) {
+        const dateStr = d2.toISOString().split('T')[0];
+        const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
+        if (!stored && dateStr !== challenge.date) break;
+        if (stored || dateStr === challenge.date) streakCount++;
+        d2.setDate(d2.getDate() - 1);
+      }
+      setStreak(streakCount);
     } catch (error) {
       console.error('Error submitting challenge:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const fetchLeaderboard = async (date: string) => {
+    setLeaderboardLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('daily_challenge_scores')
+        .select('username, total_score, total_time_ms, correct_count, completed_at')
+        .eq('challenge_date', date)
+        .order('total_score', { ascending: false })
+        .order('total_time_ms', { ascending: true })
+        .limit(20);
+      if (!error && data) setLeaderboard(data as DbDailyChallengeScore[]);
+    } catch {
+      // Silently ignore leaderboard fetch errors
+    } finally {
+      setLeaderboardLoading(false);
     }
   };
 
@@ -464,6 +536,18 @@ export default function DailyChallengeScreen() {
                 </Animated.View>
                 <Text style={{ color: '#E8FFE8', fontSize: 56, fontWeight: '900', marginTop: 12, lineHeight: 60 }}>{result?.totalScore}</Text>
                 <Text style={{ color: '#4ADE8080', fontSize: 14 }}>points today</Text>
+                {streak > 0 && (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10,
+                    backgroundColor: 'rgba(251,146,60,0.15)', paddingHorizontal: 14, paddingVertical: 6,
+                    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(251,146,60,0.35)',
+                  }}>
+                    <Text style={{ fontSize: 16 }}>🔥</Text>
+                    <Text style={{ color: '#fb923c', fontSize: 14, fontWeight: '900' }}>
+                      {streak} day streak{streak === 1 ? '' : '!'}
+                    </Text>
+                  </View>
+                )}
 
                 {/* Stats row */}
                 <View style={{
@@ -534,9 +618,9 @@ export default function DailyChallengeScreen() {
                               {isEmptyAnswer ? 'No answer' : answer.answer}
                             </Text>
                             {answer.hasSpeedBonus && (
-                              <View style={{ backgroundColor: 'rgba(212,168,75,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                <Zap size={10} color="#D4A84B" strokeWidth={2.5} />
-                                <Text style={{ color: '#D4A84B', fontSize: 10, fontWeight: '800' }}>+2</Text>
+                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: '#f59e0b' }}>
+                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '900' }}>ABC</Text>
+                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
                               </View>
                             )}
                           </View>
@@ -559,6 +643,66 @@ export default function DailyChallengeScreen() {
                       </Animated.View>
                     );
                   })}
+                </View>
+              </Animated.View>
+
+              {/* Leaderboard */}
+              <Animated.View entering={FadeInUp.duration(500).delay(900)} style={{ marginBottom: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <Trophy size={16} color="#4ADE80" strokeWidth={2.5} />
+                  <Text style={{ color: '#4ADE80', fontSize: 14, fontWeight: '900', letterSpacing: 0.5 }}>Today's Leaderboard</Text>
+                  <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.15)' }} />
+                  <Globe size={13} color="rgba(74,222,128,0.45)" strokeWidth={2} />
+                </View>
+                <View style={{ backgroundColor: 'rgba(74,222,128,0.05)', borderRadius: 16, padding: 10, borderWidth: 1, borderColor: 'rgba(74,222,128,0.12)' }}>
+                  {leaderboardLoading ? (
+                    <View style={{ alignItems: 'center', paddingVertical: 18 }}>
+                      <ActivityIndicator size="small" color="#4ADE80" />
+                      <Text style={{ color: 'rgba(74,222,128,0.4)', fontSize: 12, marginTop: 6 }}>Loading scores…</Text>
+                    </View>
+                  ) : leaderboard.length === 0 ? (
+                    <View style={{ alignItems: 'center', paddingVertical: 18 }}>
+                      <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 13 }}>No scores yet — you might be first!</Text>
+                    </View>
+                  ) : (
+                    leaderboard.map((entry, idx) => {
+                      const isMe = entry.username === currentUser?.username;
+                      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
+                      const timeSec = (entry.total_time_ms / 1000).toFixed(1);
+                      return (
+                        <View
+                          key={`${entry.username}-${idx}`}
+                          style={{
+                            flexDirection: 'row', alignItems: 'center',
+                            paddingVertical: 9, paddingHorizontal: 10, borderRadius: 10, marginBottom: 4,
+                            backgroundColor: isMe ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.03)',
+                            borderWidth: isMe ? 1 : 0, borderColor: 'rgba(74,222,128,0.35)',
+                          }}
+                        >
+                          {/* Rank */}
+                          <View style={{ width: 28, alignItems: 'center' }}>
+                            {medal
+                              ? <Text style={{ fontSize: 15 }}>{medal}</Text>
+                              : <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 12, fontWeight: '700' }}>#{idx + 1}</Text>
+                            }
+                          </View>
+                          {/* Username */}
+                          <Text
+                            style={{ flex: 1, color: isMe ? '#4ADE80' : '#E8FFE8', fontSize: 13, fontWeight: isMe ? '900' : '600', marginLeft: 6 }}
+                            numberOfLines={1}
+                          >
+                            {entry.username}{isMe ? ' (you)' : ''}
+                          </Text>
+                          {/* Time */}
+                          <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>{timeSec}s</Text>
+                          {/* Score */}
+                          <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{entry.total_score}</Text>
+                          </View>
+                        </View>
+                      );
+                    })
+                  )}
                 </View>
               </Animated.View>
 
@@ -684,6 +828,18 @@ export default function DailyChallengeScreen() {
               </View>
             </Animated.View>
 
+            {/* Sticky letter reminder — always visible above keyboard */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 6, paddingHorizontal: 16 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.12)' }} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(74,222,128,0.08)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)' }}>
+                <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1 }}>LETTER</Text>
+                <View style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: '#4ADE80', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#0D1F0D', fontSize: 14, fontWeight: '900' }}>{challenge.letter}</Text>
+                </View>
+              </View>
+              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.12)' }} />
+            </View>
+
             {/* Categories Input */}
             <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">
               <Animated.View entering={FadeInUp.duration(500).delay(100)}>
@@ -744,7 +900,7 @@ export default function DailyChallengeScreen() {
                         autoCorrect={false}
                       />
                       {hasAnswer && !startsWithLetter && (
-                        <Text style={{ color: '#F87171', fontSize: 11, marginTop: 6 }}>Must start with "{challenge.letter}"</Text>
+                        <Text style={{ color: '#fb923c', fontSize: 11, marginTop: 6 }}>Must start with "{challenge.letter}"</Text>
                       )}
                     </Animated.View>
                   );

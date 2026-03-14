@@ -1,9 +1,22 @@
 import { Audio } from 'expo-av';
 
 let soundEnabled = true;
+let audioModeSet = false;
 
-// Cache sounds to avoid re-creating
-const soundCache: Map<string, Audio.Sound> = new Map();
+// One-time audio mode init — called before first sound plays
+async function ensureAudioMode() {
+  if (audioModeSet) return;
+  audioModeSet = true;
+  try {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    });
+  } catch {
+    // non-critical
+  }
+}
 
 export function setSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
@@ -16,6 +29,7 @@ export function isSoundEnabled() {
 async function playSound(uri: string, volume: number = 0.3) {
   if (!soundEnabled) return;
   try {
+    await ensureAudioMode();
     const { sound } = await Audio.Sound.createAsync(
       { uri },
       { shouldPlay: true, volume }
@@ -26,30 +40,41 @@ async function playSound(uri: string, volume: number = 0.3) {
       }
     });
   } catch {
-    // Silent fail - sounds are non-critical
+    // Silent fail — sounds are non-critical
   }
 }
 
-// Game sounds - short, friendly, nothing crazy
+// ─── Game sounds ─────────────────────────────────────────────────────────────
+// All CDN-hosted short clips at comfortable mobile volumes
+
 export const Sounds = {
-  // Button tap - soft click
-  tap: () => playSound('https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3', 0.2),
+  // UI tap — soft click for button presses
+  tap: () => playSound('https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3', 0.18),
 
-  // Round start - gentle chime
-  roundStart: () => playSound('https://cdn.freesound.org/previews/352/352661_5765337-lq.mp3', 0.25),
+  // Navigate — subtle swoosh for screen changes
+  navigate: () => playSound('https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3', 0.13),
 
-  // Answer complete - soft pop
-  answerComplete: () => playSound('https://cdn.freesound.org/previews/575/575249_7037-lq.mp3', 0.2),
+  // Round / game start — cheerful chime
+  roundStart: () => playSound('https://cdn.freesound.org/previews/352/352661_5765337-lq.mp3', 0.22),
 
-  // Timer warning - subtle tick
-  timerWarning: () => playSound('https://cdn.freesound.org/previews/254/254316_4486188-lq.mp3', 0.15),
+  // Answer complete — satisfying soft pop when a valid word is entered
+  answerComplete: () => playSound('https://cdn.freesound.org/previews/575/575249_7037-lq.mp3', 0.18),
 
-  // Round end / stop - whoosh
-  roundEnd: () => playSound('https://cdn.freesound.org/previews/411/411089_5121236-lq.mp3', 0.25),
+  // Timer warning — subtle tick in last 10 seconds
+  timerWarning: () => playSound('https://cdn.freesound.org/previews/254/254316_4486188-lq.mp3', 0.14),
 
-  // Success / level complete - bright ding
-  success: () => playSound('https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3', 0.3),
+  // Round end / STOP pressed — whoosh
+  roundEnd: () => playSound('https://cdn.freesound.org/previews/411/411089_5121236-lq.mp3', 0.22),
 
-  // Navigate - subtle swoosh
-  navigate: () => playSound('https://cdn.freesound.org/previews/242/242501_4284968-lq.mp3', 0.15),
+  // Level/game success — bright ding
+  success: () => playSound('https://cdn.freesound.org/previews/320/320655_5260872-lq.mp3', 0.28),
+
+  // Level failed — soft lower tone
+  fail: () => playSound('https://cdn.freesound.org/previews/254/254316_4486188-lq.mp3', 0.2),
+
+  // Join game / lobby ready
+  join: () => playSound('https://cdn.freesound.org/previews/352/352661_5765337-lq.mp3', 0.18),
+
+  // Letter locked in (letter picker phase)
+  letterLock: () => playSound('https://cdn.freesound.org/previews/575/575249_7037-lq.mp3', 0.25),
 };

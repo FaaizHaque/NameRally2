@@ -31,6 +31,17 @@ import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
 
+// Player avatar emojis + colors — one per slot, consistent per session
+const PLAYER_EMOJIS = ['🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🦋', '🐸', '🦄', '🐙'];
+const PLAYER_COLORS = ['#E8704A', '#8B6A3A', '#5A5A5A', '#E8A030', '#D05030', '#5A9080', '#8060C8', '#50A050', '#C850A0', '#6060A0'];
+
+// Stable avatar index derived from username
+function getAvatarIndex(username: string): number {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) hash = (hash * 31 + username.charCodeAt(i)) & 0xffff;
+  return hash % PLAYER_EMOJIS.length;
+}
+
 // OG notebook palette
 const P = {
   paper:      '#F2EAD0',
@@ -342,22 +353,32 @@ export default function LobbyScreen() {
                           borderColor: isCurrentPlayer ? P.amber : P.paperLine + '40',
                         }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                            <View style={{
-                              width: 34, height: 34, borderRadius: 17,
-                              backgroundColor: player.isHost ? P.amberBg : P.paperDark,
-                              borderWidth: 1.5, borderColor: player.isHost ? P.amber : P.paperLine,
-                              alignItems: 'center', justifyContent: 'center',
-                            }}>
-                              {player.isHost
-                                ? <Crown size={16} color={P.amber} strokeWidth={2.5} />
-                                : <User size={16} color={P.inkFaint} strokeWidth={2.5} />
-                              }
+                            {/* Emoji avatar — consistent color per username */}
+                            <View style={{ position: 'relative' }}>
+                              <View style={{
+                                width: 38, height: 38, borderRadius: 19,
+                                backgroundColor: PLAYER_COLORS[getAvatarIndex(player.username)] + '22',
+                                borderWidth: 2, borderColor: PLAYER_COLORS[getAvatarIndex(player.username)] + '80',
+                                alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                <Text style={{ fontSize: 20 }}>{PLAYER_EMOJIS[getAvatarIndex(player.username)]}</Text>
+                              </View>
+                              {player.isHost && (
+                                <View style={{
+                                  position: 'absolute', top: -4, right: -4,
+                                  width: 16, height: 16, borderRadius: 8,
+                                  backgroundColor: P.amberBg, borderWidth: 1.5, borderColor: P.amber,
+                                  alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                  <Crown size={9} color={P.amber} strokeWidth={2.5} />
+                                </View>
+                              )}
                             </View>
                             <View>
                               <Text style={{ fontWeight: '700', fontSize: 15, color: P.inkMed }}>
                                 {player.username}{isCurrentPlayer ? ' (You)' : ''}
                               </Text>
-                              <Text style={{ fontWeight: '500',fontSize: 11, color: player.isHost ? P.amber : P.inkFaint }}>
+                              <Text style={{ fontWeight: '500', fontSize: 11, color: player.isHost ? P.amber : P.inkFaint }}>
                                 {player.isHost ? 'Host' : 'Player'}
                               </Text>
                             </View>

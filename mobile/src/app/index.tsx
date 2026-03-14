@@ -23,6 +23,7 @@ import { useFonts, PlayfairDisplay_400Regular_Italic } from '@expo-google-fonts/
 import { useGameStore } from '@/lib/state/game-store';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
+import { Sounds } from '@/lib/sounds';
 
 const mainLogoSource = require('@/assets/logo-main-dark.png');
 
@@ -190,6 +191,7 @@ export default function HomeScreen() {
   const handleCreateAccount = () => {
     if (username.trim().length < 1) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
     setCurrentUser({ id: `user_${Date.now()}`, username: username.trim() });
     setShowInput(false);
   };
@@ -211,11 +213,13 @@ export default function HomeScreen() {
 
   const handlePlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Sounds.navigate();
     router.push('/game-mode');
   };
 
   const handleHowToPlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Sounds.tap();
     router.push('/how-to-play');
   };
 
@@ -298,24 +302,24 @@ export default function HomeScreen() {
                     marginBottom: 8,
                     textAlign: 'center',
                   }}>
-                    Player Name:
+                    Enter Your Name
                   </Text>
                   <View style={{
                     borderBottomWidth: 2.5,
-                    borderBottomColor: SKETCH_COLORS.ink,
-                    marginBottom: 36,
+                    borderBottomColor: username.trim().length > 0 ? SKETCH_COLORS.ink : SKETCH_COLORS.inkFaint,
+                    marginBottom: 32,
                     width: '80%',
                   }}>
                     <TextInput
                       style={{
                         paddingVertical: 8, paddingHorizontal: 2,
                         color: SKETCH_COLORS.ink,
-                        fontSize: 24, fontWeight: '800',
+                        fontSize: 26, fontWeight: '800',
                         backgroundColor: 'transparent',
                         textAlign: 'center',
                       }}
                       placeholder="your name..."
-                      placeholderTextColor={SKETCH_COLORS.inkFaint}
+                      placeholderTextColor={SKETCH_COLORS.inkFaint + '80'}
                       value={username}
                       onChangeText={setUsername}
                       autoCapitalize="none"
@@ -325,24 +329,34 @@ export default function HomeScreen() {
                       onSubmitEditing={handleCreateAccount}
                     />
                   </View>
+                  {/* Play button — clearly shows inactive until name entered */}
                   <Pressable
                     onPress={handleCreateAccount}
+                    disabled={username.trim().length < 1}
                     style={({ pressed }) => ({
-                      backgroundColor: pressed ? '#1a1a1a' : SKETCH_COLORS.ink,
-                      borderRadius: 16, paddingVertical: 18,
+                      backgroundColor: username.trim().length > 0
+                        ? (pressed ? '#2a2a2a' : SKETCH_COLORS.ink)
+                        : 'rgba(0,0,0,0.12)',
+                      borderRadius: 18, paddingVertical: 20,
                       alignItems: 'center', justifyContent: 'center',
                       flexDirection: 'row', gap: 12,
                       paddingHorizontal: 40,
                       alignSelf: 'center',
-                      minWidth: '65%',
+                      minWidth: '70%',
+                      borderWidth: username.trim().length > 0 ? 0 : 2,
+                      borderColor: 'rgba(0,0,0,0.15)',
                       shadowColor: SKETCH_COLORS.ink,
-                      shadowOffset: { width: 0, height: 6 },
-                      shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+                      shadowOffset: { width: 0, height: username.trim().length > 0 ? 8 : 0 },
+                      shadowOpacity: username.trim().length > 0 ? 0.35 : 0,
+                      shadowRadius: 16, elevation: username.trim().length > 0 ? 10 : 0,
                     })}
                   >
-                    <Gamepad2 size={24} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                    <Text style={{ color: '#fff', fontWeight: '900', fontSize: 22, letterSpacing: 2 }}>
-                      PLAY
+                    <Gamepad2 size={26} color={username.trim().length > 0 ? SKETCH_COLORS.amberLight : SKETCH_COLORS.inkFaint} strokeWidth={2} />
+                    <Text style={{
+                      color: username.trim().length > 0 ? '#fff' : SKETCH_COLORS.inkFaint,
+                      fontWeight: '900', fontSize: 22, letterSpacing: 2,
+                    }}>
+                      {username.trim().length > 0 ? 'LET\'S PLAY!' : 'Enter a name first'}
                     </Text>
                   </Pressable>
                 </Animated.View>
@@ -354,21 +368,13 @@ export default function HomeScreen() {
                     entering={splashDone ? FadeInUp.duration(500) : undefined}
                     style={{ marginBottom: 20, opacity: splashDone ? 1 : 0, alignItems: 'center' }}
                   >
-                    <Text style={{
-                      color: SKETCH_COLORS.inkFaint,
-                      fontSize: 12, fontWeight: '700',
-                      letterSpacing: 3, textTransform: 'uppercase',
-                      marginBottom: 4,
-                      textAlign: 'center',
-                    }}>
-                      Player Name:
-                    </Text>
-
+                    {/* Inline editable name — tap to rename, no label needed */}
                     <View style={{
-                      borderBottomWidth: 2,
+                      borderBottomWidth: 2.5,
                       borderBottomColor: SKETCH_COLORS.amber,
                       paddingBottom: 4,
                       paddingHorizontal: 16,
+                      minWidth: '55%',
                     }}>
                       <TextInput
                         ref={editInputRef}
@@ -400,32 +406,40 @@ export default function HomeScreen() {
                         selectTextOnFocus
                       />
                     </View>
+                    <Text style={{
+                      color: SKETCH_COLORS.inkFaint,
+                      fontSize: 11, fontWeight: '600',
+                      letterSpacing: 1, marginTop: 5,
+                      textAlign: 'center',
+                    }}>
+                      tap to rename
+                    </Text>
                   </Animated.View>
 
                   <Animated.View
                     entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
-                    style={{ opacity: splashDone ? 1 : 0, marginTop: 12 }}
+                    style={{ opacity: splashDone ? 1 : 0, marginTop: 6 }}
                   >
                     <AnimatedPressable
                       onPress={handlePlay}
                       style={({ pressed }: { pressed: boolean }) => ({
-                        transform: [{ scale: pressed ? 0.97 : 1 }],
+                        transform: [{ scale: pressed ? 0.96 : 1 }],
                       })}
                     >
                       <View style={{
                         backgroundColor: SKETCH_COLORS.ink,
-                        borderRadius: 16, paddingVertical: 18,
+                        borderRadius: 18, paddingVertical: 20,
                         paddingHorizontal: 40,
                         alignItems: 'center', justifyContent: 'center',
                         flexDirection: 'row', gap: 12,
                         alignSelf: 'center',
-                        minWidth: '65%',
+                        minWidth: '70%',
                         shadowColor: SKETCH_COLORS.ink,
-                        shadowOffset: { width: 0, height: 6 },
-                        shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+                        shadowOffset: { width: 0, height: 8 },
+                        shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
                       }}>
-                        <Gamepad2 size={24} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                        <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: 2 }}>
+                        <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
                           PLAY
                         </Text>
                       </View>

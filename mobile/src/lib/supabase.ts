@@ -55,3 +55,37 @@ export interface DbRoundResult {
   answers: Record<string, Record<string, { answer: string; score: number; isValid: boolean }>>;
   created_at: string;
 }
+
+/**
+ * Daily Challenge Leaderboard entry.
+ *
+ * Required Supabase SQL (run once in the SQL Editor):
+ *
+ * create table if not exists daily_challenge_scores (
+ *   id uuid primary key default gen_random_uuid(),
+ *   challenge_date text not null,
+ *   username text not null,
+ *   total_score integer not null,
+ *   total_time_ms integer not null,
+ *   correct_count integer not null,
+ *   completed_at bigint not null,
+ *   created_at timestamp with time zone default now(),
+ *   unique(challenge_date, username)
+ * );
+ *
+ * -- Enable Row Level Security (allow public reads, authenticated writes)
+ * alter table daily_challenge_scores enable row level security;
+ * create policy "Anyone can read scores" on daily_challenge_scores for select using (true);
+ * create policy "Anyone can insert scores" on daily_challenge_scores for insert with check (true);
+ * create policy "Users can update own score" on daily_challenge_scores for update using (true);
+ */
+export interface DbDailyChallengeScore {
+  id?: string;
+  challenge_date: string;   // YYYY-MM-DD
+  username: string;
+  total_score: number;
+  total_time_ms: number;
+  correct_count: number;
+  completed_at: number;     // Unix timestamp ms
+  created_at?: string;
+}

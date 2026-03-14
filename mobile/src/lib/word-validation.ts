@@ -8,17 +8,33 @@ import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
 import healthIssuesData from '../data/health_issues.json';
 import {
-  validateWordFuzzyInSupabase,
-  getHintsFromSupabase,
-  hasSupabaseSupport,
-} from './supabase-categories';
+  validateWordFuzzy,
+  getHintsLocally,
+  hasCategorySupport,
+} from './local-categories';
+
+// Strip accents/diacritics: é→e, ñ→n, ü→u, etc.
+const stripAccents = (str: string): string =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 // Build Sets from JSON data (lowercase for validation)
+// Also adds accent-stripped and hyphen-normalised variants so players
+// don't need to type special characters or exact punctuation.
 function buildLowercaseSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
     if (entry && entry.trim().length > 0) {
-      s.add(entry.toLowerCase().trim());
+      const lower = entry.toLowerCase().trim();
+      s.add(lower);
+      // Accent-free variant: "beyoncé" -> "beyonce"
+      const noAccents = stripAccents(lower);
+      if (noAccents !== lower) s.add(noAccents);
+      // Hyphen-free variant: "spider-man" -> "spider man"
+      const noHyphens = lower.replace(/-/g, ' ').trim();
+      if (noHyphens !== lower) s.add(noHyphens);
+      // Dot-free variant: "e.t." -> "et"
+      const noDots = lower.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+      if (noDots !== lower) s.add(noDots);
     }
   }
   return s;
@@ -279,6 +295,54 @@ const getSpellingVariants = (word: string): string[] => {
   }
 
   return [...new Set(variants)];
+};
+
+// Normalize an answer to handle abbreviations and punctuation variations.
+// Returns all possible normalized forms to look up in the database, e.g.:
+//   "St. Petersburg" -> includes "saint petersburg"
+//   "Beyoncé"        -> includes "beyonce"
+//   "Spider-Man"     -> includes "spider man"
+//   "E.T."           -> includes "et"
+const getNormalizedVariants = (answer: string): string[] => {
+  const w = answer.toLowerCase().trim();
+  const variants = new Set<string>([w]);
+
+  // Strip accents: "beyoncé" -> "beyonce", "café" -> "cafe"
+  const noAccents = stripAccents(w);
+  if (noAccents !== w) variants.add(noAccents);
+
+  // Replace hyphens with spaces: "spider-man" -> "spider man"
+  const noHyphens = w.replace(/-/g, ' ').trim();
+  if (noHyphens !== w) variants.add(noHyphens);
+
+  // Remove all dots: "e.t." -> "et", "u.s.a." -> "usa"
+  const allDotsRemoved = w.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  if (allDotsRemoved !== w) variants.add(allDotsRemoved);
+
+  // Strip abbreviation dots only: "St." -> "St", "Mt." -> "Mt"
+  const abbrevDots = w.replace(/\b(\w+)\./g, '$1').trim();
+  if (abbrevDots !== w) variants.add(abbrevDots);
+
+  // Expand common abbreviations; applied to all base forms so far
+  const expansions: Array<[RegExp, string]> = [
+    [/\bst\b/g, 'saint'],
+    [/\bmt\b/g, 'mount'],
+    [/\bft\b/g, 'fort'],
+  ];
+
+  for (const base of [w, abbrevDots, noAccents, noHyphens]) {
+    for (const [pattern, replacement] of expansions) {
+      const expanded = base.replace(pattern, replacement);
+      if (expanded !== base) variants.add(expanded);
+    }
+  }
+
+  return [...variants];
+};
+
+// Combine spelling variants and normalized variants for a comprehensive lookup list
+const getAllVariants = (answer: string): string[] => {
+  return [...new Set([...getSpellingVariants(answer), ...getNormalizedVariants(answer)])];
 };
 
 // Comprehensive word databases for each category
@@ -763,11 +827,11 @@ export const getHintAsync = async (
     return passesConstraint(hint);
   };
 
-  // Use Supabase database (only source)
-  if (hasSupabaseSupport(category)) {
+  // Use local category database (only source)
+  if (hasCategorySupport(category)) {
     try {
-      console.log(`[Hint] Checking Supabase for ${category}/${letterUpper}...`);
-      const supabaseHints = await getHintsFromSupabase(category, letter, 100);
+      console.log(`[Hint] Checking local data for ${category}/${letterUpper}...`);
+      const supabaseHints = await getHintsLocally(category, letter, 100);
       if (supabaseHints.length > 0) {
         // Shuffle and find first valid hint
         const shuffled = [...supabaseHints].sort(() => Math.random() - 0.5);
@@ -790,117 +854,6 @@ export const getHintAsync = async (
 
   console.log(`[Hint] No hint found for ${category}/${letterUpper}`);
   return null;
-};
-
-// Check if an answer is valid for the given category
-// Returns true if the answer matches known words in the database
-export const isValidCategoryAnswer = (
-  answer: string,
-  letter: string,
-  category: CategoryType
-): boolean => {
-  const trimmedAnswer = answer.trim().toLowerCase();
-
-  if (!trimmedAnswer || trimmedAnswer.length < 2) {
-    return false;
-  }
-
-  if (!trimmedAnswer.startsWith(letter.toLowerCase())) {
-    return false;
-  }
-
-  // Reject category names as answers (e.g., "vegetable" for fruits_vegetables category)
-  if (isCategoryName(trimmedAnswer, category)) {
-    return false;
-  }
-
-  // Get singular form for plural validation in certain categories
-  const singularForm = getSingularForm(trimmedAnswer);
-  const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
-
-  // Get spelling variants (British/American) for comprehensive matching
-  const spellingVariants = getSpellingVariants(trimmedAnswer);
-  const singularSpellingVariants = singularForm ? getSpellingVariants(singularForm) : [];
-
-  // Helper to check if any spelling variant exists in a set
-  const existsInSet = (set: Set<string>, variants: string[]): boolean => {
-    return variants.some(v => set.has(v));
-  };
-
-  // Check against extended databases first (comprehensive sets)
-  switch (category) {
-    case 'places':
-      if (existsInSet(WORLD_PLACES_SET, spellingVariants)) {
-        return true;
-      }
-      break;
-    case 'names':
-      if (existsInSet(WORLD_NAMES_SET, spellingVariants)) {
-        return true;
-      }
-      break;
-    case 'animal':
-      if (existsInSet(ANIMALS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (tigers, cats, dogs)
-      if (singularForm && singularStartsWithLetter && existsInSet(ANIMALS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'thing':
-      if (existsInSet(THINGS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (pens, books, chairs)
-      if (singularForm && singularStartsWithLetter && existsInSet(THINGS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'sports_games':
-      if (existsInSet(SPORTS_GAMES_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms
-      if (singularForm && singularStartsWithLetter && existsInSet(SPORTS_GAMES_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'brands':
-      if (existsInSet(BRANDS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms
-      if (singularForm && singularStartsWithLetter && existsInSet(BRANDS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'health_issues':
-      if (existsInSet(HEALTH_ISSUES_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (ulcers, allergies, headaches)
-      if (singularForm && singularStartsWithLetter && existsInSet(HEALTH_ISSUES_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-  }
-
-  // Get the database for this category
-  const categoryData = WORD_DATABASE[category];
-  const validWords = categoryData[letter.toUpperCase()] || [];
-
-  // Check if the answer matches any known word (case-insensitive)
-  const isKnown = validWords.some(
-    (word) => word.toLowerCase() === trimmedAnswer ||
-              trimmedAnswer.includes(word.toLowerCase()) ||
-              word.toLowerCase().includes(trimmedAnswer)
-  );
-
-  // For more flexibility, also allow answers that are at least 3 characters
-  // and start with the correct letter (in case our database is incomplete)
-  // But give preference to known answers in scoring
-  return isKnown || trimmedAnswer.length >= 3;
 };
 
 // Calculate Levenshtein distance between two strings (for fuzzy matching)
@@ -1043,20 +996,28 @@ export const isStrictValidAnswer = (
   const singularForm = getSingularForm(trimmedAnswer);
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
+  const allVariants = getNormalizedVariants(trimmedAnswer);
+
   // Check against extended databases first (comprehensive sets)
   switch (category) {
     case 'places':
-      if (WORLD_PLACES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => WORLD_PLACES_SET.has(v))) {
         return true;
       }
       break;
-    case 'names':
-      if (WORLD_NAMES_SET.has(trimmedAnswer)) {
+    case 'names': {
+      if (allVariants.some(v => WORLD_NAMES_SET.has(v))) {
+        return true;
+      }
+      // Accept multi-word names where all parts are in the database (e.g., "John Peter")
+      const nameParts = trimmedAnswer.split(' ');
+      if (nameParts.length >= 2 && nameParts.every(part => WORLD_NAMES_SET.has(part))) {
         return true;
       }
       break;
+    }
     case 'animal':
-      if (ANIMALS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => ANIMALS_SET.has(v))) {
         return true;
       }
       // Accept plural forms (tigers, cats, dogs)
@@ -1065,7 +1026,7 @@ export const isStrictValidAnswer = (
       }
       break;
     case 'thing':
-      if (THINGS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => THINGS_SET.has(v))) {
         return true;
       }
       // Accept plural forms (pens, books, chairs)
@@ -1074,17 +1035,17 @@ export const isStrictValidAnswer = (
       }
       break;
     case 'sports_games':
-      if (SPORTS_GAMES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => SPORTS_GAMES_SET.has(v))) {
         return true;
       }
       break;
     case 'brands':
-      if (BRANDS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => BRANDS_SET.has(v))) {
         return true;
       }
       break;
     case 'health_issues':
-      if (HEALTH_ISSUES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => HEALTH_ISSUES_SET.has(v))) {
         return true;
       }
       break;
@@ -1121,29 +1082,35 @@ export const hasSpellingPenalty = (
     return false;
   }
 
-  // First check if it's an exact match (no penalty)
+  const penaltyVariants = getNormalizedVariants(trimmedAnswer);
+
+  // First check if it's an exact/normalized match (no penalty)
   // Check extended databases
   switch (category) {
     case 'places':
-      if (WORLD_PLACES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => WORLD_PLACES_SET.has(v))) return false;
       break;
-    case 'names':
-      if (WORLD_NAMES_SET.has(trimmedAnswer)) return false;
+    case 'names': {
+      if (penaltyVariants.some(v => WORLD_NAMES_SET.has(v))) return false;
+      // No penalty for valid multi-word names (e.g., "John Peter")
+      const parts = trimmedAnswer.split(' ');
+      if (parts.length >= 2 && parts.every(part => WORLD_NAMES_SET.has(part))) return false;
       break;
+    }
     case 'animal':
-      if (ANIMALS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => ANIMALS_SET.has(v))) return false;
       break;
     case 'thing':
-      if (THINGS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => THINGS_SET.has(v))) return false;
       break;
     case 'sports_games':
-      if (SPORTS_GAMES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => SPORTS_GAMES_SET.has(v))) return false;
       break;
     case 'brands':
-      if (BRANDS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => BRANDS_SET.has(v))) return false;
       break;
     case 'health_issues':
-      if (HEALTH_ISSUES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => HEALTH_ISSUES_SET.has(v))) return false;
       break;
   }
 
@@ -1552,11 +1519,6 @@ export const validateWithFallback = async (
     return { isValid: false, source: 'none' };
   }
 
-  // Must have at least 3 characters for a real word (rejects "lo", "ch", etc.)
-  if (trimmed.length < 3) {
-    return { isValid: false, source: 'none' };
-  }
-
   // Reject category names as answers (e.g., "vegetable" for fruits_vegetables category)
   if (isCategoryName(trimmed, category)) {
     console.log(`[Validation] "${answer}" - rejected (category name for ${category})`);
@@ -1573,18 +1535,25 @@ export const validateWithFallback = async (
   const singularForm = getSingularForm(trimmed);
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
-  // FIRST: Check Supabase database (primary source)
-  if (hasSupabaseSupport(category)) {
+  // FIRST: Check local category database (primary source)
+  // Note: dataset check happens before the 3-char minimum so known short words
+  // like "Ox" (animal) are accepted even though they're only 2 characters.
+  if (hasCategorySupport(category)) {
     try {
-      const supabaseResult = await validateWordFuzzyInSupabase(answer, category);
-      if (supabaseResult.found) {
-        console.log(`[Validation] "${answer}" - accepted from Supabase (matched: ${supabaseResult.matchedWord})`);
-        return { isValid: true, source: 'supabase' };
+      const localResult = await validateWordFuzzy(answer, category);
+      if (localResult.found) {
+        console.log(`[Validation] "${answer}" - accepted from local data (matched: ${localResult.matchedWord})`);
+        return { isValid: true, source: 'local' };
       }
-      console.log(`[Validation] "${answer}" - not found in Supabase for ${category}, checking local...`);
+      console.log(`[Validation] "${answer}" - not found in local data for ${category}, checking secondary...`);
     } catch (err) {
-      console.log(`[Validation] Supabase check failed, falling back to local:`, err);
+      console.log(`[Validation] Local check failed, falling back:`, err);
     }
+  }
+
+  // 3-char minimum for unknown words (after dataset check, so "Ox" etc. still pass via dataset)
+  if (trimmed.length < 3) {
+    return { isValid: false, source: 'none' };
   }
 
   // SECOND: Check local database with multiple variations
