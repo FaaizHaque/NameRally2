@@ -834,11 +834,17 @@ export const isValidCategoryAnswer = (
         return true;
       }
       break;
-    case 'names':
+    case 'names': {
       if (existsInSet(WORLD_NAMES_SET, spellingVariants)) {
         return true;
       }
+      // Accept multi-word names where all parts are in the database (e.g., "John Peter")
+      const nameParts = trimmedAnswer.split(' ');
+      if (nameParts.length >= 2 && nameParts.every(part => WORLD_NAMES_SET.has(part))) {
+        return true;
+      }
       break;
+    }
     case 'animal':
       if (existsInSet(ANIMALS_SET, spellingVariants)) {
         return true;
@@ -1050,11 +1056,17 @@ export const isStrictValidAnswer = (
         return true;
       }
       break;
-    case 'names':
+    case 'names': {
       if (WORLD_NAMES_SET.has(trimmedAnswer)) {
         return true;
       }
+      // Accept multi-word names where all parts are in the database (e.g., "John Peter")
+      const nameParts = trimmedAnswer.split(' ');
+      if (nameParts.length >= 2 && nameParts.every(part => WORLD_NAMES_SET.has(part))) {
+        return true;
+      }
       break;
+    }
     case 'animal':
       if (ANIMALS_SET.has(trimmedAnswer)) {
         return true;
@@ -1127,9 +1139,13 @@ export const hasSpellingPenalty = (
     case 'places':
       if (WORLD_PLACES_SET.has(trimmedAnswer)) return false;
       break;
-    case 'names':
+    case 'names': {
       if (WORLD_NAMES_SET.has(trimmedAnswer)) return false;
+      // No penalty for valid multi-word names (e.g., "John Peter")
+      const parts = trimmedAnswer.split(' ');
+      if (parts.length >= 2 && parts.every(part => WORLD_NAMES_SET.has(part))) return false;
       break;
+    }
     case 'animal':
       if (ANIMALS_SET.has(trimmedAnswer)) return false;
       break;
