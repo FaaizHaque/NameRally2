@@ -281,6 +281,40 @@ const getSpellingVariants = (word: string): string[] => {
   return [...new Set(variants)];
 };
 
+// Normalize an answer to handle abbreviations and punctuation variations.
+// Returns all possible normalized forms to look up in the database, e.g.:
+//   "St. Petersburg" -> ["st. petersburg", "st petersburg", "saint petersburg"]
+//   "Mt. Everest"    -> ["mt. everest", "mt everest", "mount everest"]
+const getNormalizedVariants = (answer: string): string[] => {
+  const w = answer.toLowerCase().trim();
+  const variants = new Set<string>([w]);
+
+  // Strip trailing dots from abbreviations: "St." -> "St", "Mt." -> "Mt"
+  const noDots = w.replace(/\b(\w+)\./g, '$1').trim();
+  if (noDots !== w) variants.add(noDots);
+
+  // Expand common abbreviations; applied to both dotted and dot-free forms
+  const expansions: Array<[RegExp, string]> = [
+    [/\bst\b/g, 'saint'],
+    [/\bmt\b/g, 'mount'],
+    [/\bft\b/g, 'fort'],
+  ];
+
+  for (const base of [w, noDots]) {
+    for (const [pattern, replacement] of expansions) {
+      const expanded = base.replace(pattern, replacement);
+      if (expanded !== base) variants.add(expanded);
+    }
+  }
+
+  return [...variants];
+};
+
+// Combine spelling variants and normalized variants for a comprehensive lookup list
+const getAllVariants = (answer: string): string[] => {
+  return [...new Set([...getSpellingVariants(answer), ...getNormalizedVariants(answer)])];
+};
+
 // Comprehensive word databases for each category
 export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
   names: {
@@ -818,9 +852,9 @@ export const isValidCategoryAnswer = (
   const singularForm = getSingularForm(trimmedAnswer);
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
-  // Get spelling variants (British/American) for comprehensive matching
-  const spellingVariants = getSpellingVariants(trimmedAnswer);
-  const singularSpellingVariants = singularForm ? getSpellingVariants(singularForm) : [];
+  // Get spelling variants (British/American) + normalized variants (abbreviations, punctuation)
+  const spellingVariants = getAllVariants(trimmedAnswer);
+  const singularSpellingVariants = singularForm ? getAllVariants(singularForm) : [];
 
   // Helper to check if any spelling variant exists in a set
   const existsInSet = (set: Set<string>, variants: string[]): boolean => {
@@ -1049,15 +1083,17 @@ export const isStrictValidAnswer = (
   const singularForm = getSingularForm(trimmedAnswer);
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
+  const allVariants = getNormalizedVariants(trimmedAnswer);
+
   // Check against extended databases first (comprehensive sets)
   switch (category) {
     case 'places':
-      if (WORLD_PLACES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => WORLD_PLACES_SET.has(v))) {
         return true;
       }
       break;
     case 'names': {
-      if (WORLD_NAMES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => WORLD_NAMES_SET.has(v))) {
         return true;
       }
       // Accept multi-word names where all parts are in the database (e.g., "John Peter")
@@ -1068,7 +1104,7 @@ export const isStrictValidAnswer = (
       break;
     }
     case 'animal':
-      if (ANIMALS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => ANIMALS_SET.has(v))) {
         return true;
       }
       // Accept plural forms (tigers, cats, dogs)
@@ -1077,7 +1113,7 @@ export const isStrictValidAnswer = (
       }
       break;
     case 'thing':
-      if (THINGS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => THINGS_SET.has(v))) {
         return true;
       }
       // Accept plural forms (pens, books, chairs)
@@ -1086,17 +1122,17 @@ export const isStrictValidAnswer = (
       }
       break;
     case 'sports_games':
-      if (SPORTS_GAMES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => SPORTS_GAMES_SET.has(v))) {
         return true;
       }
       break;
     case 'brands':
-      if (BRANDS_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => BRANDS_SET.has(v))) {
         return true;
       }
       break;
     case 'health_issues':
-      if (HEALTH_ISSUES_SET.has(trimmedAnswer)) {
+      if (allVariants.some(v => HEALTH_ISSUES_SET.has(v))) {
         return true;
       }
       break;
@@ -1133,33 +1169,35 @@ export const hasSpellingPenalty = (
     return false;
   }
 
-  // First check if it's an exact match (no penalty)
+  const penaltyVariants = getNormalizedVariants(trimmedAnswer);
+
+  // First check if it's an exact/normalized match (no penalty)
   // Check extended databases
   switch (category) {
     case 'places':
-      if (WORLD_PLACES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => WORLD_PLACES_SET.has(v))) return false;
       break;
     case 'names': {
-      if (WORLD_NAMES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => WORLD_NAMES_SET.has(v))) return false;
       // No penalty for valid multi-word names (e.g., "John Peter")
       const parts = trimmedAnswer.split(' ');
       if (parts.length >= 2 && parts.every(part => WORLD_NAMES_SET.has(part))) return false;
       break;
     }
     case 'animal':
-      if (ANIMALS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => ANIMALS_SET.has(v))) return false;
       break;
     case 'thing':
-      if (THINGS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => THINGS_SET.has(v))) return false;
       break;
     case 'sports_games':
-      if (SPORTS_GAMES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => SPORTS_GAMES_SET.has(v))) return false;
       break;
     case 'brands':
-      if (BRANDS_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => BRANDS_SET.has(v))) return false;
       break;
     case 'health_issues':
-      if (HEALTH_ISSUES_SET.has(trimmedAnswer)) return false;
+      if (penaltyVariants.some(v => HEALTH_ISSUES_SET.has(v))) return false;
       break;
   }
 
