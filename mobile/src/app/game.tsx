@@ -786,7 +786,7 @@ export default function GameScreen() {
     const modernCategoryColors: Record<string, { bg: string; border: string; accent: string }> = {
       names:              { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' },
       places:             { bg: '#1a2e1a', border: '#22c55e', accent: '#86efac' },
-      animal:             { bg: '#2e1a1a', border: '#ef4444', accent: '#fca5a5' },
+      animal:             { bg: '#2a1020', border: '#f472b6', accent: '#f9a8d4' },
       thing:              { bg: '#1a1e2e', border: '#3b82f6', accent: '#93c5fd' },
       sports_games:       { bg: '#1e1a2e', border: '#8b5cf6', accent: '#c4b5fd' },
       brands:             { bg: '#2a1a28', border: '#d946ef', accent: '#f0abfc' },
@@ -868,9 +868,12 @@ export default function GameScreen() {
           </View>
 
           {/* Stars row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 }}>
             <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
-            <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '600' }}>{levelProgress.totalStars} stars · {HINT_COST} per hint</Text>
+            <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '700' }}>{levelProgress.totalStars}</Text>
+            <Text style={{ color: 'rgba(253,211,77,0.35)', fontSize: 12 }}>|</Text>
+            <Lightbulb size={12} color="rgba(253,211,77,0.55)" strokeWidth={1.5} />
+            <Text style={{ color: 'rgba(253,211,77,0.55)', fontSize: 12, fontWeight: '600' }}>hint = {HINT_COST}★</Text>
           </View>
 
           {/* Constraint banner */}
@@ -1373,7 +1376,10 @@ export default function GameScreen() {
             {gameMode === 'single' && (
               <Animated.View entering={FadeIn.duration(400).delay(50)} style={s.starsRow}>
                 <Star size={12} color={P.amber} fill={P.amber} strokeWidth={1} />
-                <Text style={[s.starsTxt, { fontWeight: '500' }]}>{levelProgress.totalStars} stars · {HINT_COST} per hint</Text>
+                <Text style={[s.starsTxt, { fontWeight: '700' }]}>{levelProgress.totalStars}</Text>
+                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>|</Text>
+                <Lightbulb size={11} color={P.inkFaint} strokeWidth={1.5} />
+                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>hint = {HINT_COST}★</Text>
               </Animated.View>
             )}
             {session.settings.selectedCategories.map((cat, i) => {

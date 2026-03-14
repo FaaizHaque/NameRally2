@@ -418,31 +418,28 @@ export default function HomeScreen() {
 
                   <Animated.View
                     entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
-                    style={{ opacity: splashDone ? 1 : 0, marginTop: 6 }}
+                    style={{ opacity: splashDone ? 1 : 0, marginTop: 6, alignItems: 'center' }}
                   >
                     <AnimatedPressable
                       onPress={handlePlay}
                       style={({ pressed }: { pressed: boolean }) => ({
                         transform: [{ scale: pressed ? 0.96 : 1 }],
-                      })}
-                    >
-                      <View style={{
+                        alignSelf: 'center',
+                        minWidth: '70%',
                         backgroundColor: SKETCH_COLORS.ink,
                         borderRadius: 18, paddingVertical: 20,
                         paddingHorizontal: 40,
                         alignItems: 'center', justifyContent: 'center',
                         flexDirection: 'row', gap: 12,
-                        alignSelf: 'center',
-                        minWidth: '70%',
                         shadowColor: SKETCH_COLORS.ink,
                         shadowOffset: { width: 0, height: 8 },
                         shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
-                      }}>
-                        <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
-                          PLAY
-                        </Text>
-                      </View>
+                      })}
+                    >
+                      <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
+                        PLAY
+                      </Text>
                     </AnimatedPressable>
                   </Animated.View>
                 </View>
