@@ -1519,11 +1519,6 @@ export const validateWithFallback = async (
     return { isValid: false, source: 'none' };
   }
 
-  // Must have at least 3 characters for a real word (rejects "lo", "ch", etc.)
-  if (trimmed.length < 3) {
-    return { isValid: false, source: 'none' };
-  }
-
   // Reject category names as answers (e.g., "vegetable" for fruits_vegetables category)
   if (isCategoryName(trimmed, category)) {
     console.log(`[Validation] "${answer}" - rejected (category name for ${category})`);
@@ -1541,6 +1536,8 @@ export const validateWithFallback = async (
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
   // FIRST: Check local category database (primary source)
+  // Note: dataset check happens before the 3-char minimum so known short words
+  // like "Ox" (animal) are accepted even though they're only 2 characters.
   if (hasCategorySupport(category)) {
     try {
       const localResult = await validateWordFuzzy(answer, category);
@@ -1552,6 +1549,11 @@ export const validateWithFallback = async (
     } catch (err) {
       console.log(`[Validation] Local check failed, falling back:`, err);
     }
+  }
+
+  // 3-char minimum for unknown words (after dataset check, so "Ox" etc. still pass via dataset)
+  if (trimmed.length < 3) {
+    return { isValid: false, source: 'none' };
   }
 
   // SECOND: Check local database with multiple variations
