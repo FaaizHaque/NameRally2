@@ -2,11 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Trophy } from 'lucide-react-native';
+import { ChevronLeft, Users, Zap, Trophy, Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useGameStore } from '@/lib/state/game-store';
 import type { LevelData } from '@/lib/level-types';
+import { Sounds } from '@/lib/sounds';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
@@ -25,6 +26,7 @@ export default function GameModeScreen() {
 
   const handleStartSinglePlayer = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
     setGameMode('single');
     setIsLoadingSingle(true);
     try {
@@ -33,6 +35,7 @@ export default function GameModeScreen() {
       if (!response.ok) throw new Error('Failed to fetch level');
       const levelData: LevelData = await response.json();
       await startLevelGame(levelData);
+      Sounds.roundStart();
       router.push('/game');
     } catch (error: any) {
       console.error('Error starting single player:', error?.message);
@@ -44,42 +47,50 @@ export default function GameModeScreen() {
 
   const handlePress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
     if (key === 'single') {
       handleStartSinglePlayer();
     } else if (key === 'multi') {
       setGameMode('multiplayer');
+      Sounds.navigate();
       router.push('/multiplayer-options');
     } else if (key === 'daily') {
+      Sounds.navigate();
       router.push('/daily-challenge');
     }
   };
 
+  // Lighter warm-dark background — noticeably brighter than before
   return (
-    <View style={{ flex: 1, backgroundColor: '#0a0f1e' }}>
+    <View style={{ flex: 1, backgroundColor: '#1a2540' }}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['#0a0f1e', '#0d1528', '#0a1020']}
+        colors={['#1f2d50', '#253560', '#1a2845']}
         style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom + 16, paddingHorizontal: 16 }}
       >
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, marginBottom: 12 }}>
           <TouchableOpacity
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Sounds.tap();
+              router.back();
+            }}
             style={{
-              width: 38, height: 38, borderRadius: 10,
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+              width: 40, height: 40, borderRadius: 12,
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)',
               alignItems: 'center', justifyContent: 'center',
             }}
           >
             <ChevronLeft size={22} color="#fff" strokeWidth={2.5} />
           </TouchableOpacity>
-          <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', marginLeft: 12, letterSpacing: 0.3 }}>
+          <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', marginLeft: 12, letterSpacing: 0.3 }}>
             Select Mode
           </Text>
         </View>
 
-        {/* Cards — each is a TouchableOpacity with flex:1 */}
+        {/* Cards */}
         <View style={{ flex: 1, gap: 14 }}>
 
           {/* ── SINGLE PLAYER ── */}
@@ -90,55 +101,75 @@ export default function GameModeScreen() {
             style={{ flex: 1 }}
           >
             <LinearGradient
-              colors={['#1a3a6e', '#1e4a8a', '#163468']}
+              colors={['#1e4a8a', '#1a3a72', '#1630608']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
                 flex: 1, borderRadius: 20, overflow: 'hidden',
-                borderWidth: 1.5, borderColor: 'rgba(100,160,255,0.35)',
-                flexDirection: 'row', alignItems: 'center',
-                paddingHorizontal: 18, gap: 16,
+                borderWidth: 2, borderColor: 'rgba(120,170,255,0.5)',
+                paddingHorizontal: 20, paddingVertical: 20,
               }}
             >
+              {/* Subtle shimmer at top */}
               <View style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
-                backgroundColor: 'rgba(255,255,255,0.04)',
+                position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
+                backgroundColor: 'rgba(255,255,255,0.06)',
                 borderTopLeftRadius: 20, borderTopRightRadius: 20,
               }} />
-              <View style={{
-                position: 'absolute', top: -20, right: -20,
-                width: 80, height: 80, borderRadius: 40,
-                backgroundColor: 'rgba(80,140,255,0.18)',
-              }} />
-              <View style={{
-                width: 54, height: 54, borderRadius: 16,
-                backgroundColor: 'rgba(80,140,255,0.2)',
-                borderWidth: 1.5, borderColor: 'rgba(100,160,255,0.45)',
-                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                {isLoadingSingle ? (
-                  <ActivityIndicator color="#90c0ff" />
-                ) : (
-                  <Text style={{ fontSize: 28 }}>✍️</Text>
-                )}
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: 0.2, marginBottom: 7 }}>
-                  Single Player
-                </Text>
-                <View style={{
-                  backgroundColor: 'rgba(80,140,255,0.18)',
-                  paddingHorizontal: 10, paddingVertical: 4,
-                  borderRadius: 8, alignSelf: 'flex-start',
-                  borderWidth: 1, borderColor: 'rgba(100,160,255,0.4)',
-                }}>
-                  <Text style={{ color: '#90c0ff', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>
-                    LEVEL {levelProgress.unlockedLevel}
-                  </Text>
+
+              <View style={{ flex: 1, justifyContent: 'space-between' }}>
+                {/* Top row: icon + title */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                  <View style={{
+                    width: 56, height: 56, borderRadius: 16,
+                    backgroundColor: 'rgba(80,140,255,0.25)',
+                    borderWidth: 2, borderColor: 'rgba(120,170,255,0.5)',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {isLoadingSingle
+                      ? <ActivityIndicator color="#90c0ff" />
+                      : <Text style={{ fontSize: 28 }}>✍️</Text>
+                    }
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: 0.2 }}>
+                      Single Player
+                    </Text>
+                    <Text style={{ color: 'rgba(160,200,255,0.7)', fontSize: 13, marginTop: 2 }}>
+                      Progress through 500 levels
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <View style={{ opacity: 0.4 }}>
-                <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
+
+                {/* Level badge — big and prominent */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 10,
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12,
+                  borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.4)',
+                  marginTop: 10,
+                }}>
+                  <View style={{
+                    width: 42, height: 42, borderRadius: 10,
+                    backgroundColor: '#4090e8',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: '900' }}>
+                      {levelProgress.unlockedLevel}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={{ color: 'rgba(160,200,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      Current Level
+                    </Text>
+                    <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', marginTop: 1 }}>
+                      Level {levelProgress.unlockedLevel}
+                    </Text>
+                  </View>
+                  <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                    <Text style={{ color: '#fff', fontSize: 24 }}>›</Text>
+                  </View>
+                </View>
               </View>
             </LinearGradient>
           </TouchableOpacity>
@@ -165,9 +196,9 @@ export default function GameModeScreen() {
             <View style={{
               flex: 1, backgroundColor: '#F2EAD0',
               borderRadius: 8, borderWidth: 2.5, borderColor: '#8A7040',
-              overflow: 'hidden', flexDirection: 'row',
-              alignItems: 'center', paddingHorizontal: 18, gap: 16,
+              overflow: 'hidden', paddingHorizontal: 20, paddingVertical: 18, gap: 10,
             }}>
+              {/* Ruled lines */}
               {[0,1,2,3,4].map(i => (
                 <View key={i} style={{
                   position: 'absolute', left: 44, right: 0,
@@ -175,30 +206,33 @@ export default function GameModeScreen() {
                   backgroundColor: 'rgba(138,112,64,0.15)',
                 }} />
               ))}
+              {/* Red margin line */}
               <View style={{
                 position: 'absolute', left: 0, top: 0, bottom: 0,
                 width: 5, backgroundColor: 'rgba(190,60,50,0.7)',
               }} />
-              <View style={{
-                width: 50, height: 50, borderRadius: 10,
-                backgroundColor: '#FEF0B0',
-                borderWidth: 2, borderColor: '#D09010',
-                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                <Users size={26} color="#7A5000" strokeWidth={2.5} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: '#1C120A', fontSize: 22, fontWeight: '900', letterSpacing: 0.3, marginBottom: 5 }}>
-                  Multiplayer
-                </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                 <View style={{
-                  backgroundColor: '#FEF0B0', paddingHorizontal: 10, paddingVertical: 4,
-                  borderRadius: 6, alignSelf: 'flex-start',
-                  borderWidth: 1.5, borderColor: '#D09010',
+                  width: 52, height: 52, borderRadius: 12,
+                  backgroundColor: '#FEF0B0',
+                  borderWidth: 2, borderColor: '#D09010',
+                  alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Text style={{ color: '#7A5000', fontSize: 11, fontWeight: '800', letterSpacing: 0.4 }}>
-                    2–10 PLAYERS
+                  <Users size={28} color="#7A5000" strokeWidth={2.5} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: '#1C120A', fontSize: 22, fontWeight: '900', letterSpacing: 0.3 }}>
+                    Multiplayer
                   </Text>
+                  <View style={{
+                    backgroundColor: '#FEF0B0', paddingHorizontal: 10, paddingVertical: 3,
+                    borderRadius: 6, alignSelf: 'flex-start', marginTop: 4,
+                    borderWidth: 1.5, borderColor: '#D09010',
+                  }}>
+                    <Text style={{ color: '#7A5000', fontSize: 11, fontWeight: '800', letterSpacing: 0.4 }}>
+                      2–10 PLAYERS
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -211,54 +245,48 @@ export default function GameModeScreen() {
             style={{ flex: 1 }}
           >
             <View style={{
-              flex: 1, borderRadius: 12, overflow: 'hidden',
-              backgroundColor: '#020f04',
-              borderWidth: 2.5, borderColor: '#00C040',
-              flexDirection: 'row', alignItems: 'center',
-              paddingHorizontal: 18, gap: 16,
+              flex: 1, borderRadius: 16, overflow: 'hidden',
+              backgroundColor: '#071510',
+              borderWidth: 2, borderColor: '#00C840',
+              paddingHorizontal: 20, paddingVertical: 18,
             }}>
               {/* Corner brackets */}
-              <View style={{ position: 'absolute', top: 6, left: 6 }}>
-                <View style={{ width: 14, height: 3, backgroundColor: '#00C040', marginBottom: 2 }} />
-                <View style={{ width: 3, height: 14, backgroundColor: '#00C040' }} />
+              <View style={{ position: 'absolute', top: 8, left: 8 }}>
+                <View style={{ width: 14, height: 3, backgroundColor: '#00C840', marginBottom: 2 }} />
+                <View style={{ width: 3, height: 14, backgroundColor: '#00C840' }} />
               </View>
-              <View style={{ position: 'absolute', top: 6, right: 6, alignItems: 'flex-end' }}>
-                <View style={{ width: 14, height: 3, backgroundColor: '#00C040', marginBottom: 2 }} />
-                <View style={{ width: 3, height: 14, backgroundColor: '#00C040', alignSelf: 'flex-end' }} />
+              <View style={{ position: 'absolute', top: 8, right: 8, alignItems: 'flex-end' }}>
+                <View style={{ width: 14, height: 3, backgroundColor: '#00C840', marginBottom: 2 }} />
+                <View style={{ width: 3, height: 14, backgroundColor: '#00C840', alignSelf: 'flex-end' }} />
               </View>
-              <View style={{ position: 'absolute', bottom: 6, left: 6 }}>
-                <View style={{ width: 3, height: 14, backgroundColor: '#00C040', marginBottom: 2 }} />
-                <View style={{ width: 14, height: 3, backgroundColor: '#00C040' }} />
-              </View>
-              <View style={{ position: 'absolute', bottom: 6, right: 6, alignItems: 'flex-end' }}>
-                <View style={{ width: 3, height: 14, backgroundColor: '#00C040', alignSelf: 'flex-end', marginBottom: 2 }} />
-                <View style={{ width: 14, height: 3, backgroundColor: '#00C040' }} />
-              </View>
-              <View style={{
-                width: 54, height: 54, borderRadius: 6,
-                backgroundColor: '#041408',
-                borderWidth: 2.5, borderColor: '#00C040',
-                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                <Trophy size={26} color="#00C040" strokeWidth={2} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{
-                  color: '#00C040', fontSize: 19, fontWeight: '900',
-                  letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6,
-                }}>
-                  Daily Challenge
-                </Text>
+
+              <View style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
                 <View style={{
-                  paddingHorizontal: 8, paddingVertical: 3,
-                  borderRadius: 4, alignSelf: 'flex-start',
-                  borderWidth: 1.5, borderColor: 'rgba(0,192,64,0.5)',
-                  flexDirection: 'row', alignItems: 'center', gap: 4,
+                  width: 56, height: 56, borderRadius: 10,
+                  backgroundColor: '#0a2010',
+                  borderWidth: 2, borderColor: '#00C840',
+                  alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Zap size={9} color="#00C040" strokeWidth={2.5} fill="#00C040" />
-                  <Text style={{ color: '#00C040', fontSize: 10, fontWeight: '800', letterSpacing: 1 }}>
-                    GLOBAL
+                  <Trophy size={28} color="#00C840" strokeWidth={2} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    color: '#00C840', fontSize: 20, fontWeight: '900',
+                    letterSpacing: 1.5, textTransform: 'uppercase',
+                  }}>
+                    Daily Challenge
                   </Text>
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 5,
+                    paddingHorizontal: 8, paddingVertical: 3,
+                    borderRadius: 6, alignSelf: 'flex-start',
+                    borderWidth: 1, borderColor: 'rgba(0,200,64,0.4)',
+                  }}>
+                    <Zap size={10} color="#00C840" strokeWidth={2.5} fill="#00C840" />
+                    <Text style={{ color: '#00C840', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>
+                      GLOBAL LEADERBOARD
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>

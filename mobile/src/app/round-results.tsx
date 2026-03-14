@@ -207,8 +207,8 @@ const AnswerRevealCard = ({
               {player.username}{isCurrentUser ? ' (You)' : ''}
             </Text>
             {hasBonus && revealed && (
-              <View style={{ backgroundColor: SKETCH_COLORS.amberLight, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: SKETCH_COLORS.amber }}>
-                <Zap size={9} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+              <View style={{ backgroundColor: SKETCH_COLORS.amberLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: SKETCH_COLORS.amber }}>
+                <Text style={{ color: SKETCH_COLORS.inkLight, fontSize: 9, fontWeight: '900' }}>ABC</Text>
                 <Text style={{ color: SKETCH_COLORS.inkLight, fontSize: 10, fontWeight: '800' }}>+2</Text>
               </View>
             )}

@@ -11,6 +11,7 @@ import {
   Modal,
   ActivityIndicator,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,6 +44,7 @@ import { PermanentMarker_400Regular } from '@expo-google-fonts/permanent-marker'
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName, getHintAsync, LevelConstraintCheck } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
+import { Sounds } from '@/lib/sounds';
 
 // ─── PALETTE ──────────────────────────────────────────────────────────────────
 const P = {
@@ -213,6 +215,7 @@ const CategoryRow = React.memo(({
       );
       glowAnim.value = withSequence(withTiming(1, { duration: 200 }), withTiming(0, { duration: 600 }));
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Sounds.answerComplete();
     }
     prevComplete.current = isComplete;
   }, [isComplete]);
@@ -319,13 +322,13 @@ const CategoryRow = React.memo(({
           {/* Ruled-line underline — matches notebook line color when idle, colors on state */}
           <View style={[s.catCardLine, {
             backgroundColor: isComplete ? c.vivid
-              : hasAnswer && !startsOk ? P.stopRed
+              : hasAnswer && !startsOk ? '#C87020'
               : P.paperLine,
             height: isComplete || (hasAnswer && !startsOk) ? 2 : 1,
             opacity: isComplete ? 0.9 : (hasAnswer && !startsOk) ? 1 : 0.35,
           }]} />
           {hasAnswer && !startsOk && (
-            <Text style={[s.errNote, { fontFamily: handFontReg }]}>must start with "{letter}"</Text>
+            <Text style={[s.errNote, { fontFamily: handFontReg, color: '#C87020' }]}>must start with "{letter}"</Text>
           )}
           {usedHint && (
             <View style={s.hintUsedRow}>
@@ -379,6 +382,14 @@ export default function GameScreen() {
   const [showLeaderboard,  setShowLeaderboard]  = useState(false);
   const [usedHints,    setUsedHints]    = useState<Set<CategoryType>>(new Set());
   const [loadingHints, setLoadingHints] = useState<Set<CategoryType>>(new Set());
+  const [keyboardVisible,  setKeyboardVisible]  = useState(false);
+
+  // Track keyboard to control STOP button visibility
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   // Letter reveal overlay
   const [showReveal,    setShowReveal]    = useState(true);
@@ -512,6 +523,7 @@ export default function GameScreen() {
     setPickerCycling(false);
     setPickerLocked(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Sounds.letterLock();
     const chosenLetter = pickerLetter;
     setTimeout(() => {
       confirmLetterPick(chosenLetter);
@@ -587,6 +599,15 @@ export default function GameScreen() {
     prevFilledRef.current = !!allAnswersFilled;
   }, [allAnswersFilled]);
 
+  // Play round start sound when status changes to playing
+  const prevStatusRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (session?.status === 'playing' && prevStatusRef.current !== 'playing') {
+      Sounds.roundStart();
+    }
+    prevStatusRef.current = session?.status;
+  }, [session?.status]);
+
   const stampStyle = useAnimatedStyle(() => ({ transform: [{ scale: stampBounce.value }, { rotate: '-1deg' }] }));
 
   const handleUseHint = async (category: CategoryType, i: number) => {
@@ -622,6 +643,8 @@ export default function GameScreen() {
   useEffect(() => {
     if (!session || (session?.status !== 'round_results' && session?.status !== 'final_results')) return;
     [timerRef, stopCountdownRef, pollingRef].forEach(r => { if (r.current) clearInterval(r.current); });
+    // Hide the reveal overlay immediately to prevent flash during navigation
+    setShowReveal(false);
     // Use setTimeout to ensure navigation happens after state settles
     const navTimer = setTimeout(() => {
       router.replace(isLevelMode ? '/final-results' : '/round-results');
@@ -703,6 +726,7 @@ export default function GameScreen() {
   const handleStop = async () => {
     if (!allAnswersFilled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    Sounds.roundEnd();
     if (isLevelMode) {
       await handleRoundEnd();
       return;
@@ -865,7 +889,7 @@ export default function GameScreen() {
                     style={{
                       borderRadius: 12, overflow: 'hidden',
                       borderWidth: 1.5,
-                      borderColor: isComplete ? mc.border : (hasAnswer && !startsOk) ? '#ef4444' : 'rgba(99,102,241,0.2)',
+                      borderColor: isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.2)',
                       backgroundColor: isComplete ? mc.bg : '#0e2040',
                       shadowColor: isComplete ? mc.border : 'transparent',
                       shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 8,
@@ -920,7 +944,7 @@ export default function GameScreen() {
                           color: usedHints.has(cat) ? '#FCD34D' : isComplete ? mc.accent : '#e0e7ff',
                           paddingVertical: 6,
                           borderBottomWidth: 1.5,
-                          borderBottomColor: isComplete ? mc.border : (hasAnswer && !startsOk) ? '#ef4444' : 'rgba(99,102,241,0.3)',
+                          borderBottomColor: isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.3)',
                           letterSpacing: 1,
                         }}
                         placeholder={`${letter}...`}
@@ -937,7 +961,7 @@ export default function GameScreen() {
                         underlineColorAndroid="transparent"
                       />
                       {hasAnswer && !startsOk && (
-                        <Text style={{ color: '#ef4444', fontSize: 11, fontWeight: '600', marginTop: 3 }}>must start with "{letter}"</Text>
+                        <Text style={{ color: '#f97316', fontSize: 11, fontWeight: '600', marginTop: 3 }}>must start with "{letter}"</Text>
                       )}
                     </View>
                   </Animated.View>
@@ -945,37 +969,63 @@ export default function GameScreen() {
               })}
             </ScrollView>
 
-            {/* Submit button */}
-            <Animated.View entering={FadeInUp.duration(500).delay(600)} style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 16 }}>
-              {!allAnswersFilled && (
-                <Text style={{ color: 'rgba(144,192,255,0.5)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
-                  Fill all categories to submit
-                </Text>
-              )}
-              <Pressable onPress={handleStop} disabled={!allAnswersFilled || session.stopRequested}>
-                <LinearGradient
-                  colors={allAnswersFilled ? ['#1e5aa8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                  style={{
-                    borderRadius: 14, paddingVertical: 18,
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    borderWidth: 1.5, borderColor: allAnswersFilled ? 'transparent' : 'rgba(99,102,241,0.3)',
-                    shadowColor: allAnswersFilled ? '#6366f1' : 'transparent',
-                    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 12,
-                  }}
-                >
-                  {session.stopRequested
-                    ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
-                    : <>
-                        <Check size={22} color={allAnswersFilled ? '#fff' : '#4F46E5'} strokeWidth={3} />
-                        <Text style={{ color: allAnswersFilled ? '#fff' : '#4090e8', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 }}>
-                          Submit
-                        </Text>
-                      </>
-                  }
-                </LinearGradient>
-              </Pressable>
-            </Animated.View>
+            {/* Submit button — hidden while keyboard is open, shown once keyboard dismissed */}
+            {!keyboardVisible ? (
+              <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 16 }}>
+                {!allAnswersFilled && (
+                  <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
+                    Fill all categories to submit
+                  </Text>
+                )}
+                <Pressable onPress={handleStop} disabled={!allAnswersFilled || !!session.stopRequested}>
+                  <LinearGradient
+                    colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    style={{
+                      borderRadius: 16, paddingVertical: 18,
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
+                      shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
+                      shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
+                    }}
+                  >
+                    {session.stopRequested
+                      ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                      : <>
+                          <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
+                          <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                            Submit
+                          </Text>
+                        </>
+                    }
+                  </LinearGradient>
+                </Pressable>
+              </View>
+            ) : (
+              /* Keyboard visible — show a slim status bar */
+              <View style={{ paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center' }}>
+                {allAnswersFilled ? (
+                  <Pressable
+                    onPress={() => Keyboard.dismiss()}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 8,
+                      backgroundColor: 'rgba(64,144,232,0.15)', borderRadius: 10,
+                      paddingVertical: 8, paddingHorizontal: 20,
+                      borderWidth: 1, borderColor: 'rgba(64,144,232,0.4)',
+                    }}
+                  >
+                    <Check size={15} color="#90c0ff" strokeWidth={2.5} />
+                    <Text style={{ color: '#90c0ff', fontSize: 13, fontWeight: '700' }}>
+                      All done — tap to submit
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Text style={{ color: 'rgba(144,192,255,0.3)', fontSize: 12, fontWeight: '500' }}>
+                    Filling answers...
+                  </Text>
+                )}
+              </View>
+            )}
           </KeyboardAvoidingView>
 
           {/* Exit Modal */}
@@ -1304,35 +1354,70 @@ export default function GameScreen() {
             <View style={{ height: 24 }} />
           </ScrollView>
 
-          {/* ════ STOP / SUBMIT STAMP ════ */}
-          <Animated.View entering={FadeInUp.duration(500).delay(600)} style={[s.stampArea, { paddingBottom: insets.bottom + 10 }]}>
-            {!allAnswersFilled && (
-              <Animated.Text entering={FadeIn.duration(300)} style={[s.stampHint, { fontWeight: '500' }]}>
-                Fill All Categories to STOP the Timer
-              </Animated.Text>
-            )}
-            <Pressable
-              onPress={handleStop}
-              disabled={!allAnswersFilled || session.stopRequested}
-            >
-              <Animated.View style={[s.stampRing, !allAnswersFilled && s.stampRingOff, stampStyle]}>
-                <View style={[s.stampBody, !allAnswersFilled && s.stampBodyOff]}>
-                  {session.stopRequested
-                    ? <ActivityIndicator color={allAnswersFilled ? '#FFF' : P.inkFaint} />
-                    : gameMode === 'single'
-                      ? <View style={s.stampInner}>
-                          <Check size={24} color={allAnswersFilled ? '#FFF' : P.inkFaint} strokeWidth={3} />
-                          <Text style={[s.stampTxt, { fontWeight: '900' }, !allAnswersFilled && { color: P.inkFaint }]}>Submit</Text>
-                        </View>
-                      : <View style={s.stampInner}>
-                          <Hand size={24} color={allAnswersFilled ? '#FFF' : P.inkFaint} strokeWidth={2} />
-                          <Text style={[s.stampTxt, { fontWeight: '900' }, !allAnswersFilled && { color: P.inkFaint }]}>STOP!</Text>
-                        </View>
-                  }
+          {/* ════ STOP / SUBMIT BUTTON ════
+               Only fully shown when keyboard is DOWN.
+               When keyboard visible: show a compact "dismiss keyboard" hint.
+               When keyboard hidden + all filled: show the main action button. ════ */}
+          <View style={[s.stampArea, { paddingBottom: insets.bottom + 10 }]}>
+            {keyboardVisible ? (
+              /* Keyboard is open — show a slim, static info row */
+              allAnswersFilled ? (
+                <Pressable
+                  onPress={() => Keyboard.dismiss()}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    backgroundColor: P.paperDark, borderRadius: 10,
+                    paddingVertical: 10, paddingHorizontal: 20,
+                    borderWidth: 1, borderColor: P.amber,
+                  }}
+                >
+                  <Check size={16} color={P.amber} strokeWidth={2.5} />
+                  <Text style={{ color: P.amber, fontSize: 14, fontWeight: '800' }}>
+                    {gameMode === 'single' ? 'Done — tap Submit' : 'Done — tap STOP!'}
+                  </Text>
+                </Pressable>
+              ) : (
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  paddingVertical: 8,
+                }}>
+                  <Text style={{ color: P.inkFaint, fontSize: 13, fontWeight: '500', fontStyle: 'italic' }}>
+                    Fill all categories to {gameMode === 'single' ? 'submit' : 'stop'}
+                  </Text>
                 </View>
-              </Animated.View>
-            </Pressable>
-          </Animated.View>
+              )
+            ) : (
+              /* Keyboard hidden — show the full action button */
+              <>
+                {!allAnswersFilled && (
+                  <Text style={[s.stampHint, { fontWeight: '500' }]}>
+                    Fill all categories to {gameMode === 'single' ? 'submit' : 'stop'}
+                  </Text>
+                )}
+                <Pressable
+                  onPress={handleStop}
+                  disabled={!allAnswersFilled || !!session.stopRequested}
+                >
+                  <Animated.View style={[s.stampRing, !allAnswersFilled && s.stampRingOff, stampStyle]}>
+                    <View style={[s.stampBody, !allAnswersFilled && s.stampBodyOff]}>
+                      {session.stopRequested
+                        ? <ActivityIndicator color={allAnswersFilled ? '#FFF' : P.inkFaint} />
+                        : gameMode === 'single'
+                          ? <View style={s.stampInner}>
+                              <Check size={20} color={allAnswersFilled ? '#FFF' : P.inkFaint} strokeWidth={3} />
+                              <Text style={[s.stampTxt, { fontWeight: '900' }, !allAnswersFilled && { color: P.inkFaint }]}>Submit</Text>
+                            </View>
+                          : <View style={s.stampInner}>
+                              <Hand size={20} color={allAnswersFilled ? '#FFF' : P.inkFaint} strokeWidth={2} />
+                              <Text style={[s.stampTxt, { fontWeight: '900' }, !allAnswersFilled && { color: P.inkFaint }]}>STOP!</Text>
+                            </View>
+                      }
+                    </View>
+                  </Animated.View>
+                </Pressable>
+              </>
+            )}
+          </View>
         </View>
         </NotebookBackground>
       </KeyboardAvoidingView>
@@ -1888,28 +1973,28 @@ const s = StyleSheet.create({
   // ── Stamp ──
   stampArea: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    alignItems: 'center', paddingTop: 10,
+    alignItems: 'center', paddingTop: 8, paddingHorizontal: 16,
     backgroundColor: P.paper,
-    borderTopWidth: 1.5, borderTopColor: P.paperLine,
-    shadowColor: 'rgba(50,35,10,0.15)',
-    shadowOffset: { width: 0, height: -3 }, shadowOpacity: 1, shadowRadius: 8, elevation: 5,
+    borderTopWidth: 1, borderTopColor: P.paperLine + '80',
+    shadowColor: 'rgba(50,35,10,0.1)',
+    shadowOffset: { width: 0, height: -2 }, shadowOpacity: 1, shadowRadius: 6, elevation: 4,
   },
-  stampHint: { color: P.inkFaint, fontSize: 17, fontStyle: 'italic', marginBottom: 6 },
+  stampHint: { color: P.inkFaint, fontSize: 13, fontStyle: 'italic', marginBottom: 8, textAlign: 'center' },
   stampRing: {
-    borderRadius: 50, borderWidth: 3, borderColor: P.stopRed,
+    borderRadius: 14, borderWidth: 2.5, borderColor: P.stopRed,
     padding: 3, backgroundColor: P.stopRedBg,
     shadowColor: P.stopRed, shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.55, shadowRadius: 12, elevation: 8,
   },
   stampRingOff: { borderColor: P.paperLine, shadowOpacity: 0, backgroundColor: P.paperDark },
   stampBody: {
-    borderRadius: 44, paddingVertical: 14, paddingHorizontal: 52,
+    borderRadius: 11, paddingVertical: 14, paddingHorizontal: 44,
     backgroundColor: P.stopRed, alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)',
   },
   stampBodyOff: { backgroundColor: P.paperDeep },
-  stampInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  stampTxt: { color: '#FFF', fontSize: 27, letterSpacing: 2 },
+  stampInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  stampTxt: { color: '#FFF', fontSize: 22, letterSpacing: 1.5 },
 
   // ── Modals ──
   backdrop: {
