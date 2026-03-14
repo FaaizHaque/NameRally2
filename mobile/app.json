@@ -36,6 +36,14 @@
         {
           "microphonePermission": "NameRally uses the microphone for audio features."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/logo-main.png",
+          "color": "#4ADE80",
+          "sounds": []
+        }
       ]
     ],
     "experiments": {

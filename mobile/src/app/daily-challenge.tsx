@@ -44,6 +44,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
+import { dismissDailyBadge } from '@/lib/notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { validateWithFallback } from '@/lib/word-validation';
@@ -189,6 +190,7 @@ export default function DailyChallengeScreen() {
     };
 
     loadChallenge();
+    dismissDailyBadge(); // Clear badge when user opens daily challenge
   }, []);
 
   // Game timer
