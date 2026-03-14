@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -146,6 +146,7 @@ export default function HomeScreen() {
   const [splashDone, setSplashDone] = useState(splashAlreadyShown);
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
+  const [showHowToPlayModal, setShowHowToPlayModal] = useState(false);
   const editInputRef = useRef<TextInput>(null);
 
   const currentUser = useGameStore((s) => s.currentUser);
@@ -194,6 +195,8 @@ export default function HomeScreen() {
     Sounds.tap();
     setCurrentUser({ id: `user_${Date.now()}`, username: username.trim() });
     setShowInput(false);
+    // Show how-to-play prompt for new users
+    setShowHowToPlayModal(true);
   };
 
   const handleStartEditName = () => {
@@ -295,19 +298,11 @@ export default function HomeScreen() {
                   entering={splashDone ? FadeInUp.duration(600).delay(400) : undefined}
                   style={{ opacity: splashDone ? 1 : 0, alignItems: 'center' }}
                 >
-                  <Text style={{
-                    color: SKETCH_COLORS.inkFaint,
-                    fontSize: 12, fontWeight: '700',
-                    letterSpacing: 3, textTransform: 'uppercase',
-                    marginBottom: 8,
-                    textAlign: 'center',
-                  }}>
-                    Enter Your Name
-                  </Text>
+                  {/* Name input */}
                   <View style={{
                     borderBottomWidth: 2.5,
                     borderBottomColor: username.trim().length > 0 ? SKETCH_COLORS.ink : SKETCH_COLORS.inkFaint,
-                    marginBottom: 32,
+                    marginBottom: 10,
                     width: '80%',
                   }}>
                     <TextInput
@@ -318,7 +313,7 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                         textAlign: 'center',
                       }}
-                      placeholder="your name..."
+                      placeholder="enter your name..."
                       placeholderTextColor={SKETCH_COLORS.inkFaint + '80'}
                       value={username}
                       onChangeText={setUsername}
@@ -327,24 +322,33 @@ export default function HomeScreen() {
                       maxLength={20}
                       returnKeyType="done"
                       onSubmitEditing={handleCreateAccount}
+                      autoFocus
                     />
                   </View>
-                  {/* Play button — clearly shows inactive until name entered */}
+                  <Text style={{
+                    color: SKETCH_COLORS.inkFaint,
+                    fontSize: 11, fontWeight: '600',
+                    letterSpacing: 1, marginBottom: 32,
+                    textAlign: 'center',
+                  }}>
+                    this is how others will see you
+                  </Text>
+                  {/* Play button — always shows LET'S PLAY, dimmed until name typed */}
                   <Pressable
                     onPress={handleCreateAccount}
                     disabled={username.trim().length < 1}
                     style={({ pressed }) => ({
                       backgroundColor: username.trim().length > 0
                         ? (pressed ? '#2a2a2a' : SKETCH_COLORS.ink)
-                        : 'rgba(0,0,0,0.12)',
+                        : 'rgba(0,0,0,0.10)',
                       borderRadius: 18, paddingVertical: 20,
                       alignItems: 'center', justifyContent: 'center',
                       flexDirection: 'row', gap: 12,
                       paddingHorizontal: 40,
                       alignSelf: 'center',
                       minWidth: '70%',
-                      borderWidth: username.trim().length > 0 ? 0 : 2,
-                      borderColor: 'rgba(0,0,0,0.15)',
+                      borderWidth: 2,
+                      borderColor: username.trim().length > 0 ? 'transparent' : 'rgba(0,0,0,0.12)',
                       shadowColor: SKETCH_COLORS.ink,
                       shadowOffset: { width: 0, height: username.trim().length > 0 ? 8 : 0 },
                       shadowOpacity: username.trim().length > 0 ? 0.35 : 0,
@@ -356,7 +360,7 @@ export default function HomeScreen() {
                       color: username.trim().length > 0 ? '#fff' : SKETCH_COLORS.inkFaint,
                       fontWeight: '900', fontSize: 22, letterSpacing: 2,
                     }}>
-                      {username.trim().length > 0 ? 'LET\'S PLAY!' : 'Enter a name first'}
+                      LET&apos;S PLAY!
                     </Text>
                   </Pressable>
                 </Animated.View>
@@ -476,6 +480,87 @@ export default function HomeScreen() {
       {!splashDone && (
         <SplashScreen fontsLoaded={fontsLoaded} onDone={() => { splashAlreadyShown = true; setSplashDone(true); }} />
       )}
+
+      {/* ── How to Play prompt for new users ── */}
+      <Modal
+        visible={showHowToPlayModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowHowToPlayModal(false)}
+      >
+        <View style={{
+          flex: 1, backgroundColor: 'rgba(28,18,10,0.65)',
+          alignItems: 'center', justifyContent: 'center',
+          paddingHorizontal: 28,
+        }}>
+          <View style={{
+            backgroundColor: SKETCH_COLORS.paper,
+            borderRadius: 20, padding: 28,
+            borderWidth: 2.5, borderColor: SKETCH_COLORS.amber,
+            shadowColor: SKETCH_COLORS.ink,
+            shadowOffset: { width: 0, height: 12 },
+            shadowOpacity: 0.3, shadowRadius: 24,
+            elevation: 20, width: '100%',
+          }}>
+            {/* Tape strip decoration */}
+            <View style={{
+              position: 'absolute', top: -10, alignSelf: 'center',
+              width: 60, height: 18,
+              backgroundColor: 'rgba(205,190,120,0.7)',
+              borderRadius: 3, transform: [{ rotate: '-1deg' }],
+            }} />
+            <Text style={{
+              fontSize: 26, fontWeight: '900', color: SKETCH_COLORS.ink,
+              textAlign: 'center', marginBottom: 8, marginTop: 4,
+            }}>
+              Welcome! 🎉
+            </Text>
+            <Text style={{
+              fontSize: 15, color: SKETCH_COLORS.inkLight,
+              textAlign: 'center', lineHeight: 22, marginBottom: 24,
+            }}>
+              Want a quick tour on how to play before you dive in?
+            </Text>
+            {/* How to Play button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                Sounds.tap();
+                setShowHowToPlayModal(false);
+                router.push('/how-to-play');
+              }}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? '#2a2a2a' : SKETCH_COLORS.ink,
+                borderRadius: 14, paddingVertical: 16,
+                alignItems: 'center', marginBottom: 12,
+                shadowColor: SKETCH_COLORS.ink,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
+              })}
+            >
+              <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: 1 }}>
+                Show me how to play
+              </Text>
+            </Pressable>
+            {/* Skip button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowHowToPlayModal(false);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 10, alignItems: 'center' })}
+            >
+              <Text style={{
+                color: SKETCH_COLORS.inkFaint,
+                fontSize: 15, fontWeight: '600',
+                textDecorationLine: 'underline',
+              }}>
+                Skip for now
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

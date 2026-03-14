@@ -18,8 +18,7 @@ const stripAccents = (str: string): string =>
   str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 // Build Sets from JSON data (lowercase for validation)
-// Also adds accent-stripped and hyphen-normalised variants so players
-// don't need to type special characters or exact punctuation.
+// Adds multiple variants so players can type any reasonable form of a word.
 function buildLowercaseSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
@@ -35,6 +34,12 @@ function buildLowercaseSet(data: string[]): Set<string> {
       // Dot-free variant: "e.t." -> "et"
       const noDots = lower.replace(/\./g, '').replace(/\s+/g, ' ').trim();
       if (noDots !== lower) s.add(noDots);
+      // No-space variant: "dodge ball" -> "dodgeball", "ice cream" -> "icecream"
+      const noSpaces = lower.replace(/[\s\-_]+/g, '');
+      if (noSpaces !== lower) s.add(noSpaces);
+      // Underscore-free variant: "dodge_ball" -> "dodge ball"
+      const noUnderscores = lower.replace(/_/g, ' ').trim();
+      if (noUnderscores !== lower) s.add(noUnderscores);
     }
   }
   return s;
@@ -315,6 +320,14 @@ const getNormalizedVariants = (answer: string): string[] => {
   const noHyphens = w.replace(/-/g, ' ').trim();
   if (noHyphens !== w) variants.add(noHyphens);
 
+  // Replace underscores with spaces: "dodge_ball" -> "dodge ball"
+  const noUnderscores = w.replace(/_/g, ' ').trim();
+  if (noUnderscores !== w) variants.add(noUnderscores);
+
+  // No-space variant: "dodge ball" / "dodge-ball" -> "dodgeball"
+  const noSpaces = w.replace(/[\s\-_]+/g, '');
+  if (noSpaces !== w) variants.add(noSpaces);
+
   // Remove all dots: "e.t." -> "et", "u.s.a." -> "usa"
   const allDotsRemoved = w.replace(/\./g, '').replace(/\s+/g, ' ').trim();
   if (allDotsRemoved !== w) variants.add(allDotsRemoved);
@@ -361,7 +374,7 @@ export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
     K: ['Kaitlyn', 'Karen', 'Kari', 'Karina', 'Karl', 'Karla', 'Kate', 'Katelyn', 'Katherine', 'Kathleen', 'Kathryn', 'Kathy', 'Katie', 'Katrina', 'Kay', 'Kayla', 'Kaylee', 'Keisha', 'Keith', 'Kelly', 'Kelsey', 'Ken', 'Kendall', 'Kendra', 'Kenneth', 'Kenny', 'Kent', 'Kerry', 'Kevin', 'Kim', 'Kimberly', 'Kirk', 'Krista', 'Kristen', 'Kristin', 'Kristina', 'Kristine', 'Kristy', 'Kurt', 'Kyle', 'Kylie'],
     L: ['Lacey', 'Lance', 'Landon', 'Lane', 'Lara', 'Larry', 'Laura', 'Lauren', 'Laurence', 'Laurie', 'Lawrence', 'Layla', 'Lea', 'Leah', 'Lee', 'Leigh', 'Lena', 'Leo', 'Leon', 'Leonard', 'Leonardo', 'Leroy', 'Leslie', 'Lester', 'Levi', 'Lewis', 'Liam', 'Lillian', 'Lily', 'Lincoln', 'Linda', 'Lindsay', 'Lindsey', 'Lisa', 'Lloyd', 'Logan', 'Lois', 'Lola', 'Lonnie', 'Lorena', 'Lorenzo', 'Lori', 'Lorraine', 'Louis', 'Louise', 'Lucas', 'Lucia', 'Lucille', 'Lucy', 'Luis', 'Luke', 'Luna', 'Luther', 'Lydia', 'Lynda', 'Lynn', 'Lynne'],
     M: ['Mabel', 'Mack', 'Mackenzie', 'Macy', 'Madeleine', 'Madeline', 'Madison', 'Mae', 'Maggie', 'Malcolm', 'Malik', 'Mallory', 'Mandy', 'Manuel', 'Marc', 'Marcia', 'Marco', 'Marcus', 'Margaret', 'Margarita', 'Maria', 'Mariah', 'Marian', 'Marianne', 'Marie', 'Marilyn', 'Mario', 'Marion', 'Marisa', 'Marissa', 'Marjorie', 'Mark', 'Marlene', 'Marlon', 'Marsha', 'Marshall', 'Martha', 'Martin', 'Marvin', 'Mary', 'Mason', 'Mathew', 'Matt', 'Matthew', 'Maureen', 'Maurice', 'Max', 'Maxine', 'Maxwell', 'Maya', 'Megan', 'Melanie', 'Melinda', 'Melissa', 'Melody', 'Melvin', 'Mercedes', 'Meredith', 'Mia', 'Michael', 'Micheal', 'Michele', 'Michelle', 'Miguel', 'Mike', 'Mildred', 'Miles', 'Milton', 'Mindy', 'Minnie', 'Miranda', 'Miriam', 'Misty', 'Mitchell', 'Molly', 'Monica', 'Monique', 'Morgan', 'Morris', 'Moses', 'Myra', 'Myrtle'],
-    N: ['Nadine', 'Nancy', 'Naomi', 'Natalie', 'Natasha', 'Nathan', 'Nathaniel', 'Neal', 'Neil', 'Nellie', 'Nelson', 'Neville', 'Nicholas', 'Nick', 'Nicky', 'Nicolas', 'Nicole', 'Nigel', 'Nina', 'Noah', 'Noel', 'Nora', 'Norma', 'Norman'],
+    N: ['Nadine', 'Nancy', 'Naomi', 'Natalie', 'Natasha', 'Nathan', 'Nathaniel', 'Neal', 'Ned', 'Neil', 'Nellie', 'Nelson', 'Neville', 'Nicholas', 'Nick', 'Nicky', 'Nicolas', 'Nicole', 'Nigel', 'Nina', 'Noah', 'Noel', 'Nora', 'Norma', 'Norman'],
     O: ['Octavia', 'Olga', 'Olive', 'Oliver', 'Olivia', 'Omar', 'Opal', 'Ora', 'Orlando', 'Oscar', 'Otis', 'Otto', 'Owen'],
     P: ['Pablo', 'Paige', 'Pamela', 'Paris', 'Pat', 'Patricia', 'Patrick', 'Patsy', 'Patty', 'Paul', 'Paula', 'Pauline', 'Pearl', 'Pedro', 'Peggy', 'Penelope', 'Penny', 'Percy', 'Perry', 'Pete', 'Peter', 'Phil', 'Philip', 'Phillip', 'Phoebe', 'Phyllis', 'Preston', 'Priscilla'],
     Q: ['Queen', 'Quentin', 'Quincy', 'Quinn'],
@@ -383,7 +396,7 @@ export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
     E: ['Ecuador', 'Edinburgh', 'Egypt', 'El Paso', 'El Salvador', 'England', 'Equatorial Guinea', 'Eritrea', 'Essex', 'Estonia', 'Ethiopia'],
     F: ['Fiji', 'Finland', 'Florence', 'Florida', 'France', 'Frankfurt', 'Freetown', 'Fresno'],
     G: ['Gabon', 'Gambia', 'Geneva', 'Georgia', 'Germany', 'Ghana', 'Gibraltar', 'Glasgow', 'Greece', 'Greenland', 'Grenada', 'Guadalajara', 'Guam', 'Guatemala', 'Guinea', 'Guyana'],
-    H: ['Haiti', 'Hamburg', 'Hanoi', 'Harare', 'Hartford', 'Havana', 'Hawaii', 'Helsinki', 'Ho Chi Minh City', 'Hollywood', 'Honduras', 'Hong Kong', 'Honolulu', 'Houston', 'Hungary'],
+    H: ['Haiti', 'Hamburg', 'Hanoi', 'Harare', 'Hartford', 'Havana', 'Hawaii', 'Helsinki', 'Ho Chi Minh City', 'Holland', 'Hollywood', 'Honduras', 'Hong Kong', 'Honolulu', 'Houston', 'Hungary'],
     I: ['Iceland', 'Idaho', 'Illinois', 'India', 'Indiana', 'Indianapolis', 'Indonesia', 'Iowa', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Istanbul', 'Italy', 'Ivory Coast'],
     J: ['Jacksonville', 'Jakarta', 'Jamaica', 'Japan', 'Jeddah', 'Jersey', 'Jerusalem', 'Johannesburg', 'Jordan'],
     K: ['Kabul', 'Kampala', 'Kansas', 'Kansas City', 'Karachi', 'Kazakhstan', 'Kentucky', 'Kenya', 'Khartoum', 'Kiev', 'Kigali', 'Kingston', 'Kinshasa', 'Korea', 'Kosovo', 'Kuala Lumpur', 'Kuwait', 'Kyoto', 'Kyrgyzstan'],
@@ -435,10 +448,10 @@ export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
     A: ['Accordion', 'Acorn', 'Airplane', 'Alarm', 'Album', 'Ambulance', 'Anchor', 'Antenna', 'Apple', 'Apron', 'Aquarium', 'Arm', 'Armchair', 'Arrow', 'Axe'],
     B: ['Backpack', 'Badge', 'Bag', 'Ball', 'Balloon', 'Banana', 'Band', 'Bandage', 'Bank', 'Banner', 'Barrel', 'Basket', 'Bat', 'Bath', 'Battery', 'Bead', 'Beam', 'Bean', 'Bed', 'Bell', 'Belt', 'Bench', 'Bicycle', 'Binoculars', 'Blanket', 'Blender', 'Block', 'Boat', 'Bolt', 'Bomb', 'Bone', 'Book', 'Bookshelf', 'Boomerang', 'Boot', 'Bottle', 'Bowl', 'Box', 'Bracelet', 'Brake', 'Branch', 'Bread', 'Brick', 'Bridge', 'Briefcase', 'Broom', 'Brush', 'Bubble', 'Bucket', 'Building', 'Bulb', 'Bullet', 'Bus', 'Bush', 'Button'],
     C: ['Cabinet', 'Cable', 'Cage', 'Cake', 'Calculator', 'Calendar', 'Camera', 'Can', 'Candle', 'Candy', 'Cane', 'Cannon', 'Canoe', 'Cap', 'Car', 'Card', 'Carpet', 'Carrot', 'Cart', 'Case', 'Castle', 'Cat', 'Ceiling', 'Cell', 'Chain', 'Chair', 'Chalk', 'Chart', 'Cheese', 'Chest', 'Chip', 'Chocolate', 'Circle', 'Clamp', 'Clip', 'Clock', 'Cloth', 'Cloud', 'Coat', 'Coin', 'Collar', 'Comb', 'Compass', 'Computer', 'Cone', 'Container', 'Cookie', 'Cord', 'Cork', 'Corner', 'Couch', 'Counter', 'Cover', 'Crayon', 'Cream', 'Crown', 'Cube', 'Cup', 'Curtain', 'Cushion', 'Cylinder'],
-    D: ['Dart', 'Desk', 'Diamond', 'Dice', 'Dictionary', 'Dish', 'Disk', 'Doll', 'Dollar', 'Door', 'Doorbell', 'Dot', 'Drawer', 'Dress', 'Drill', 'Drink', 'Drum', 'Dryer'],
+    D: ['Dart', 'Data', 'Desk', 'Diamond', 'Dice', 'Dictionary', 'Dish', 'Disk', 'Doll', 'Dollar', 'Door', 'Doorbell', 'Dot', 'Drawer', 'Dress', 'Drill', 'Drink', 'Drum', 'Dryer'],
     E: ['Earring', 'Egg', 'Elastic', 'Elbow', 'Elevator', 'Engine', 'Envelope', 'Eraser', 'Eye'],
     F: ['Fabric', 'Face', 'Fan', 'Faucet', 'Feather', 'Fence', 'File', 'Film', 'Filter', 'Finger', 'Fire', 'Flag', 'Flame', 'Flashlight', 'Flask', 'Floor', 'Flower', 'Flute', 'Foam', 'Folder', 'Food', 'Foot', 'Football', 'Fork', 'Frame', 'Freezer', 'Fridge', 'Fruit', 'Funnel', 'Fur', 'Furniture'],
-    G: ['Game', 'Garage', 'Garbage', 'Garden', 'Garlic', 'Gas', 'Gate', 'Gauge', 'Gear', 'Gem', 'Gift', 'Glass', 'Glasses', 'Globe', 'Glove', 'Glue', 'Goal', 'Gold', 'Golf', 'Gong', 'Grain', 'Grape', 'Graph', 'Grass', 'Grater', 'Gravel', 'Grill', 'Grip', 'Grocery', 'Ground', 'Guitar', 'Gum', 'Gun'],
+    G: ['Game', 'Garage', 'Garbage', 'Garden', 'Garlic', 'Gas', 'Gate', 'Gauge', 'Gear', 'Gel', 'Gem', 'Gift', 'Glass', 'Glasses', 'Globe', 'Glove', 'Glue', 'Goal', 'Gold', 'Golf', 'Gong', 'Grain', 'Grape', 'Graph', 'Grass', 'Grater', 'Gravel', 'Grill', 'Grip', 'Grocery', 'Ground', 'Guitar', 'Gum', 'Gun'],
     H: ['Hair', 'Hammer', 'Handle', 'Hanger', 'Hardware', 'Harmonica', 'Harp', 'Hat', 'Headphones', 'Heart', 'Heater', 'Hedge', 'Helmet', 'Highlighter', 'Hinge', 'Hole', 'Hook', 'Hoop', 'Horn', 'Hose', 'House'],
     I: ['Ice', 'Icicle', 'Ink', 'Instrument', 'Iron', 'Island', 'Ivory'],
     J: ['Jacket', 'Jar', 'Jeans', 'Jeep', 'Jelly', 'Jet', 'Jewel', 'Jewelry', 'Jigsaw', 'Journal', 'Joystick', 'Jug', 'Juice', 'Junk'],
@@ -475,7 +488,7 @@ export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
     M: ['Mahjong', 'Mancala', 'Marathon', 'Marbles', 'Martial Arts', 'Mini Golf', 'Mixed Martial Arts', 'MMA', 'Monopoly', 'Motocross', 'Motor Racing', 'Mountain Biking', 'Mountain Climbing', 'Mountaineering', 'Mother May I', 'Muay Thai', 'Musical Chairs'],
     N: ['NASCAR', 'Netball', 'Nine Ball'],
     O: ['Obstacle Course', 'Old Maid', 'Olympics', 'Operation', 'Orienteering', 'Othello'],
-    P: ['Paddleball', 'Paddleboarding', 'Paintball', 'Parachuting', 'Parcheesi', 'Parkour', 'Pentathlon', 'Pictionary', 'Pickleball', 'Pilates', 'Pin the Tail', 'Pinball', 'Ping Pong', 'Platform Diving', 'Poker', 'Pole Vault', 'Polo', 'Pool', 'Powerlifting', 'Puzzles'],
+    P: ['Paddle', 'Paddle Ball', 'Paddleball', 'Paddleboarding', 'Paintball', 'Parachuting', 'Parcheesi', 'Parkour', 'Pentathlon', 'Pictionary', 'Pickleball', 'Pilates', 'Pin the Tail', 'Pinball', 'Ping Pong', 'Platform Diving', 'Poker', 'Pole Vault', 'Polo', 'Pool', 'Powerlifting', 'Puzzles'],
     Q: ['Quidditch', 'Quoits'],
     R: ['Race Walking', 'Racing', 'Racquetball', 'Rafting', 'Rally Racing', 'Rappelling', 'Red Light Green Light', 'Red Rover', 'Relay', 'Relay Race', 'Rhythmic Gymnastics', 'Ring Around the Rosie', 'Ring Toss', 'Risk', 'Rock Climbing', 'Rock Paper Scissors', 'Rodeo', 'Roller Derby', 'Roller Hockey', 'Roller Skating', 'Rollerblading', 'Rowing', 'Rugby', 'Rummy', 'Running'],
     S: ['Sack Race', 'Sailing', 'Sardines', 'Scavenger Hunt', 'Scrabble', 'Scuba Diving', 'Shooting', 'Shot Put', 'Shuffleboard', 'Simon Says', 'Skateboarding', 'Skating', 'Skeet Shooting', 'Skeleton', 'Ski Jumping', 'Skiing', 'Skipping', 'Skydiving', 'Slalom', 'Sledding', 'Snooker', 'Snorkeling', 'Snowball Fight', 'Snowboarding', 'Soccer', 'Softball', 'Solitaire', 'Sorry', 'Spades', 'Speed Skating', 'Spinning', 'Spoons', 'Sprint', 'Sprinting', 'Squash', 'Steeplechase', 'Sumo Wrestling', 'Surfing', 'Swimming', 'Synchronized Swimming'],

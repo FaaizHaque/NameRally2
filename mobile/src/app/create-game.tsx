@@ -45,6 +45,7 @@ const CATEGORY_ICONS_MODERN: Record<string, React.ReactNode> = {
   places: <MapPin size={18} color={MODERN_ICON_COLOR} />,
   animal: <Cat size={18} color={MODERN_ICON_COLOR} />,
   thing: <Box size={18} color={MODERN_ICON_COLOR} />,
+  fruits_vegetables: <Apple size={18} color={MODERN_ICON_COLOR} />,
   sports_games: <Gamepad2 size={18} color={MODERN_ICON_COLOR} />,
   brands: <ShoppingBag size={18} color={MODERN_ICON_COLOR} />,
   health_issues: <HeartPulse size={18} color={MODERN_ICON_COLOR} />,
@@ -64,6 +65,7 @@ const CATEGORY_ICONS_SKETCH: Record<string, React.ReactNode> = {
   places: <MapPin size={18} color={SKETCH_ICON_COLOR} />,
   animal: <Cat size={18} color={SKETCH_ICON_COLOR} />,
   thing: <Box size={18} color={SKETCH_ICON_COLOR} />,
+  fruits_vegetables: <Apple size={18} color={SKETCH_ICON_COLOR} />,
   sports_games: <Gamepad2 size={18} color={SKETCH_ICON_COLOR} />,
   brands: <ShoppingBag size={18} color={SKETCH_ICON_COLOR} />,
   health_issues: <HeartPulse size={18} color={SKETCH_ICON_COLOR} />,
@@ -98,6 +100,7 @@ const LEVEL_CATEGORY_NAMES: Record<LevelCategoryType, string> = {
 
 // Pastel notebook colors per category (multiplayer)
 const CATEGORY_PASTEL: Record<string, { bg: string; border: string; selectedBg: string; ink: string }> = {
+  fruits_vegetables:  { bg: '#E8FFE0', border: '#50B840', selectedBg: '#50B840', ink: '#205010' },   // Lime green - fresh produce
   names:              { bg: '#FEF3A3', border: '#E8D840', selectedBg: '#F8E040', ink: '#8B7A10' },   // Yellow - warm, personal
   places:             { bg: '#C8F5D0', border: '#50B870', selectedBg: '#50B870', ink: '#2A6640' },   // Green - nature, geography
   animal:             { bg: '#FFD4D4', border: '#E07070', selectedBg: '#E07070', ink: '#882020' },   // Coral - living things

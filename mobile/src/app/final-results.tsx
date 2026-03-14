@@ -90,6 +90,7 @@ export default function FinalResultsScreen() {
 
   const trophyScale = useSharedValue(0);
   const confettiOpacity = useSharedValue(0);
+  const soundPlayedRef = React.useRef(false);
 
   const isSoloMode = session?.players.length === 1;
   const playerScore = session?.players[0]?.totalScore || 0;
@@ -104,13 +105,16 @@ export default function FinalResultsScreen() {
   }, []);
 
   useEffect(() => {
-    if (isLevelMode) {
-      Haptics.notificationAsync(levelPassed ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error);
-      if (levelPassed) Sounds.success();
-      else Sounds.fail();
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Sounds.success();
+    if (!soundPlayedRef.current) {
+      soundPlayedRef.current = true;
+      if (isLevelMode) {
+        Haptics.notificationAsync(levelPassed ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Error);
+        if (levelPassed) Sounds.success();
+        else Sounds.fail();
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Sounds.success();
+      }
     }
     trophyScale.value = withDelay(300, withSpring(1, { damping: 8, stiffness: 100 }));
     confettiOpacity.value = withDelay(500, withRepeat(withSequence(withTiming(1, { duration: 1000 }), withTiming(0.5, { duration: 1000 })), -1, true));
@@ -473,22 +477,22 @@ export default function FinalResultsScreen() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: '#0e2040', borderRadius: 14, paddingVertical: 14,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.25)',
+                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 16,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
                 }}>
-                  <Home size={18} color="#6090d0" strokeWidth={2.5} />
-                  <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Home</Text>
+                  <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Home</Text>
                 </View>
               </Pressable>
               <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: '#0e2040', borderRadius: 14, paddingVertical: 14,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.25)',
+                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 16,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
                 }}>
-                  <RotateCcw size={18} color="#6090d0" strokeWidth={2.5} />
-                  <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Menu</Text>
+                  <RotateCcw size={19} color="#a0c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Menu</Text>
                 </View>
               </Pressable>
             </View>
