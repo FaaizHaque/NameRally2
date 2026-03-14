@@ -125,6 +125,7 @@ export default function DailyChallengeScreen() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   // Game state
   const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
@@ -150,10 +151,27 @@ export default function DailyChallengeScreen() {
 
         // Check if already completed
         const storedResult = await AsyncStorage.getItem(`daily_challenge_result_${challengeData.date}`);
+        // Calculate streak (count consecutive past days with saved results)
+        const calcStreak = async (todayDate: string) => {
+          let count = 0;
+          let d = new Date(todayDate);
+          // Walk backwards through dates
+          for (let i = 0; i < 365; i++) {
+            const dateStr = d.toISOString().split('T')[0];
+            const key = `daily_challenge_result_${dateStr}`;
+            const stored = await AsyncStorage.getItem(key);
+            if (!stored) break;
+            count++;
+            d.setDate(d.getDate() - 1);
+          }
+          setStreak(count);
+        };
+
         if (storedResult) {
           setResult(JSON.parse(storedResult));
           setPhase('already_completed');
           fetchLeaderboard(challengeData.date);
+          calcStreak(challengeData.date);
           return;
         }
 
@@ -339,6 +357,17 @@ export default function DailyChallengeScreen() {
       setResult(newResult);
       setPhase('results');
       fetchLeaderboard(challenge.date);
+      // Recalculate streak now that today is complete
+      let streakCount = 0;
+      let d2 = new Date(challenge.date);
+      for (let i = 0; i < 365; i++) {
+        const dateStr = d2.toISOString().split('T')[0];
+        const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
+        if (!stored && dateStr !== challenge.date) break;
+        if (stored || dateStr === challenge.date) streakCount++;
+        d2.setDate(d2.getDate() - 1);
+      }
+      setStreak(streakCount);
     } catch (error) {
       console.error('Error submitting challenge:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -507,6 +536,18 @@ export default function DailyChallengeScreen() {
                 </Animated.View>
                 <Text style={{ color: '#E8FFE8', fontSize: 56, fontWeight: '900', marginTop: 12, lineHeight: 60 }}>{result?.totalScore}</Text>
                 <Text style={{ color: '#4ADE8080', fontSize: 14 }}>points today</Text>
+                {streak > 0 && (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10,
+                    backgroundColor: 'rgba(251,146,60,0.15)', paddingHorizontal: 14, paddingVertical: 6,
+                    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(251,146,60,0.35)',
+                  }}>
+                    <Text style={{ fontSize: 16 }}>🔥</Text>
+                    <Text style={{ color: '#fb923c', fontSize: 14, fontWeight: '900' }}>
+                      {streak} day streak{streak === 1 ? '' : '!'}
+                    </Text>
+                  </View>
+                )}
 
                 {/* Stats row */}
                 <View style={{
@@ -786,6 +827,18 @@ export default function DailyChallengeScreen() {
                 </Text>
               </View>
             </Animated.View>
+
+            {/* Sticky letter reminder — always visible above keyboard */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 6, paddingHorizontal: 16 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.12)' }} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(74,222,128,0.08)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)' }}>
+                <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1 }}>LETTER</Text>
+                <View style={{ width: 26, height: 26, borderRadius: 8, backgroundColor: '#4ADE80', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#0D1F0D', fontSize: 14, fontWeight: '900' }}>{challenge.letter}</Text>
+                </View>
+              </View>
+              <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.12)' }} />
+            </View>
 
             {/* Categories Input */}
             <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} keyboardShouldPersistTaps="handled">

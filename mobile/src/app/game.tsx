@@ -411,6 +411,8 @@ export default function GameScreen() {
   const timerWiggle = useSharedValue(0);
   const stampBounce = useSharedValue(1);
   const stickyFloat = useSharedValue(0);
+  const timerBarWidth = useSharedValue(1);   // 0–1 fraction of full width
+  const timerBarPulse = useSharedValue(1);   // scale pulse when urgent
 
   const isHost = session?.hostId === currentUser?.id;
   const handFont    = fontsLoaded ? 'Caveat_700Bold'    : undefined;
@@ -703,6 +705,26 @@ export default function GameScreen() {
     return () => { if (stopCountdownRef.current) clearInterval(stopCountdownRef.current); };
   }, [session?.stopRequested, session?.stopCountdownStart, handleRoundEnd]);
 
+  // Update timer bar width
+  useEffect(() => {
+    if (!session?.settings.roundDuration) return;
+    const fraction = Math.max(0, Math.min(1, timeRemaining / session.settings.roundDuration));
+    timerBarWidth.value = withTiming(fraction, { duration: 900 });
+    if (timeRemaining <= 10 && timeRemaining > 0) {
+      timerBarPulse.value = withRepeat(
+        withSequence(withTiming(1.03, { duration: 300 }), withTiming(1, { duration: 300 })),
+        -1, true
+      );
+    } else {
+      timerBarPulse.value = withTiming(1, { duration: 200 });
+    }
+  }, [timeRemaining]);
+
+  const timerBarStyle = useAnimatedStyle(() => ({
+    width: `${timerBarWidth.value * 100}%` as any,
+    transform: [{ scaleY: timerBarPulse.value }],
+  }));
+
   // Timer pulse + wiggle when <= 10
   useEffect(() => {
     if (timeRemaining <= 10) {
@@ -830,6 +852,21 @@ export default function GameScreen() {
             </View>
           </View>
 
+          {/* Timer progress bar — full-width, 9px, color shifts red when urgent */}
+          <View style={{ height: 9, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+            <Animated.View
+              style={[{
+                height: '100%',
+                backgroundColor: urgentTimer ? '#ef4444' : '#4090e8',
+                borderRadius: 0,
+                shadowColor: urgentTimer ? '#ef4444' : '#4090e8',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: urgentTimer ? 0.9 : 0.5,
+                shadowRadius: urgentTimer ? 6 : 4,
+              }, timerBarStyle]}
+            />
+          </View>
+
           {/* Stars row */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 }}>
             <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
@@ -900,8 +937,8 @@ export default function GameScreen() {
                       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
                       paddingHorizontal: 12, paddingTop: 10, paddingBottom: 4,
                     }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <View style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: mc.bg, borderWidth: 1, borderColor: mc.border, alignItems: 'center', justifyContent: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: mc.bg, borderWidth: 1.5, borderColor: mc.border, alignItems: 'center', justifyContent: 'center' }}>
                           {CATEGORY_ICONS[cat](mc.accent)}
                         </View>
                         <Text style={{ color: isComplete ? mc.accent : 'rgba(165,180,252,0.7)', fontSize: 12, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' }}>
@@ -1102,6 +1139,16 @@ export default function GameScreen() {
         <View style={s.headerBorder}>
           <View style={s.headerBorderLine1} />
           <View style={s.headerBorderLine2} />
+        </View>
+        {/* Timer progress bar */}
+        <View style={{ height: 8, backgroundColor: P.paperDark, overflow: 'hidden' }}>
+          <Animated.View style={[{
+            height: '100%',
+            backgroundColor: timeRemaining <= 10 ? P.stopRed : P.amber,
+            shadowColor: timeRemaining <= 10 ? P.stopRed : P.amber,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.6, shadowRadius: 4,
+          }, timerBarStyle]} />
         </View>
 
         {/* Controls bar */}

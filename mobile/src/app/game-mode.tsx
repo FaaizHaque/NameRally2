@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import Animated, { FadeIn, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Trophy, Lock } from 'lucide-react-native';
@@ -19,9 +20,18 @@ export default function GameModeScreen() {
   const levelProgress = useGameStore((s) => s.levelProgress);
   const startLevelGame = useGameStore((s) => s.startLevelGame);
   const [isLoadingSingle, setIsLoadingSingle] = useState(false);
+  const [levelLoaded, setLevelLoaded] = useState(false);
+
+  // Skeleton shimmer animation
+  const shimmer = useSharedValue(0);
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: 0.4 + shimmer.value * 0.4 }));
 
   useEffect(() => {
-    loadLevelProgress();
+    shimmer.value = withRepeat(
+      withSequence(withTiming(1, { duration: 700 }), withTiming(0, { duration: 700 })),
+      -1, true
+    );
+    loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
   const handleStartSinglePlayer = useCallback(async () => {
@@ -141,7 +151,7 @@ export default function GameModeScreen() {
                   </View>
                 </View>
 
-                {/* Level badge — big and prominent */}
+                {/* Level badge — big and prominent, with skeleton while loading */}
                 <View style={{
                   flexDirection: 'row', alignItems: 'center', gap: 10,
                   backgroundColor: 'rgba(255,255,255,0.12)',
@@ -149,26 +159,38 @@ export default function GameModeScreen() {
                   borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.4)',
                   marginTop: 10,
                 }}>
-                  <View style={{
-                    width: 42, height: 42, borderRadius: 10,
-                    backgroundColor: '#4090e8',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: '900' }}>
-                      {levelProgress.unlockedLevel}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text style={{ color: 'rgba(160,200,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
-                      Current Level
-                    </Text>
-                    <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', marginTop: 1 }}>
-                      Level {levelProgress.unlockedLevel}
-                    </Text>
-                  </View>
-                  <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
-                    <Text style={{ color: '#fff', fontSize: 24 }}>›</Text>
-                  </View>
+                  {levelLoaded ? (
+                    <Animated.View entering={FadeIn.duration(300)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                      <View style={{
+                        width: 42, height: 42, borderRadius: 10,
+                        backgroundColor: '#4090e8',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '900' }}>
+                          {levelProgress.unlockedLevel}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={{ color: 'rgba(160,200,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                          Current Level
+                        </Text>
+                        <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', marginTop: 1 }}>
+                          Level {levelProgress.unlockedLevel}
+                        </Text>
+                      </View>
+                      <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                        <Text style={{ color: '#fff', fontSize: 24 }}>›</Text>
+                      </View>
+                    </Animated.View>
+                  ) : (
+                    <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }, shimmerStyle]}>
+                      <View style={{ width: 42, height: 42, borderRadius: 10, backgroundColor: 'rgba(80,140,255,0.3)' }} />
+                      <View style={{ gap: 6 }}>
+                        <View style={{ width: 80, height: 10, borderRadius: 5, backgroundColor: 'rgba(160,200,255,0.25)' }} />
+                        <View style={{ width: 60, height: 14, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+                      </View>
+                    </Animated.View>
+                  )}
                 </View>
               </View>
             </LinearGradient>
