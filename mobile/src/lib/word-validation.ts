@@ -8,10 +8,10 @@ import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
 import healthIssuesData from '../data/health_issues.json';
 import {
-  validateWordFuzzyInSupabase,
-  getHintsFromSupabase,
-  hasSupabaseSupport,
-} from './supabase-categories';
+  validateWordFuzzy,
+  getHintsLocally,
+  hasCategorySupport,
+} from './local-categories';
 
 // Strip accents/diacritics: é→e, ñ→n, ü→u, etc.
 const stripAccents = (str: string): string =>
@@ -827,11 +827,11 @@ export const getHintAsync = async (
     return passesConstraint(hint);
   };
 
-  // Use Supabase database (only source)
-  if (hasSupabaseSupport(category)) {
+  // Use local category database (only source)
+  if (hasCategorySupport(category)) {
     try {
-      console.log(`[Hint] Checking Supabase for ${category}/${letterUpper}...`);
-      const supabaseHints = await getHintsFromSupabase(category, letter, 100);
+      console.log(`[Hint] Checking local data for ${category}/${letterUpper}...`);
+      const supabaseHints = await getHintsLocally(category, letter, 100);
       if (supabaseHints.length > 0) {
         // Shuffle and find first valid hint
         const shuffled = [...supabaseHints].sort(() => Math.random() - 0.5);
@@ -854,123 +854,6 @@ export const getHintAsync = async (
 
   console.log(`[Hint] No hint found for ${category}/${letterUpper}`);
   return null;
-};
-
-// Check if an answer is valid for the given category
-// Returns true if the answer matches known words in the database
-export const isValidCategoryAnswer = (
-  answer: string,
-  letter: string,
-  category: CategoryType
-): boolean => {
-  const trimmedAnswer = answer.trim().toLowerCase();
-
-  if (!trimmedAnswer || trimmedAnswer.length < 2) {
-    return false;
-  }
-
-  if (!trimmedAnswer.startsWith(letter.toLowerCase())) {
-    return false;
-  }
-
-  // Reject category names as answers (e.g., "vegetable" for fruits_vegetables category)
-  if (isCategoryName(trimmedAnswer, category)) {
-    return false;
-  }
-
-  // Get singular form for plural validation in certain categories
-  const singularForm = getSingularForm(trimmedAnswer);
-  const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
-
-  // Get spelling variants (British/American) + normalized variants (abbreviations, punctuation)
-  const spellingVariants = getAllVariants(trimmedAnswer);
-  const singularSpellingVariants = singularForm ? getAllVariants(singularForm) : [];
-
-  // Helper to check if any spelling variant exists in a set
-  const existsInSet = (set: Set<string>, variants: string[]): boolean => {
-    return variants.some(v => set.has(v));
-  };
-
-  // Check against extended databases first (comprehensive sets)
-  switch (category) {
-    case 'places':
-      if (existsInSet(WORLD_PLACES_SET, spellingVariants)) {
-        return true;
-      }
-      break;
-    case 'names': {
-      if (existsInSet(WORLD_NAMES_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept multi-word names where all parts are in the database (e.g., "John Peter")
-      const nameParts = trimmedAnswer.split(' ');
-      if (nameParts.length >= 2 && nameParts.every(part => WORLD_NAMES_SET.has(part))) {
-        return true;
-      }
-      break;
-    }
-    case 'animal':
-      if (existsInSet(ANIMALS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (tigers, cats, dogs)
-      if (singularForm && singularStartsWithLetter && existsInSet(ANIMALS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'thing':
-      if (existsInSet(THINGS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (pens, books, chairs)
-      if (singularForm && singularStartsWithLetter && existsInSet(THINGS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'sports_games':
-      if (existsInSet(SPORTS_GAMES_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms
-      if (singularForm && singularStartsWithLetter && existsInSet(SPORTS_GAMES_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'brands':
-      if (existsInSet(BRANDS_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms
-      if (singularForm && singularStartsWithLetter && existsInSet(BRANDS_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-    case 'health_issues':
-      if (existsInSet(HEALTH_ISSUES_SET, spellingVariants)) {
-        return true;
-      }
-      // Accept plural forms (ulcers, allergies, headaches)
-      if (singularForm && singularStartsWithLetter && existsInSet(HEALTH_ISSUES_SET, singularSpellingVariants)) {
-        return true;
-      }
-      break;
-  }
-
-  // Get the database for this category
-  const categoryData = WORD_DATABASE[category];
-  const validWords = categoryData[letter.toUpperCase()] || [];
-
-  // Check if the answer matches any known word (case-insensitive)
-  const isKnown = validWords.some(
-    (word) => word.toLowerCase() === trimmedAnswer ||
-              trimmedAnswer.includes(word.toLowerCase()) ||
-              word.toLowerCase().includes(trimmedAnswer)
-  );
-
-  // For more flexibility, also allow answers that are at least 3 characters
-  // and start with the correct letter (in case our database is incomplete)
-  // But give preference to known answers in scoring
-  return isKnown || trimmedAnswer.length >= 3;
 };
 
 // Calculate Levenshtein distance between two strings (for fuzzy matching)
@@ -1657,17 +1540,17 @@ export const validateWithFallback = async (
   const singularForm = getSingularForm(trimmed);
   const singularStartsWithLetter = singularForm?.startsWith(letter.toLowerCase());
 
-  // FIRST: Check Supabase database (primary source)
-  if (hasSupabaseSupport(category)) {
+  // FIRST: Check local category database (primary source)
+  if (hasCategorySupport(category)) {
     try {
-      const supabaseResult = await validateWordFuzzyInSupabase(answer, category);
-      if (supabaseResult.found) {
-        console.log(`[Validation] "${answer}" - accepted from Supabase (matched: ${supabaseResult.matchedWord})`);
-        return { isValid: true, source: 'supabase' };
+      const localResult = await validateWordFuzzy(answer, category);
+      if (localResult.found) {
+        console.log(`[Validation] "${answer}" - accepted from local data (matched: ${localResult.matchedWord})`);
+        return { isValid: true, source: 'local' };
       }
-      console.log(`[Validation] "${answer}" - not found in Supabase for ${category}, checking local...`);
+      console.log(`[Validation] "${answer}" - not found in local data for ${category}, checking secondary...`);
     } catch (err) {
-      console.log(`[Validation] Supabase check failed, falling back to local:`, err);
+      console.log(`[Validation] Local check failed, falling back:`, err);
     }
   }
 
