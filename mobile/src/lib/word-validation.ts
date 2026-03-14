@@ -13,12 +13,28 @@ import {
   hasSupabaseSupport,
 } from './supabase-categories';
 
+// Strip accents/diacritics: é→e, ñ→n, ü→u, etc.
+const stripAccents = (str: string): string =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
 // Build Sets from JSON data (lowercase for validation)
+// Also adds accent-stripped and hyphen-normalised variants so players
+// don't need to type special characters or exact punctuation.
 function buildLowercaseSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
     if (entry && entry.trim().length > 0) {
-      s.add(entry.toLowerCase().trim());
+      const lower = entry.toLowerCase().trim();
+      s.add(lower);
+      // Accent-free variant: "beyoncé" -> "beyonce"
+      const noAccents = stripAccents(lower);
+      if (noAccents !== lower) s.add(noAccents);
+      // Hyphen-free variant: "spider-man" -> "spider man"
+      const noHyphens = lower.replace(/-/g, ' ').trim();
+      if (noHyphens !== lower) s.add(noHyphens);
+      // Dot-free variant: "e.t." -> "et"
+      const noDots = lower.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+      if (noDots !== lower) s.add(noDots);
     }
   }
   return s;
@@ -283,24 +299,38 @@ const getSpellingVariants = (word: string): string[] => {
 
 // Normalize an answer to handle abbreviations and punctuation variations.
 // Returns all possible normalized forms to look up in the database, e.g.:
-//   "St. Petersburg" -> ["st. petersburg", "st petersburg", "saint petersburg"]
-//   "Mt. Everest"    -> ["mt. everest", "mt everest", "mount everest"]
+//   "St. Petersburg" -> includes "saint petersburg"
+//   "Beyoncé"        -> includes "beyonce"
+//   "Spider-Man"     -> includes "spider man"
+//   "E.T."           -> includes "et"
 const getNormalizedVariants = (answer: string): string[] => {
   const w = answer.toLowerCase().trim();
   const variants = new Set<string>([w]);
 
-  // Strip trailing dots from abbreviations: "St." -> "St", "Mt." -> "Mt"
-  const noDots = w.replace(/\b(\w+)\./g, '$1').trim();
-  if (noDots !== w) variants.add(noDots);
+  // Strip accents: "beyoncé" -> "beyonce", "café" -> "cafe"
+  const noAccents = stripAccents(w);
+  if (noAccents !== w) variants.add(noAccents);
 
-  // Expand common abbreviations; applied to both dotted and dot-free forms
+  // Replace hyphens with spaces: "spider-man" -> "spider man"
+  const noHyphens = w.replace(/-/g, ' ').trim();
+  if (noHyphens !== w) variants.add(noHyphens);
+
+  // Remove all dots: "e.t." -> "et", "u.s.a." -> "usa"
+  const allDotsRemoved = w.replace(/\./g, '').replace(/\s+/g, ' ').trim();
+  if (allDotsRemoved !== w) variants.add(allDotsRemoved);
+
+  // Strip abbreviation dots only: "St." -> "St", "Mt." -> "Mt"
+  const abbrevDots = w.replace(/\b(\w+)\./g, '$1').trim();
+  if (abbrevDots !== w) variants.add(abbrevDots);
+
+  // Expand common abbreviations; applied to all base forms so far
   const expansions: Array<[RegExp, string]> = [
     [/\bst\b/g, 'saint'],
     [/\bmt\b/g, 'mount'],
     [/\bft\b/g, 'fort'],
   ];
 
-  for (const base of [w, noDots]) {
+  for (const base of [w, abbrevDots, noAccents, noHyphens]) {
     for (const [pattern, replacement] of expansions) {
       const expanded = base.replace(pattern, replacement);
       if (expanded !== base) variants.add(expanded);
