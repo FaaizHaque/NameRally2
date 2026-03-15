@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
+import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays, RotateCcw } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useGameStore } from '@/lib/state/game-store';
 import { Sounds } from '@/lib/sounds';
+import type { LevelData } from '@/lib/level-types';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
 export default function GameModeScreen() {
   const router = useRouter();
@@ -15,7 +18,9 @@ export default function GameModeScreen() {
   const setGameMode = useGameStore((s) => s.setGameMode);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
   const levelProgress = useGameStore((s) => s.levelProgress);
+  const startLevelGame = useGameStore((s) => s.startLevelGame);
   const [levelLoaded, setLevelLoaded] = useState(false);
+  const [isStartingGame, setIsStartingGame] = useState(false);
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -29,22 +34,49 @@ export default function GameModeScreen() {
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
-  const handlePress = (key: string) => {
+  const handleSinglePlayer = useCallback(async () => {
+    if (isStartingGame || !levelLoaded) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
-    if (key === 'single') {
-      setGameMode('single');
+    setGameMode('single');
+    setIsStartingGame(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/levels/${levelProgress.unlockedLevel}`);
+      if (!response.ok) throw new Error('Failed to fetch level');
+      const levelData: LevelData = await response.json();
+      await startLevelGame(levelData);
       Sounds.navigate();
-      router.push('/level-select');
-    } else if (key === 'multi') {
-      setGameMode('multiplayer');
-      Sounds.navigate();
-      router.push('/multiplayer-options');
-    } else if (key === 'daily') {
-      Sounds.navigate();
-      router.push('/daily-challenge');
+      router.push('/game');
+    } catch (error: any) {
+      console.error('Error starting level:', error?.message);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsStartingGame(false);
     }
+  }, [isStartingGame, levelLoaded, levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
+
+  const handleRevisit = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Sounds.tap();
+    router.push('/level-select');
   };
+
+  const handleMultiplayer = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
+    setGameMode('multiplayer');
+    Sounds.navigate();
+    router.push('/multiplayer-options');
+  };
+
+  const handleDaily = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
+    Sounds.navigate();
+    router.push('/daily-challenge');
+  };
+
+  const completedCount = Math.max(0, levelProgress.unlockedLevel - 1);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#1a2540' }}>
@@ -54,7 +86,7 @@ export default function GameModeScreen() {
         style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom + 16, paddingHorizontal: 16 }}
       >
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, marginBottom: 14 }}>
           <TouchableOpacity
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -75,14 +107,15 @@ export default function GameModeScreen() {
           </Text>
         </View>
 
-        {/* Cards — equal height, stacked */}
-        <View style={{ flex: 1, gap: 12 }}>
+        {/* Cards */}
+        <View style={{ flex: 1, gap: 14 }}>
 
           {/* ── SINGLE PLAYER ── */}
           <Animated.View entering={FadeInDown.duration(400).delay(0)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => handlePress('single')}
+              onPress={handleSinglePlayer}
+              disabled={isStartingGame}
               style={{ flex: 1 }}
             >
               <LinearGradient
@@ -92,7 +125,7 @@ export default function GameModeScreen() {
                 style={{
                   flex: 1, borderRadius: 20, overflow: 'hidden',
                   borderWidth: 2, borderColor: 'rgba(120,170,255,0.5)',
-                  padding: 20, justifyContent: 'space-between',
+                  padding: 16, justifyContent: 'space-between',
                 }}
               >
                 {/* Subtle shimmer stripe */}
@@ -103,62 +136,88 @@ export default function GameModeScreen() {
                 }} />
 
                 {/* Top row */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <View style={{
-                    width: 52, height: 52, borderRadius: 14,
+                    width: 46, height: 46, borderRadius: 12,
                     backgroundColor: 'rgba(80,140,255,0.2)',
                     borderWidth: 2, borderColor: 'rgba(120,170,255,0.5)',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Pencil size={24} color="#90c0ff" strokeWidth={2} />
+                    <Pencil size={21} color="#90c0ff" strokeWidth={2} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>Single Player</Text>
-                    <Text style={{ color: 'rgba(160,200,255,0.65)', fontSize: 13, marginTop: 3 }}>
-                      Work through 500 progressively harder levels solo
+                    <Text style={{ color: '#fff', fontSize: 20, fontWeight: '900' }}>Single Player</Text>
+                    <Text style={{ color: 'rgba(160,200,255,0.65)', fontSize: 12, marginTop: 2 }}>
+                      Jump straight into your next level
                     </Text>
                   </View>
                 </View>
 
-                {/* Level badge */}
-                <View style={{
-                  flexDirection: 'row', alignItems: 'center', gap: 10,
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
-                  borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.35)',
-                  marginTop: 12,
-                }}>
-                  {levelLoaded ? (
-                    <Animated.View entering={FadeIn.duration(300)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                      <View style={{
-                        width: 38, height: 38, borderRadius: 9,
-                        backgroundColor: '#4090e8',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>
-                          {levelProgress.unlockedLevel}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={{ color: 'rgba(160,200,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
-                          You&apos;re on
-                        </Text>
-                        <Text style={{ color: '#fff', fontSize: 15, fontWeight: '900' }}>
-                          Level {levelProgress.unlockedLevel}
-                        </Text>
-                      </View>
-                      <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
-                        <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
-                      </View>
-                    </Animated.View>
-                  ) : (
-                    <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }, shimmerStyle]}>
-                      <View style={{ width: 38, height: 38, borderRadius: 9, backgroundColor: 'rgba(80,140,255,0.3)' }} />
-                      <View style={{ gap: 5 }}>
-                        <View style={{ width: 70, height: 9, borderRadius: 4, backgroundColor: 'rgba(160,200,255,0.2)' }} />
-                        <View style={{ width: 55, height: 13, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.18)' }} />
-                      </View>
-                    </Animated.View>
+                {/* Level badge + revisit link */}
+                <View style={{ gap: 8, marginTop: 10 }}>
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: 11, paddingHorizontal: 12, paddingVertical: 9,
+                    borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.35)',
+                  }}>
+                    {levelLoaded ? (
+                      <Animated.View entering={FadeIn.duration(300)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                        {isStartingGame ? (
+                          <>
+                            <ActivityIndicator color="#90c0ff" size="small" />
+                            <Text style={{ color: 'rgba(160,200,255,0.7)', fontSize: 14, fontWeight: '700' }}>
+                              Loading level {levelProgress.unlockedLevel}...
+                            </Text>
+                          </>
+                        ) : (
+                          <>
+                            <View style={{
+                              width: 36, height: 36, borderRadius: 8,
+                              backgroundColor: '#4090e8',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '900' }}>
+                                {levelProgress.unlockedLevel}
+                              </Text>
+                            </View>
+                            <View>
+                              <Text style={{ color: 'rgba(160,200,255,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                                Up next
+                              </Text>
+                              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '900' }}>
+                                Level {levelProgress.unlockedLevel}
+                              </Text>
+                            </View>
+                            <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                              <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
+                            </View>
+                          </>
+                        )}
+                      </Animated.View>
+                    ) : (
+                      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }, shimmerStyle]}>
+                        <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: 'rgba(80,140,255,0.3)' }} />
+                        <View style={{ gap: 5 }}>
+                          <View style={{ width: 70, height: 8, borderRadius: 4, backgroundColor: 'rgba(160,200,255,0.2)' }} />
+                          <View style={{ width: 55, height: 12, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.18)' }} />
+                        </View>
+                      </Animated.View>
+                    )}
+                  </View>
+
+                  {/* Revisit link — only show if they have completed levels */}
+                  {levelLoaded && completedCount > 0 && (
+                    <TouchableOpacity
+                      onPress={(e) => { e.stopPropagation?.(); handleRevisit(); }}
+                      activeOpacity={0.65}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' }}
+                    >
+                      <RotateCcw size={11} color="rgba(120,170,255,0.55)" strokeWidth={2.5} />
+                      <Text style={{ color: 'rgba(120,170,255,0.55)', fontSize: 11, fontWeight: '700', letterSpacing: 0.3 }}>
+                        Revisit completed levels ({completedCount})
+                      </Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               </LinearGradient>
@@ -169,7 +228,7 @@ export default function GameModeScreen() {
           <Animated.View entering={FadeInDown.duration(400).delay(80)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.88}
-              onPress={() => handlePress('multi')}
+              onPress={handleMultiplayer}
               style={{ flex: 1 }}
             >
               {/* Tape strip */}
@@ -188,7 +247,7 @@ export default function GameModeScreen() {
               <View style={{
                 flex: 1, backgroundColor: '#F2EAD0',
                 borderRadius: 8, borderWidth: 2.5, borderColor: '#8A7040',
-                overflow: 'hidden', padding: 20, justifyContent: 'space-between',
+                overflow: 'hidden', padding: 16, justifyContent: 'space-between',
               }}>
                 {/* Ruled lines */}
                 {[0,1,2,3].map(i => (
@@ -205,19 +264,19 @@ export default function GameModeScreen() {
                 }} />
 
                 {/* Top row */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <View style={{
-                    width: 52, height: 52, borderRadius: 12,
+                    width: 46, height: 46, borderRadius: 12,
                     backgroundColor: '#FEF0B0',
                     borderWidth: 2, borderColor: '#D09010',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Users size={26} color="#7A5000" strokeWidth={2.5} />
+                    <Users size={22} color="#7A5000" strokeWidth={2.5} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#1C120A', fontSize: 22, fontWeight: '900' }}>Multiplayer</Text>
-                    <Text style={{ color: '#8A7050', fontSize: 13, marginTop: 3 }}>
-                      Host or join a game with friends
+                    <Text style={{ color: '#1C120A', fontSize: 20, fontWeight: '900' }}>Multiplayer</Text>
+                    <Text style={{ color: '#8A7050', fontSize: 12, marginTop: 2 }}>
+                      Host or join a game with friends locally
                     </Text>
                   </View>
                 </View>
@@ -225,17 +284,17 @@ export default function GameModeScreen() {
                 {/* Players badge row */}
                 <View style={{
                   flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                  gap: 8, marginTop: 12,
+                  gap: 8, marginTop: 10,
                   backgroundColor: '#FEF0B0',
-                  borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9,
+                  borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8,
                   borderWidth: 1.5, borderColor: '#D09010',
                 }}>
-                  <Users size={15} color="#7A5000" strokeWidth={2.5} />
-                  <Text style={{ color: '#7A5000', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 }}>
+                  <Users size={13} color="#7A5000" strokeWidth={2.5} />
+                  <Text style={{ color: '#7A5000', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
                     2 – 10 Players
                   </Text>
-                  <Text style={{ color: '#D09010', fontSize: 13, fontWeight: '600' }}>·</Text>
-                  <Text style={{ color: '#8A6020', fontSize: 13, fontWeight: '600' }}>
+                  <Text style={{ color: '#D09010', fontSize: 12, fontWeight: '600' }}>·</Text>
+                  <Text style={{ color: '#8A6020', fontSize: 12, fontWeight: '600' }}>
                     Real-time
                   </Text>
                 </View>
@@ -247,14 +306,14 @@ export default function GameModeScreen() {
           <Animated.View entering={FadeInDown.duration(400).delay(160)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => handlePress('daily')}
+              onPress={handleDaily}
               style={{ flex: 1 }}
             >
               <View style={{
                 flex: 1, borderRadius: 16, overflow: 'hidden',
                 backgroundColor: '#071510',
                 borderWidth: 2, borderColor: '#00C840',
-                padding: 20, justifyContent: 'space-between',
+                padding: 16, justifyContent: 'space-between',
               }}>
                 {/* Corner brackets */}
                 <View style={{ position: 'absolute', top: 8, left: 8 }}>
@@ -267,20 +326,20 @@ export default function GameModeScreen() {
                 </View>
 
                 {/* Top row */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <View style={{
-                    width: 52, height: 52, borderRadius: 10,
+                    width: 46, height: 46, borderRadius: 10,
                     backgroundColor: '#0a2010',
                     borderWidth: 2, borderColor: '#00C840',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <CalendarDays size={24} color="#00C840" strokeWidth={2} />
+                    <CalendarDays size={21} color="#00C840" strokeWidth={2} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', letterSpacing: 0.8 }}>
+                    <Text style={{ color: '#00C840', fontSize: 20, fontWeight: '900', letterSpacing: 0.8 }}>
                       Daily Challenge
                     </Text>
-                    <Text style={{ color: 'rgba(0,200,64,0.55)', fontSize: 13, marginTop: 3 }}>
+                    <Text style={{ color: 'rgba(0,200,64,0.55)', fontSize: 12, marginTop: 2 }}>
                       New puzzle every day — climb the ranks
                     </Text>
                   </View>
@@ -289,16 +348,16 @@ export default function GameModeScreen() {
                 {/* Global leaderboard badge */}
                 <View style={{
                   flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                  gap: 7, marginTop: 12,
-                  borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9,
+                  gap: 7, marginTop: 10,
+                  borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8,
                   borderWidth: 1, borderColor: 'rgba(0,200,64,0.35)',
                   backgroundColor: 'rgba(0,200,64,0.08)',
                 }}>
-                  <Zap size={13} color="#00C840" strokeWidth={2.5} fill="#00C840" />
-                  <Text style={{ color: '#00C840', fontSize: 13, fontWeight: '800', letterSpacing: 0.8 }}>
+                  <Zap size={12} color="#00C840" strokeWidth={2.5} fill="#00C840" />
+                  <Text style={{ color: '#00C840', fontSize: 12, fontWeight: '800', letterSpacing: 0.8 }}>
                     Global Leaderboard
                   </Text>
-                  <Trophy size={13} color="#00C840" strokeWidth={2} />
+                  <Trophy size={12} color="#00C840" strokeWidth={2} />
                 </View>
               </View>
             </TouchableOpacity>
