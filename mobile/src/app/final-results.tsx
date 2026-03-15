@@ -17,7 +17,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark } from 'lucide-react-native';
+import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark, LayoutList } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
@@ -474,25 +474,35 @@ export default function FinalResultsScreen() {
                 </View>
               </Pressable>
             )}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 16,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 14,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
                   borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
                 }}>
-                  <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Home</Text>
+                  <Home size={17} color="#a0c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 13 }}>Home</Text>
+                </View>
+              </Pressable>
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/level-select'); }} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                <View style={{
+                  backgroundColor: 'rgba(80,160,255,0.12)', borderRadius: 14, paddingVertical: 14,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.5)',
+                }}>
+                  <LayoutList size={17} color="#90c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#90c8ff', fontWeight: '800', fontSize: 13 }}>All Levels</Text>
                 </View>
               </Pressable>
               <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 16,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 14,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
                   borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
                 }}>
-                  <RotateCcw size={19} color="#a0c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Menu</Text>
+                  <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 13 }}>Menu</Text>
                 </View>
               </Pressable>
             </View>

@@ -45,7 +45,7 @@ export default function HowToPlayScreen() {
     { id: 'categories', label: 'Categories', icon: <Grid3X3 size={16} color="#fff" /> },
     { id: 'single', label: 'Solo', icon: <Gamepad2 size={16} color="#fff" /> },
     { id: 'daily', label: 'Daily', icon: <Calendar size={16} color="#fff" /> },
-    { id: 'multiplayer', label: 'Friends', icon: <Users size={16} color="#fff" /> },
+    { id: 'multiplayer', label: 'Multiplayer', icon: <Users size={16} color="#fff" /> },
   ];
 
   return (
@@ -193,7 +193,7 @@ function BasicsContent() {
         <Text className="text-white text-xl font-bold mb-3">What is NPAT?</Text>
         <Text className="text-white/80 text-base leading-7">
           NPAT (Name, Place, Animal, Thing) is the classic word game where you think of words
-          starting with a given letter across different categories. Play solo through 500 levels,
+          starting with a given letter across different categories. Play solo through endless levels,
           tackle the daily challenge, or compete with friends!
         </Text>
       </Animated.View>
@@ -274,7 +274,7 @@ function BasicsContent() {
           Start with basics like Names, Places, Animals, Things. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'History'].map((cat) => (
+          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Famous People', 'History'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -409,11 +409,11 @@ function SinglePlayerContent() {
       >
         <View className="flex-row items-center gap-2 mb-3">
           <Gamepad2 size={24} color="#9B6ED8" />
-          <Text className="text-white text-xl font-bold">500 Level Journey</Text>
+          <Text className="text-white text-xl font-bold">Level Journey</Text>
         </View>
         <Text className="text-white/80 text-base leading-7">
-          Progress through 500 increasingly challenging levels. Each level is one round -
-          score enough points to unlock the next. Can you reach level 500?
+          Progress through increasingly challenging levels. Each level is one round —
+          score enough points to unlock the next. How far can you go?
         </Text>
       </Animated.View>
 

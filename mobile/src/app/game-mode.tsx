@@ -56,7 +56,9 @@ export default function GameModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
     if (key === 'single') {
-      handleStartSinglePlayer();
+      setGameMode('single');
+      Sounds.navigate();
+      router.push('/level-select');
     } else if (key === 'multi') {
       setGameMode('multiplayer');
       Sounds.navigate();
