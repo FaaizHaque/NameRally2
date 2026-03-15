@@ -423,21 +423,16 @@ export default function HomeScreen() {
                         opacity: pressed ? 0.88 : 1,
                         transform: [{ scale: pressed ? 0.96 : 1 }],
                         alignSelf: 'center',
-                        minWidth: '70%',
                         backgroundColor: SKETCH_COLORS.ink,
-                        borderRadius: 18, paddingVertical: 20,
-                        paddingHorizontal: 40,
+                        borderRadius: 20,
+                        width: 72, height: 72,
                         alignItems: 'center', justifyContent: 'center',
-                        flexDirection: 'row', gap: 12,
                         shadowColor: SKETCH_COLORS.ink,
                         shadowOffset: { width: 0, height: 8 },
                         shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
                       })}
                     >
-                      <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
-                        PLAY
-                      </Text>
+                      <Gamepad2 size={34} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
                     </Pressable>
                   </Animated.View>
                 </View>
@@ -542,7 +537,7 @@ export default function HomeScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setShowHowToPlayModal(false);
               }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 10, alignItems: 'center' })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 14, alignItems: 'center', marginTop: 6 })}
             >
               <Text style={{
                 color: SKETCH_COLORS.inkFaint,
