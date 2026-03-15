@@ -30,8 +30,6 @@ const mainLogoSource = require('@/assets/logo-main-dark.png');
 const LOGO_WIDTH = 280;
 const LOGO_HEIGHT = 280;
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 const TILES = [
   { letter: 'N', bg: '#FFD4D4', border: '#E07070', ink: '#882020' },
   { letter: 'P', bg: '#FEF3A3', border: '#E8D840', ink: '#8B7A10' },
@@ -157,6 +155,8 @@ export default function HomeScreen() {
   const floatAnim = useSharedValue(0);
 
   useEffect(() => {
+    // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
+    ExpoSplashScreen.hideAsync();
     loadUser();
     loadLevelProgress();
     floatAnim.value = withRepeat(
@@ -167,13 +167,6 @@ export default function HomeScreen() {
       -1, true
     );
   }, []);
-
-  // Hide native splash only after fonts are ready, so the Haque Games logo shows seamlessly
-  useEffect(() => {
-    if (fontsLoaded) {
-      ExpoSplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
 
   useEffect(() => {
     if (!currentUser) setShowInput(true);
@@ -424,9 +417,10 @@ export default function HomeScreen() {
                     entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
                     style={{ opacity: splashDone ? 1 : 0, marginTop: 6, alignItems: 'center' }}
                   >
-                    <AnimatedPressable
+                    <Pressable
                       onPress={handlePlay}
-                      style={({ pressed }: { pressed: boolean }) => ({
+                      style={({ pressed }) => ({
+                        opacity: pressed ? 0.88 : 1,
                         transform: [{ scale: pressed ? 0.96 : 1 }],
                         alignSelf: 'center',
                         minWidth: '70%',
@@ -444,7 +438,7 @@ export default function HomeScreen() {
                       <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
                         PLAY
                       </Text>
-                    </AnimatedPressable>
+                    </Pressable>
                   </Animated.View>
                 </View>
 
