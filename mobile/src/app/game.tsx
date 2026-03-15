@@ -35,6 +35,7 @@ import {
   ShoppingBag, Check, AlertTriangle, LogOut, X, HeartPulse,
   Gamepad2, Crown, ChevronDown, ChevronUp, Globe, Film, Music,
   Briefcase, Utensils, Info, Landmark, Lightbulb, Star, Pencil, Play,
+  Volume2, VolumeX,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useFonts, Caveat_400Regular, Caveat_600SemiBold, Caveat_700Bold } from '@expo-google-fonts/caveat';
@@ -391,6 +392,16 @@ export default function GameScreen() {
     return () => { show.remove(); hide.remove(); };
   }, []);
 
+  // Sound toggle
+  const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
+  const toggleSound = () => {
+    const next = !soundOn;
+    Sounds.setSoundEnabled(next);
+    setSoundOn(next);
+    if (next) Sounds.tap();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   // Letter reveal overlay
   const [showReveal,    setShowReveal]    = useState(true);
   const [shuffleLetter, setShuffleLetter] = useState('A');
@@ -535,6 +546,7 @@ export default function GameScreen() {
   // Letter reveal shuffle effect
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const revealOpacity = useSharedValue(1);
+  const shuffleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!session?.currentLetter) return;
     // For multiplayer, only run when status just became 'playing' (letter was picked)
@@ -544,32 +556,46 @@ export default function GameScreen() {
     setRevealDone(false);
     revealOpacity.value = 1;
     const targetLetter = session.currentLetter;
-    let count = 0;
-    // Fast shuffle for 1.5s, then slow down and lock
-    const totalSteps = 22;
-    const shuffleInterval = setInterval(() => {
-      count++;
-      const progress = count / totalSteps;
-      // Pick random letter, but bias toward real letter as progress increases
-      if (Math.random() > progress * 0.8) {
-        setShuffleLetter(ALPHABET[Math.floor(Math.random() * 26)]);
-      } else {
-        setShuffleLetter(targetLetter);
-      }
-      if (count >= totalSteps) {
-        clearInterval(shuffleInterval);
+
+    // Clear any running shuffle
+    if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+
+    // Slot-machine deceleration: start fast, slow down, then snap to target
+    // Never show target letter until final step — no premature flashes
+    const totalSteps = 20;
+    let step = 0;
+    const initialDelay = 45; // ms — starting speed
+
+    const runStep = (delay: number) => {
+      step++;
+      if (step >= totalSteps) {
+        // Final step: lock to target
         setShuffleLetter(targetLetter);
         setRevealDone(true);
-        // Single player: auto-dismiss after brief pause
         if (gameMode === 'single') {
-          setTimeout(() => {
+          shuffleTimeoutRef.current = setTimeout(() => {
             revealOpacity.value = withTiming(0, { duration: 350 });
             setTimeout(() => setShowReveal(false), 350);
           }, 800);
         }
+        return;
       }
-    }, 70);
-    return () => clearInterval(shuffleInterval);
+      // Show a random letter that is NOT the target (avoids premature flashes)
+      let randomIdx = Math.floor(Math.random() * 26);
+      let randomLetter = ALPHABET[randomIdx];
+      if (randomLetter === targetLetter) {
+        randomLetter = ALPHABET[(randomIdx + 1) % 26];
+      }
+      setShuffleLetter(randomLetter);
+      // Exponential slowdown: each step 18% slower than the previous
+      const nextDelay = delay * 1.18;
+      shuffleTimeoutRef.current = setTimeout(() => runStep(nextDelay), delay);
+    };
+
+    shuffleTimeoutRef.current = setTimeout(() => runStep(initialDelay), 0);
+    return () => {
+      if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+    };
   }, [session?.currentLetter, session?.status]);
 
   const revealOverlayStyle = useAnimatedStyle(() => ({ opacity: revealOpacity.value }));
@@ -818,16 +844,24 @@ export default function GameScreen() {
                 </Text>
               </View>
 
-              {/* Timer */}
-              <Animated.View style={[
-                { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1.5 },
-                urgentTimer
-                  ? { backgroundColor: '#2d1a1a', borderColor: '#ef4444' }
-                  : { backgroundColor: '#1a3a6e', borderColor: 'rgba(80,160,255,0.6)' },
-              ]}>
-                <Clock size={13} color={urgentTimer ? '#ef4444' : '#a5b4fc'} strokeWidth={2.5} />
-                <Text style={{ color: urgentTimer ? '#ef4444' : '#a5b4fc', fontSize: 17, fontWeight: '700' }}>{fmt(timeRemaining)}</Text>
-              </Animated.View>
+              {/* Timer + Sound toggle */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Animated.View style={[
+                  { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1.5 },
+                  urgentTimer
+                    ? { backgroundColor: '#2d1a1a', borderColor: '#ef4444' }
+                    : { backgroundColor: '#1a3a6e', borderColor: 'rgba(80,160,255,0.6)' },
+                ]}>
+                  <Clock size={13} color={urgentTimer ? '#ef4444' : '#a5b4fc'} strokeWidth={2.5} />
+                  <Text style={{ color: urgentTimer ? '#ef4444' : '#a5b4fc', fontSize: 17, fontWeight: '700' }}>{fmt(timeRemaining)}</Text>
+                </Animated.View>
+                <Pressable onPress={toggleSound}
+                  style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: '#1a3a6e', borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.6)', alignItems: 'center', justifyContent: 'center' }}>
+                  {soundOn
+                    ? <Volume2 size={16} color="#a5b4fc" strokeWidth={2.5} />
+                    : <VolumeX size={16} color="#6b7280" strokeWidth={2.5} />}
+                </Pressable>
+              </View>
             </View>
 
             {/* Letter display */}
@@ -997,7 +1031,7 @@ export default function GameScreen() {
                         }}
                         autoCapitalize="characters"
                         autoCorrect={false}
-                        editable={!usedHints.has(cat)}
+                        editable={!usedHints.has(cat) && timeRemaining > 0}
                         underlineColorAndroid="transparent"
                       />
                       {hasAnswer && !startsOk && (
@@ -1046,17 +1080,17 @@ export default function GameScreen() {
               <View style={{ paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center' }}>
                 {allAnswersFilled ? (
                   <Pressable
-                    onPress={() => Keyboard.dismiss()}
+                    onPress={() => { Keyboard.dismiss(); handleStop(); }}
                     style={{
                       flexDirection: 'row', alignItems: 'center', gap: 8,
-                      backgroundColor: 'rgba(64,144,232,0.15)', borderRadius: 10,
-                      paddingVertical: 8, paddingHorizontal: 20,
-                      borderWidth: 1, borderColor: 'rgba(64,144,232,0.4)',
+                      backgroundColor: 'rgba(64,144,232,0.22)', borderRadius: 12,
+                      paddingVertical: 10, paddingHorizontal: 24,
+                      borderWidth: 1.5, borderColor: 'rgba(64,144,232,0.55)',
                     }}
                   >
-                    <Check size={15} color="#90c0ff" strokeWidth={2.5} />
-                    <Text style={{ color: '#90c0ff', fontSize: 13, fontWeight: '700' }}>
-                      All done — tap to submit
+                    <Check size={16} color="#90c0ff" strokeWidth={2.5} />
+                    <Text style={{ color: '#a0d0ff', fontSize: 14, fontWeight: '800' }}>
+                      Submit Answers
                     </Text>
                   </Pressable>
                 ) : (
@@ -1188,13 +1222,20 @@ export default function GameScreen() {
             </Animated.View>
           </View>
 
-          {/* Timer */}
-          <Animated.View style={[s.timerPill, timeRemaining <= 10 && timerBgStyle]}>
-            <Clock size={12} color={timeRemaining <= 10 ? P.stopRed : P.inkFaint} strokeWidth={2.5} />
-            <Text style={[s.timerTxt, { fontWeight: '700' }, timeRemaining <= 10 && { color: P.stopRed, fontWeight: '800' }]}>
-              {fmt(timeRemaining)}
-            </Text>
-          </Animated.View>
+          {/* Timer + Sound toggle */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Animated.View style={[s.timerPill, timeRemaining <= 10 && timerBgStyle]}>
+              <Clock size={12} color={timeRemaining <= 10 ? P.stopRed : P.inkFaint} strokeWidth={2.5} />
+              <Text style={[s.timerTxt, { fontWeight: '700' }, timeRemaining <= 10 && { color: P.stopRed, fontWeight: '800' }]}>
+                {fmt(timeRemaining)}
+              </Text>
+            </Animated.View>
+            <Pressable onPress={toggleSound} style={s.exitBtn}>
+              {soundOn
+                ? <Volume2 size={14} color={P.inkMed} strokeWidth={2.5} />
+                : <VolumeX size={14} color={P.inkFaint} strokeWidth={2.5} />}
+            </Pressable>
+          </View>
         </View>
       </View>
 

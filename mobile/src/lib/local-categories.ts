@@ -20,7 +20,7 @@ import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
 
 // Build normalized Sets for O(1) lookup — normalized to lowercase, no accents
-// Also adds dot-free variants (e.g. "E.T." → "et") so players can type either form.
+// Adds multiple spelling variants so players can type any reasonable form.
 function buildSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
@@ -30,6 +30,12 @@ function buildSet(data: string[]): Set<string> {
       // dot-free variant: "e.t." → "et"
       const noDots = norm.replace(/\./g, '').replace(/\s+/g, ' ').trim();
       if (noDots !== norm) s.add(noDots);
+      // no-space variant: "dodge ball" → "dodgeball", "ice cream" → "icecream"
+      const noSpaces = norm.replace(/\s+/g, '');
+      if (noSpaces !== norm) s.add(noSpaces);
+      // hyphenated variant: "dodge ball" → "dodge-ball"
+      const hyphenated = norm.replace(/\s+/g, '-');
+      if (hyphenated !== norm) s.add(hyphenated);
     }
   }
   return s;

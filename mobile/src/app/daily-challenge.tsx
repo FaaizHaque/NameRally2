@@ -41,6 +41,8 @@ import {
   Share2,
   Home,
   Sparkles,
+  Volume2,
+  VolumeX,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
@@ -124,6 +126,14 @@ export default function DailyChallengeScreen() {
   const [result, setResult] = useState<DailyChallengeResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
+  const toggleSound = () => {
+    const next = !soundOn;
+    Sounds.setSoundEnabled(next);
+    setSoundOn(next);
+    if (next) Sounds.tap();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [streak, setStreak] = useState(0);
@@ -805,14 +815,22 @@ export default function DailyChallengeScreen() {
                 <Text style={{ color: '#0D1F0D', fontSize: 26, fontWeight: '900' }}>{challenge.letter}</Text>
               </View>
 
-              {/* Timer */}
-              <View style={{
-                backgroundColor: 'rgba(74,222,128,0.1)', paddingHorizontal: 14, paddingVertical: 10,
-                borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6,
-                borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
-              }}>
-                <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
-                <Text style={{ color: '#4ADE80', fontWeight: '800', fontSize: 15 }}>{formatTime(elapsedTime)}</Text>
+              {/* Timer + Sound toggle */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  backgroundColor: 'rgba(74,222,128,0.1)', paddingHorizontal: 14, paddingVertical: 10,
+                  borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6,
+                  borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
+                }}>
+                  <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
+                  <Text style={{ color: '#4ADE80', fontWeight: '800', fontSize: 15 }}>{formatTime(elapsedTime)}</Text>
+                </View>
+                <Pressable onPress={toggleSound}
+                  style={{ backgroundColor: 'rgba(74,222,128,0.1)', padding: 10, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)' }}>
+                  {soundOn
+                    ? <Volume2 size={18} color="#4ADE80" strokeWidth={2.5} />
+                    : <VolumeX size={18} color="#4a7a4a" strokeWidth={2.5} />}
+                </Pressable>
               </View>
             </Animated.View>
 
