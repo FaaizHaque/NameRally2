@@ -15,8 +15,6 @@ export default function GameModeScreen() {
   const setGameMode = useGameStore((s) => s.setGameMode);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
   const levelProgress = useGameStore((s) => s.levelProgress);
-  const startLevelGame = useGameStore((s) => s.startLevelGame);
-  const [isLoadingSingle, setIsLoadingSingle] = useState(false);
   const [levelLoaded, setLevelLoaded] = useState(false);
 
   // Skeleton shimmer animation
@@ -30,27 +28,6 @@ export default function GameModeScreen() {
     );
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
-
-  const handleStartSinglePlayer = useCallback(async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Sounds.tap();
-    setGameMode('single');
-    setIsLoadingSingle(true);
-    try {
-      const levelNumber = levelProgress.unlockedLevel;
-      const response = await fetch(`${BACKEND_URL}/api/levels/${levelNumber}`);
-      if (!response.ok) throw new Error('Failed to fetch level');
-      const levelData: LevelData = await response.json();
-      await startLevelGame(levelData);
-      Sounds.roundStart();
-      router.push('/game');
-    } catch (error: any) {
-      console.error('Error starting single player:', error?.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } finally {
-      setIsLoadingSingle(false);
-    }
-  }, [levelProgress.unlockedLevel, startLevelGame, router, setGameMode]);
 
   const handlePress = (key: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -106,7 +83,6 @@ export default function GameModeScreen() {
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => handlePress('single')}
-              disabled={isLoadingSingle}
               style={{ flex: 1 }}
             >
               <LinearGradient
@@ -134,10 +110,7 @@ export default function GameModeScreen() {
                     borderWidth: 2, borderColor: 'rgba(120,170,255,0.5)',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    {isLoadingSingle
-                      ? <ActivityIndicator color="#90c0ff" />
-                      : <Pencil size={24} color="#90c0ff" strokeWidth={2} />
-                    }
+                    <Pencil size={24} color="#90c0ff" strokeWidth={2} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>Single Player</Text>
