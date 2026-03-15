@@ -471,34 +471,6 @@ function SinglePlayerContent() {
         </View>
       </Animated.View>
 
-      {/* Difficulty Bands */}
-      <Animated.View
-        entering={FadeInUp.duration(500).delay(300)}
-        className="bg-white/8 rounded-3xl p-6 mb-5 border border-white/10"
-      >
-        <Text className="text-white text-lg font-bold mb-4">Difficulty Bands</Text>
-        <View className="gap-2">
-          {[
-            { range: '1-100', name: 'Learning', color: '#3BA99C', desc: 'Easy letters, basic categories' },
-            { range: '101-200', name: 'Growing', color: '#6EC4B8', desc: 'Harder letters, more categories' },
-            { range: '201-300', name: 'Challenging', color: '#D4A84B', desc: 'Two-letter combos, constraints' },
-            { range: '301-400', name: 'Expert', color: '#FF6B6B', desc: 'Survival mode, tight timers' },
-            { range: '401-500', name: 'Legendary', color: '#9B6ED8', desc: 'Ultimate challenge' },
-          ].map((band) => (
-            <View key={band.range} className="flex-row items-center gap-3">
-              <View
-                className="w-16 py-1.5 rounded-lg items-center"
-                style={{ backgroundColor: `${band.color}30` }}
-              >
-                <Text className="text-white/90 text-xs font-bold">{band.range}</Text>
-              </View>
-              <Text className="text-white font-semibold text-sm">{band.name}</Text>
-              <Text className="text-white/50 text-xs flex-1">- {band.desc}</Text>
-            </View>
-          ))}
-        </View>
-      </Animated.View>
-
       {/* Tips */}
       <Animated.View
         entering={FadeInUp.duration(500).delay(400)}
