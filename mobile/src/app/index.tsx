@@ -157,8 +157,6 @@ export default function HomeScreen() {
   const floatAnim = useSharedValue(0);
 
   useEffect(() => {
-    // Hide the native Expo splash screen immediately so our custom splash takes over
-    ExpoSplashScreen.hideAsync();
     loadUser();
     loadLevelProgress();
     floatAnim.value = withRepeat(
@@ -169,6 +167,13 @@ export default function HomeScreen() {
       -1, true
     );
   }, []);
+
+  // Hide native splash only after fonts are ready, so the Haque Games logo shows seamlessly
+  useEffect(() => {
+    if (fontsLoaded) {
+      ExpoSplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   useEffect(() => {
     if (!currentUser) setShowInput(true);
@@ -190,10 +195,10 @@ export default function HomeScreen() {
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
 
   const handleCreateAccount = () => {
-    if (username.trim().length < 1) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
-    setCurrentUser({ id: `user_${Date.now()}`, username: username.trim() });
+    const chosenName = username.trim() || 'Guest';
+    setCurrentUser({ id: `user_${Date.now()}`, username: chosenName });
     setShowInput(false);
     // Show how-to-play prompt for new users
     setShowHowToPlayModal(true);
@@ -333,31 +338,26 @@ export default function HomeScreen() {
                   }}>
                     this is how others will see you
                   </Text>
-                  {/* Play button — always shows LET'S PLAY, dimmed until name typed */}
+                  {/* Play button — always black, Guest name used if no name typed */}
                   <Pressable
                     onPress={handleCreateAccount}
-                    disabled={username.trim().length < 1}
                     style={({ pressed }) => ({
-                      backgroundColor: username.trim().length > 0
-                        ? (pressed ? '#2a2a2a' : SKETCH_COLORS.ink)
-                        : 'rgba(0,0,0,0.10)',
+                      backgroundColor: pressed ? '#2a2a2a' : SKETCH_COLORS.ink,
                       borderRadius: 18, paddingVertical: 20,
                       alignItems: 'center', justifyContent: 'center',
                       flexDirection: 'row', gap: 12,
                       paddingHorizontal: 40,
                       alignSelf: 'center',
                       minWidth: '70%',
-                      borderWidth: 2,
-                      borderColor: username.trim().length > 0 ? 'transparent' : 'rgba(0,0,0,0.12)',
                       shadowColor: SKETCH_COLORS.ink,
-                      shadowOffset: { width: 0, height: username.trim().length > 0 ? 8 : 0 },
-                      shadowOpacity: username.trim().length > 0 ? 0.35 : 0,
-                      shadowRadius: 16, elevation: username.trim().length > 0 ? 10 : 0,
+                      shadowOffset: { width: 0, height: 8 },
+                      shadowOpacity: 0.35,
+                      shadowRadius: 16, elevation: 10,
                     })}
                   >
-                    <Gamepad2 size={26} color={username.trim().length > 0 ? SKETCH_COLORS.amberLight : SKETCH_COLORS.inkFaint} strokeWidth={2} />
+                    <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
                     <Text style={{
-                      color: username.trim().length > 0 ? '#fff' : SKETCH_COLORS.inkFaint,
+                      color: '#fff',
                       fontWeight: '900', fontSize: 22, letterSpacing: 2,
                     }}>
                       LET&apos;S PLAY!
