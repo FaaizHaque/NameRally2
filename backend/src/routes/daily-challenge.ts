@@ -56,6 +56,13 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   'Z': ['sports_games', 'food_dishes'],
 };
 
+// Category pairs that should NOT appear together in the same challenge
+// (too similar — players would be confused about which to use for an answer)
+const INCOMPATIBLE_PAIRS: [CategoryType, CategoryType][] = [
+  ['countries', 'places'],         // Countries ⊂ Places — overlap is too large
+  ['food_dishes', 'fruits_vegetables'], // Both are food — fruits/veg could go in either
+];
+
 /**
  * Seeded random number generator for deterministic daily challenges
  */
@@ -109,6 +116,17 @@ function isValidLetterCategory(letter: string, category: CategoryType): boolean 
 }
 
 /**
+ * Filter out categories that would create incompatible pairs with already-selected ones
+ */
+function filterIncompatible(candidate: CategoryType, selected: CategoryType[]): boolean {
+  for (const [a, b] of INCOMPATIBLE_PAIRS) {
+    if (candidate === a && selected.includes(b)) return false;
+    if (candidate === b && selected.includes(a)) return false;
+  }
+  return true;
+}
+
+/**
  * Determine difficulty level based on date (cycles through difficulties)
  */
 function getDifficultyForDate(dateString: string): DifficultyLevel {
@@ -151,10 +169,17 @@ function generateDailyChallenge(dateString: string): DailyChallenge {
   const letterPool = getLetterPoolForDifficulty(difficulty);
   const letter = rng.pick(letterPool);
 
-  // Pick 6 random categories that work with this letter
-  const validCategories = ALL_CATEGORIES.filter(cat => isValidLetterCategory(letter, cat));
-  const shuffledCategories = rng.shuffle([...validCategories]);
-  const selectedCategories = shuffledCategories.slice(0, DAILY_CHALLENGE_CATEGORY_COUNT);
+  // Pick 6 random categories that work with this letter and don't form incompatible pairs
+  const shuffledCategories = rng.shuffle(
+    ALL_CATEGORIES.filter(cat => isValidLetterCategory(letter, cat))
+  );
+  const selectedCategories: CategoryType[] = [];
+  for (const cat of shuffledCategories) {
+    if (selectedCategories.length >= DAILY_CHALLENGE_CATEGORY_COUNT) break;
+    if (filterIncompatible(cat, selectedCategories)) {
+      selectedCategories.push(cat);
+    }
+  }
 
   // Generate a unique ID based on date
   const id = `dc-${dateString}`;

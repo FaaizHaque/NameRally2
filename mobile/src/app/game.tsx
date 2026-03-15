@@ -124,12 +124,12 @@ async function playTick() {
 // ─── Category input row (full-width card on notebook paper) ─────────────────
 const CategoryRow = React.memo(({
   category, index, answer, letter, fontsLoaded,
-  onChangeText, usedHint, canUseHint, isLoadingHint, onHint, isSinglePlayer,
+  onChangeText, usedHint, canUseHint, isLoadingHint, onHint, isSinglePlayer, inputDisabled,
 }: {
   category: CategoryType; index: number; answer: string; letter: string; fontsLoaded: boolean;
   onChangeText: (t: string) => void; usedHint?: boolean;
   canUseHint?: boolean; isLoadingHint?: boolean;
-  onHint?: () => void; isSinglePlayer?: boolean;
+  onHint?: () => void; isSinglePlayer?: boolean; inputDisabled?: boolean;
 }) => {
   const c = CATEGORY_COLORS[category] || CATEGORY_COLORS.thing;
   const hasAnswer = answer.trim().length > letter.length;
@@ -308,6 +308,7 @@ const CategoryRow = React.memo(({
               placeholderTextColor={P.inkFaint + '40'}
               value={answer}
               onChangeText={t => {
+                if (inputDisabled) return;
                 const upper = t.toUpperCase();
                 if (!upper.startsWith(letter.toUpperCase())) return;
                 onChangeText(upper);
@@ -316,7 +317,7 @@ const CategoryRow = React.memo(({
               onBlur={() => setIsFocused(false)}
               autoCapitalize="characters"
               autoCorrect={false}
-              editable={!usedHint}
+              editable={!usedHint && !inputDisabled}
               underlineColorAndroid="transparent"
             />
           </View>
@@ -384,6 +385,9 @@ export default function GameScreen() {
   const [usedHints,    setUsedHints]    = useState<Set<CategoryType>>(new Set());
   const [loadingHints, setLoadingHints] = useState<Set<CategoryType>>(new Set());
   const [keyboardVisible,  setKeyboardVisible]  = useState(false);
+  // Immediately disables inputs when timer hits 0, before handleRoundEnd is called
+  const [roundInputDisabled, setRoundInputDisabled] = useState(false);
+  const roundEndScheduled = useRef(false);
 
   // Track keyboard to control STOP button visibility
   useEffect(() => {
@@ -398,7 +402,12 @@ export default function GameScreen() {
     const next = !soundOn;
     Sounds.setSoundEnabled(next);
     setSoundOn(next);
-    if (next) Sounds.tap();
+    if (next) {
+      Sounds.tap();
+      Sounds.resumeBackground();
+    } else {
+      Sounds.pauseBackground();
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -627,14 +636,22 @@ export default function GameScreen() {
     prevFilledRef.current = !!allAnswersFilled;
   }, [allAnswersFilled]);
 
-  // Play round start sound when status changes to playing
+  // Play round start sound + background music when status changes to playing
   const prevStatusRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (session?.status === 'playing' && prevStatusRef.current !== 'playing') {
       Sounds.roundStart();
+      Sounds.startBackground();
     }
     prevStatusRef.current = session?.status;
   }, [session?.status]);
+
+  // Stop background music when leaving the game screen
+  useEffect(() => {
+    return () => {
+      Sounds.stopBackground();
+    };
+  }, []);
 
   const stampStyle = useAnimatedStyle(() => ({ transform: [{ scale: stampBounce.value }, { rotate: '-1deg' }] }));
 
@@ -695,7 +712,11 @@ export default function GameScreen() {
     }
   }, [endRound, submitAnswers, isHost, isLevelMode]);
 
-  useEffect(() => { hasEndedRound.current = false; }, [session?.currentRound]);
+  useEffect(() => {
+    hasEndedRound.current = false;
+    roundEndScheduled.current = false;
+    setRoundInputDisabled(false);
+  }, [session?.currentRound]);
 
   useEffect(() => {
     if (!session || session.status !== 'playing') return;
@@ -708,12 +729,23 @@ export default function GameScreen() {
     const tick = () => {
       const remaining = Math.max(0, session.settings.roundDuration - Math.floor((Date.now() - session.roundStartTime!) / 1000));
       setTimeRemaining(remaining);
-      // Tick sound at each second in last 10
+      // Haptics + timer warning sound in last 10 seconds
       if (remaining <= 10 && remaining < prevTimeRef.current && remaining > 0) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+        Sounds.timerWarning();
       }
       prevTimeRef.current = remaining;
-      if (remaining === 0 && !hasEndedRound.current) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); handleRoundEnd(); }
+      if (remaining === 0 && !hasEndedRound.current && !roundEndScheduled.current) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        // Immediately disable inputs so last keystrokes don't get lost
+        roundEndScheduled.current = true;
+        setRoundInputDisabled(true);
+        // Small delay lets any pending onChangeText events flush before submit
+        setTimeout(() => {
+          roundEndScheduled.current = false;
+          handleRoundEnd();
+        }, 150);
+      }
     };
     tick();
     timerRef.current = setInterval(tick, 1000);
@@ -823,6 +855,8 @@ export default function GameScreen() {
       professions:        { bg: '#2a2010', border: '#eab308', accent: '#fde047' },
       food_dishes:        { bg: '#2a1e14', border: '#f59e0b', accent: '#fcd34d' },
       famous_people:      { bg: '#1e2010', border: '#84cc16', accent: '#bef264' },
+      fruits_vegetables:  { bg: '#1a2a14', border: '#4ade80', accent: '#86efac' },
+      music_artists:      { bg: '#2a1a10', border: '#fb923c', accent: '#fdba74' },
     };
     const urgentTimer = timeRemaining <= 10;
     return (
@@ -1025,13 +1059,14 @@ export default function GameScreen() {
                         placeholderTextColor="rgba(99,102,241,0.3)"
                         value={answer}
                         onChangeText={t => {
+                          if (roundInputDisabled) return;
                           const upper = t.toUpperCase();
                           if (!upper.startsWith(letter.toUpperCase())) return;
                           updateLocalAnswer(cat, upper);
                         }}
                         autoCapitalize="characters"
                         autoCorrect={false}
-                        editable={!usedHints.has(cat) && timeRemaining > 0}
+                        editable={!usedHints.has(cat) && timeRemaining > 0 && !roundInputDisabled}
                         underlineColorAndroid="transparent"
                       />
                       {hasAnswer && !startsOk && (
@@ -1442,6 +1477,7 @@ export default function GameScreen() {
                   isLoadingHint={isLoad}
                   onHint={() => handleUseHint(cat, i)}
                   isSinglePlayer={gameMode === 'single'}
+                  inputDisabled={roundInputDisabled}
                 />
               );
             })}

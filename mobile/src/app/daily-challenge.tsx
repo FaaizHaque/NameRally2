@@ -131,7 +131,12 @@ export default function DailyChallengeScreen() {
     const next = !soundOn;
     Sounds.setSoundEnabled(next);
     setSoundOn(next);
-    if (next) Sounds.tap();
+    if (next) {
+      Sounds.tap();
+      Sounds.resumeBackground();
+    } else {
+      Sounds.pauseBackground();
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
@@ -194,6 +199,7 @@ export default function DailyChallengeScreen() {
         setAnswers(initialAnswers);
         setGameStartTime(Date.now());
         setPhase('playing');
+        Sounds.startBackground();
       } catch (err) {
         console.error('Error loading challenge:', err);
       }
@@ -201,6 +207,9 @@ export default function DailyChallengeScreen() {
 
     loadChallenge();
     dismissDailyBadge(); // Clear badge when user opens daily challenge
+
+    // Stop background music when leaving daily challenge screen
+    return () => { Sounds.stopBackground(); };
   }, []);
 
   // Game timer
