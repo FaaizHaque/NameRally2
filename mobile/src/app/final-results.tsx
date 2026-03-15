@@ -387,7 +387,6 @@ export default function FinalResultsScreen() {
                   {[
                     { label: 'LEVEL', value: `${currentLevel.level}` },
                     { label: 'LETTER', value: `"${currentLevel.letter}"` },
-                    { label: 'BAND', value: currentLevel.bandName, small: true },
                   ].map((item, i) => (
                     <React.Fragment key={item.label}>
                       {i > 0 && <View style={{ width: 1, backgroundColor: 'rgba(80,160,255,0.15)' }} />}
