@@ -16,7 +16,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
-import { Gamepad2 } from 'lucide-react-native';
+import { Gamepad2, Volume2, VolumeX, HelpCircle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useFonts, PlayfairDisplay_400Regular_Italic } from '@expo-google-fonts/playfair-display';
@@ -145,6 +145,7 @@ export default function HomeScreen() {
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
   const [showHowToPlayModal, setShowHowToPlayModal] = useState(false);
+  const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
   const editInputRef = useRef<TextInput>(null);
 
   const currentUser = useGameStore((s) => s.currentUser);
@@ -225,6 +226,19 @@ export default function HomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Sounds.tap();
     router.push('/how-to-play');
+  };
+
+  const toggleSound = () => {
+    const next = !soundOn;
+    Sounds.setSoundEnabled(next);
+    setSoundOn(next);
+    if (next) {
+      Sounds.tap();
+      Sounds.resumeBackground();
+    } else {
+      Sounds.pauseBackground();
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   return (
@@ -444,24 +458,60 @@ export default function HomeScreen() {
               ) : null}
             </View>
 
-            {/* FOOTER — "How to Play" */}
+            {/* FOOTER — "How to Play" + Sound Toggle */}
             <Animated.View
               entering={splashDone ? FadeIn.duration(600).delay(700) : undefined}
-              style={{ alignItems: 'center', opacity: splashDone ? 1 : 0, marginTop: 20 }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                opacity: splashDone ? 1 : 0,
+                marginTop: 28,
+              }}
             >
+              {/* Sound Toggle Button */}
+              <Pressable
+                onPress={toggleSound}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.6 : 1,
+                  backgroundColor: soundOn ? 'rgba(212,168,75,0.2)' : 'rgba(80,80,80,0.2)',
+                  borderWidth: 1.5,
+                  borderColor: soundOn ? 'rgba(212,168,75,0.4)' : 'rgba(100,100,100,0.3)',
+                  padding: 12,
+                  borderRadius: 12,
+                })}
+              >
+                {soundOn
+                  ? <Volume2 size={22} color="#D4A84B" strokeWidth={2} />
+                  : <VolumeX size={22} color="#666666" strokeWidth={2} />
+                }
+              </Pressable>
+
+              {/* How to Play Button */}
               <Pressable
                 onPress={handleHowToPlay}
-                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 8, paddingHorizontal: 4 })}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.8 : 1,
+                  backgroundColor: '#D4A84B',
+                  paddingVertical: 13,
+                  paddingHorizontal: 20,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderWidth: 1.5,
+                  borderColor: '#E8C460',
+                })}
               >
+                <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
                 <Text style={{
-                  color: '#9A5200',
-                  fontSize: 18,
-                  fontWeight: '700',
-                  letterSpacing: 0.8,
-                  textDecorationLine: 'underline',
-                  textDecorationColor: '#C8840060',
+                  color: '#1C120A',
+                  fontSize: 16,
+                  fontWeight: '800',
+                  letterSpacing: 0.5,
                 }}>
-                  How to Play?
+                  How to Play
                 </Text>
               </Pressable>
             </Animated.View>
