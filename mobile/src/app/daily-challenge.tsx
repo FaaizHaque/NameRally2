@@ -136,6 +136,7 @@ export default function DailyChallengeScreen() {
   };
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [myLeaderboardEntry, setMyLeaderboardEntry] = useState<(DbDailyChallengeScore & { rank: number }) | null>(null);
   const [streak, setStreak] = useState(0);
   const [history, setHistory] = useState<Array<{ date: string; score: number; correct: number; speedBonuses: number; grid: string }>>([]);
 
@@ -446,7 +447,37 @@ export default function DailyChallengeScreen() {
         .order('total_score', { ascending: false })
         .order('total_time_ms', { ascending: true })
         .limit(20);
-      if (!error && data) setLeaderboard(data as DbDailyChallengeScore[]);
+
+      if (!error && data) {
+        const entries = data as DbDailyChallengeScore[];
+        setLeaderboard(entries);
+
+        // If user is not in the top 20, fetch their own score + rank
+        const username = currentUser?.username;
+        const inTop = entries.some(e => e.username === username);
+        if (username && !inTop) {
+          const [{ data: myRow }, { count }] = await Promise.all([
+            supabase
+              .from('daily_challenge_scores')
+              .select('username, total_score, total_time_ms, correct_count, completed_at')
+              .eq('challenge_date', date)
+              .eq('username', username)
+              .single(),
+            supabase
+              .from('daily_challenge_scores')
+              .select('*', { count: 'exact', head: true })
+              .eq('challenge_date', date)
+              .or(`total_score.gt.${entries[entries.length - 1]?.total_score ?? 0},and(total_score.eq.${entries[entries.length - 1]?.total_score ?? 0},total_time_ms.lt.${entries[entries.length - 1]?.total_time_ms ?? 0})`),
+          ]);
+          if (myRow) {
+            setMyLeaderboardEntry({ ...(myRow as DbDailyChallengeScore), rank: (count ?? 20) + 1 });
+          } else {
+            setMyLeaderboardEntry(null);
+          }
+        } else {
+          setMyLeaderboardEntry(null);
+        }
+      }
     } catch {
       // Silently ignore leaderboard fetch errors
     } finally {
@@ -725,54 +756,84 @@ export default function DailyChallengeScreen() {
                       <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 13 }}>No scores yet — you might be first!</Text>
                     </View>
                   ) : (
-                    leaderboard.map((entry, idx) => {
-                      const isMe = entry.username === currentUser?.username;
-                      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
-                      const timeSec = (entry.total_time_ms / 1000).toFixed(1);
-                      return (
-                        <View
-                          key={`${entry.username}-${idx}`}
-                          style={{
-                            flexDirection: 'row', alignItems: 'center',
-                            paddingVertical: 9, paddingHorizontal: 10, borderRadius: 10, marginBottom: 4,
-                            backgroundColor: isMe ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.03)',
-                            borderWidth: isMe ? 1 : 0, borderColor: 'rgba(74,222,128,0.35)',
-                          }}
-                        >
-                          {/* Rank */}
-                          <View style={{ width: 28, alignItems: 'center' }}>
-                            {medal
-                              ? <Text style={{ fontSize: 15 }}>{medal}</Text>
-                              : <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 12, fontWeight: '700' }}>#{idx + 1}</Text>
-                            }
-                          </View>
-                          {/* Username */}
-                          <Text
-                            style={{ flex: 1, color: isMe ? '#4ADE80' : '#E8FFE8', fontSize: 13, fontWeight: isMe ? '900' : '600', marginLeft: 6 }}
-                            numberOfLines={1}
+                    <>
+                      {leaderboard.map((entry, idx) => {
+                        const isMe = entry.username === currentUser?.username;
+                        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
+                        const timeSec = (entry.total_time_ms / 1000).toFixed(1);
+                        return (
+                          <View
+                            key={`${entry.username}-${idx}`}
+                            style={{
+                              flexDirection: 'row', alignItems: 'center',
+                              paddingVertical: 9, paddingHorizontal: 10, borderRadius: 10, marginBottom: 4,
+                              backgroundColor: isMe ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.03)',
+                              borderWidth: isMe ? 1 : 0, borderColor: 'rgba(74,222,128,0.35)',
+                            }}
                           >
-                            {entry.username}{isMe ? ' (you)' : ''}
-                          </Text>
-                          {/* Time */}
-                          <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>{timeSec}s</Text>
-                          {/* Score */}
-                          <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
-                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{entry.total_score}</Text>
+                            <View style={{ width: 28, alignItems: 'center' }}>
+                              {medal
+                                ? <Text style={{ fontSize: 15 }}>{medal}</Text>
+                                : <Text style={{ color: 'rgba(74,222,128,0.35)', fontSize: 12, fontWeight: '700' }}>#{idx + 1}</Text>
+                              }
+                            </View>
+                            <Text
+                              style={{ flex: 1, color: isMe ? '#4ADE80' : '#E8FFE8', fontSize: 13, fontWeight: isMe ? '900' : '600', marginLeft: 6 }}
+                              numberOfLines={1}
+                            >
+                              {entry.username}{isMe ? ' (you)' : ''}
+                            </Text>
+                            <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>{timeSec}s</Text>
+                            <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                              <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{entry.total_score}</Text>
+                            </View>
                           </View>
-                        </View>
-                      );
-                    })
+                        );
+                      })}
+                      {/* User's own score when outside top 20 */}
+                      {myLeaderboardEntry && (
+                        <>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 6 }}>
+                            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.1)' }} />
+                            <Text style={{ color: 'rgba(74,222,128,0.3)', fontSize: 10, fontWeight: '700' }}>YOUR RANK</Text>
+                            <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.1)' }} />
+                          </View>
+                          <View style={{
+                            flexDirection: 'row', alignItems: 'center',
+                            paddingVertical: 9, paddingHorizontal: 10, borderRadius: 10,
+                            backgroundColor: 'rgba(74,222,128,0.12)',
+                            borderWidth: 1, borderColor: 'rgba(74,222,128,0.35)',
+                          }}>
+                            <View style={{ width: 28, alignItems: 'center' }}>
+                              <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 12, fontWeight: '700' }}>#{myLeaderboardEntry.rank}</Text>
+                            </View>
+                            <Text style={{ flex: 1, color: '#4ADE80', fontSize: 13, fontWeight: '900', marginLeft: 6 }} numberOfLines={1}>
+                              {myLeaderboardEntry.username} (you)
+                            </Text>
+                            <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>
+                              {(myLeaderboardEntry.total_time_ms / 1000).toFixed(1)}s
+                            </Text>
+                            <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                              <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{myLeaderboardEntry.total_score}</Text>
+                            </View>
+                          </View>
+                        </>
+                      )}
+                    </>
                   )}
                 </View>
               </Animated.View>
 
-              {/* Past Results History */}
-              {history.length > 0 && (
+              {/* My History */}
+              {(result || history.length > 0) && (
                 <Animated.View entering={FadeInUp.duration(400).delay(1000)} style={{ marginBottom: 16 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
-                    <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 }}>Previous Results</Text>
+                    <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 }}>My History</Text>
                     <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.15)' }} />
+                    {streak > 0 && (
+                      <Text style={{ color: 'rgba(251,146,60,0.7)', fontSize: 11, fontWeight: '800' }}>🔥 {streak}-day streak</Text>
+                    )}
                   </View>
                   <ScrollView
                     horizontal
@@ -780,6 +841,26 @@ export default function DailyChallengeScreen() {
                     contentContainerStyle={{ gap: 8, paddingRight: 4 }}
                     style={{ flexGrow: 0 }}
                   >
+                    {/* Today's card first */}
+                    {result && challenge && (
+                      <View
+                        key="today"
+                        style={{
+                          backgroundColor: 'rgba(74,222,128,0.13)',
+                          borderRadius: 14, padding: 12, minWidth: 90,
+                          borderWidth: 1.5, borderColor: 'rgba(74,222,128,0.4)',
+                          alignItems: 'center', gap: 4,
+                        }}
+                      >
+                        <Text style={{ color: '#4ADE80', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>TODAY</Text>
+                        <Text style={{ color: '#E8FFE8', fontSize: 22, fontWeight: '900', lineHeight: 26 }}>{result.totalScore}</Text>
+                        <Text style={{ color: 'rgba(74,222,128,0.55)', fontSize: 10 }}>{result.answers.filter(a => a.isValid).length}/6</Text>
+                        <Text style={{ fontSize: 11, lineHeight: 14 }}>
+                          {result.answers.map(a => !a.isValid ? '❌' : a.hasSpeedBonus ? '⚡' : '✅').join('')}
+                        </Text>
+                      </View>
+                    )}
+                    {/* Past days */}
                     {history.map((item) => {
                       const d = new Date(item.date + 'T12:00:00');
                       const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
