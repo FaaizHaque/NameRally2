@@ -47,6 +47,8 @@ import { getCategoryName, getHintAsync, LevelConstraintCheck } from '@/lib/word-
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds } from '@/lib/sounds';
 import { CAT_COLORS } from '@/lib/category-colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Sparkles } from 'lucide-react-native';
 
 // ─── PALETTE ──────────────────────────────────────────────────────────────────
 const P = {
@@ -385,12 +387,67 @@ export default function GameScreen() {
   const [roundInputDisabled, setRoundInputDisabled] = useState(false);
   const roundEndScheduled = useRef(false);
 
+  // Novelty popup state (shows new features once)
+  const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
+  const shownNovelties = useRef<Set<string>>(new Set());
+
   // Track keyboard to control STOP button visibility
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
     return () => { show.remove(); hide.remove(); };
   }, []);
+
+  // Show novelty popup when level starts (new categories, constraints, timer changes)
+  useEffect(() => {
+    if (!currentLevel) return;
+
+    const levelNum = currentLevel.level;
+
+    // Check for new category
+    const newCategoryKey = `novelty_category_${levelNum}`;
+    if (!shownNovelties.current.has(newCategoryKey) && levelNum >= 2 && levelNum <= 11) {
+      const categoryOrder = ['sports_games', 'brands', 'countries', 'food_dishes', 'professions', 'movies', 'songs', 'health_issues', 'historical_figures', 'fruits_vegetables'];
+      const newCat = categoryOrder[levelNum - 2];
+      const catName = getCategoryName(newCat as CategoryType);
+      shownNovelties.current.add(newCategoryKey);
+      setNoveltyPopup({
+        type: 'category',
+        title: '🌟 New Category!',
+        message: `Unlock **${catName}**`,
+        icon: <Sparkles size={32} color="#FCD34D" strokeWidth={2} />,
+      });
+      setTimeout(() => setNoveltyPopup(null), 2500);
+      return;
+    }
+
+    // Check for new constraint
+    if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
+      const constraintKey = `novelty_constraint_${currentLevel.constraint.type}_${levelNum}`;
+      if (!shownNovelties.current.has(constraintKey)) {
+        const constraintNames: Record<string, string> = {
+          min_word_length: '4+ Letter Words Only',
+          max_word_length: 'Short Words Only',
+          ends_with_letter: 'Ends With Letter',
+          double_letters: 'Double Letters',
+          no_repeat_letters: 'No Repeating Letters',
+          no_common_words: 'Avoid Common Words',
+          combo: 'Multiple Constraints!',
+          survival: 'One Wrong = Fail!',
+          time_pressure: 'Time Pressure!',
+        };
+        const constraintName = constraintNames[currentLevel.constraint.type] || currentLevel.constraint.type;
+        shownNovelties.current.add(constraintKey);
+        setNoveltyPopup({
+          type: 'constraint',
+          title: '⚡ New Challenge!',
+          message: constraintName,
+          icon: <AlertTriangle size={32} color="#FF6B6B" strokeWidth={2} />,
+        });
+        setTimeout(() => setNoveltyPopup(null), 2500);
+      }
+    }
+  }, [currentLevel?.level, currentLevel?.constraint?.type]);
 
   // Sound toggle
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
@@ -1734,6 +1791,27 @@ export default function GameScreen() {
             )}
           </View>
         </Animated.View>
+      )}
+
+      {/* ═══ NOVELTY POPUP (New Features) ═══ */}
+      {noveltyPopup && (
+        <Modal visible={true} transparent animationType="fade">
+          <View style={[s.backdrop, { justifyContent: 'center', alignItems: 'center' }]}>
+            <Animated.View entering={ZoomIn.springify()}>
+              <View style={[s.modalCard, { maxWidth: 280 }]}>
+                <View style={{ alignItems: 'center', marginBottom: 12 }}>
+                  {noveltyPopup.icon}
+                </View>
+                <Text style={[s.modalTitle, { fontSize: 22, marginBottom: 10 }]}>
+                  {noveltyPopup.title}
+                </Text>
+                <Text style={[s.modalBody, { fontSize: 15 }]}>
+                  {noveltyPopup.message}
+                </Text>
+              </View>
+            </Animated.View>
+          </View>
+        </Modal>
       )}
     </View>
   );
