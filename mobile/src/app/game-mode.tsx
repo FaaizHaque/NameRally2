@@ -314,7 +314,7 @@ export default function GameModeScreen() {
           )}
 
           {/* ── MULTIPLAYER ── */}
-          <Animated.View entering={FadeInDown.duration(400).delay={completedCount > 0 ? 80 : 40}} style={{ flex: 1 }}>
+          <Animated.View entering={FadeInDown.duration(400).delay(completedCount > 0 ? 80 : 40)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={handleMultiplayer}
