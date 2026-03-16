@@ -372,7 +372,7 @@ export default function GameScreen() {
   const isLoading         = useGameStore(s => s.isLoading);
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
-  const HINT_COST = 10;
+  const HINT_COST = 5;
 
   const [showExitModal,    setShowExitModal]    = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
