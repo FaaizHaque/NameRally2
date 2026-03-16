@@ -110,7 +110,7 @@ export default function GameModeScreen() {
           </Text>
         </View>
 
-        {/* Cards */}
+        {/* Cards — 3 equal flex boxes with even gap */}
         <View style={{ flex: 1, gap: 14 }}>
 
           {/* ── SINGLE PLAYER ── */}
@@ -138,6 +138,28 @@ export default function GameModeScreen() {
                   borderTopLeftRadius: 20, borderTopRightRadius: 20,
                 }} />
 
+                {/* Completed Levels mini button — top right corner */}
+                {completedCount > 0 && (
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleCompletedLevels();
+                    }}
+                    style={{
+                      position: 'absolute', top: 12, right: 12, zIndex: 10,
+                      flexDirection: 'row', alignItems: 'center', gap: 5,
+                      backgroundColor: 'rgba(16,185,129,0.18)',
+                      borderWidth: 1.5, borderColor: 'rgba(16,185,129,0.5)',
+                      borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
+                    }}
+                  >
+                    <Trophy size={12} color="#34d399" strokeWidth={2} />
+                    <Text style={{ color: '#34d399', fontSize: 11, fontWeight: '800' }}>
+                      {completedCount}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
                 {/* Top row */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <View style={{
@@ -156,7 +178,7 @@ export default function GameModeScreen() {
                   </View>
                 </View>
 
-                {/* Level badge + revisit link */}
+                {/* Level badge */}
                 <View style={{ gap: 8, marginTop: 10 }}>
                   <View style={{
                     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -229,92 +251,13 @@ export default function GameModeScreen() {
                       </Animated.View>
                     )}
                   </View>
-
                 </View>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
 
-          {/* ── COMPLETED LEVELS ── */}
-          {completedCount > 0 && (
-            <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ flex: 1 }}>
-              <TouchableOpacity
-                activeOpacity={0.85}
-                onPress={handleCompletedLevels}
-                style={{ flex: 1 }}
-              >
-                <LinearGradient
-                  colors={['#2a5c3a', '#1f4830', '#1a3d28']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flex: 1, borderRadius: 20, overflow: 'hidden',
-                    borderWidth: 2, borderColor: 'rgba(100,200,120,0.5)',
-                    padding: 16, justifyContent: 'space-between',
-                  }}
-                >
-                  {/* Subtle shimmer stripe */}
-                  <View style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                    borderTopLeftRadius: 20, borderTopRightRadius: 20,
-                  }} />
-
-                  {/* Top row */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <View style={{
-                      width: 46, height: 46, borderRadius: 12,
-                      backgroundColor: 'rgba(100,200,120,0.2)',
-                      borderWidth: 2, borderColor: 'rgba(100,200,120,0.5)',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Trophy size={21} color="#60d485" strokeWidth={2} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: '#fff', fontSize: 20, fontWeight: '900' }}>Completed</Text>
-                      <Text style={{ color: 'rgba(100,200,150,0.65)', fontSize: 12, marginTop: 2 }}>
-                        Revisit your progress
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Level badge */}
-                  <View style={{ gap: 8, marginTop: 10 }}>
-                    <View style={{
-                      flexDirection: 'row', alignItems: 'center', gap: 10,
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                      borderRadius: 11, paddingHorizontal: 12, paddingVertical: 9,
-                      borderWidth: 1.5, borderColor: 'rgba(100,200,120,0.35)',
-                    }}>
-                      <View style={{
-                        width: 36, height: 36, borderRadius: 8,
-                        backgroundColor: '#10b981',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <Text style={{ color: '#fff', fontSize: 15, fontWeight: '900' }}>
-                          {completedCount}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={{ color: 'rgba(100,200,150,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
-                          Completed
-                        </Text>
-                        <Text style={{ color: '#fff', fontSize: 14, fontWeight: '900' }}>
-                          {completedCount} Level{completedCount !== 1 ? 's' : ''}
-                        </Text>
-                      </View>
-                      <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
-                        <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
-                      </View>
-                    </View>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-
           {/* ── MULTIPLAYER ── */}
-          <Animated.View entering={FadeInDown.duration(400).delay(completedCount > 0 ? 80 : 40)} style={{ flex: 1 }}>
+          <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={handleMultiplayer}
@@ -392,7 +335,7 @@ export default function GameModeScreen() {
           </Animated.View>
 
           {/* ── DAILY CHALLENGE ── */}
-          <Animated.View entering={FadeInDown.duration(400).delay(160)} style={{ flex: 1 }}>
+          <Animated.View entering={FadeInDown.duration(400).delay(80)} style={{ flex: 1 }}>
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={handleDaily}

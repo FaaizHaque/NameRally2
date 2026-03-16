@@ -109,7 +109,7 @@ export const Sounds = {
     try {
       await ensureAudioMode();
       const source = type === 'home' ? S.BG_HOME : S.BG_GAME;
-      const vol = type === 'home' ? 0.10 : 0.13;
+      const vol = type === 'home' ? 0.35 : 0.40;
       const { sound } = await Audio.Sound.createAsync(
         source,
         { shouldPlay: true, volume: vol, isLooping: true }
