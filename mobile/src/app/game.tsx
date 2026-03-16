@@ -596,8 +596,8 @@ export default function GameScreen() {
         randomLetter = ALPHABET[(randomIdx + 1) % 26];
       }
       setShuffleLetter(randomLetter);
-      // Exponential slowdown: each step 18% slower than the previous
-      const nextDelay = delay * 1.18;
+      // Exponential slowdown: each step 10% slower than the previous
+      const nextDelay = Math.min(delay * 1.10, 200);
       shuffleTimeoutRef.current = setTimeout(() => runStep(nextDelay), delay);
     };
 
