@@ -6,6 +6,7 @@ import { ChevronLeft, Plus, LogIn } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
+import { Sounds } from '@/lib/sounds';
 
 // Rough hand-drawn border effect using nested views
 function SketchBox({
@@ -110,6 +111,7 @@ export default function MultiplayerOptionsScreen() {
 
   const handleJoinGame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.join();
     router.push('/join-game');
   };
 

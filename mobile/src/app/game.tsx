@@ -139,6 +139,9 @@ const CategoryRow = React.memo(({
   const handFontReg = fontsLoaded ? 'Caveat_400Regular' : undefined;
   const inputFont   = fontsLoaded ? 'PatrickHand_400Regular' : undefined;
 
+  // Typing sound throttle — max once per 110ms to feel like pencil scratching
+  const lastTypeSoundAt = useRef<number>(0);
+
   // Pencil writing animation — follows cursor position
   const [isFocused, setIsFocused] = useState(false);
   const [inputZoneWidth, setInputZoneWidth] = useState(0);
@@ -312,6 +315,11 @@ const CategoryRow = React.memo(({
                 const upper = t.toUpperCase();
                 if (!upper.startsWith(letter.toUpperCase())) return;
                 onChangeText(upper);
+                const now = Date.now();
+                if (now - lastTypeSoundAt.current > 110) {
+                  lastTypeSoundAt.current = now;
+                  Sounds.typing();
+                }
               }}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
@@ -641,7 +649,7 @@ export default function GameScreen() {
   useEffect(() => {
     if (session?.status === 'playing' && prevStatusRef.current !== 'playing') {
       Sounds.roundStart();
-      Sounds.startBackground();
+      Sounds.startBackground('game');
     }
     prevStatusRef.current = session?.status;
   }, [session?.status]);
@@ -667,6 +675,7 @@ export default function GameScreen() {
       if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
         if (!spendStars(HINT_COST)) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Sounds.hint();
         updateLocalAnswer(category, hint.toUpperCase());
         setUsedHints(p => new Set(p).add(category));
       } else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);

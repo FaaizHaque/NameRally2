@@ -159,6 +159,8 @@ export default function HomeScreen() {
     ExpoSplashScreen.hideAsync();
     loadUser();
     loadLevelProgress();
+    Sounds.startBackground('home');
+    return () => { Sounds.stopBackground(); };
     floatAnim.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2200 }),
@@ -214,6 +216,7 @@ export default function HomeScreen() {
 
   const handlePlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Sounds.stopBackground();
     Sounds.navigate();
     router.push('/game-mode');
   };
