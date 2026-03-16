@@ -253,8 +253,8 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 
 // ============================================
 // CATEGORY INTRODUCTION SCHEDULE
-// Levels 1-4: BASICS ONLY (Name, Place, Animal, Thing) - warm up
-// Level 5+: Add one new category every 5 levels - keeps it fresh, not boring
+// Levels 1-4: BASICS (Name, Place, Animal, Thing) - warm up
+// Level 2+: Add ONE new category EVERY LEVEL - constant variety, never boring!
 // ============================================
 
 interface CategoryMilestone {
@@ -262,18 +262,18 @@ interface CategoryMilestone {
   category: CategoryType;
 }
 
-// New categories unlocked gradually - quick start, then steady pace
+// New categories unlocked EVERY LEVEL - keeps it fresh and exciting throughout
 const CATEGORY_MILESTONES: CategoryMilestone[] = [
-  { level: 5, category: 'sports_games' },        // 5 categories from level 5 (early variety)
-  { level: 10, category: 'brands' },             // 6 categories from level 10
-  { level: 15, category: 'countries' },          // 7 categories from level 15
-  { level: 20, category: 'food_dishes' },        // 8 categories from level 20
-  { level: 25, category: 'professions' },        // 9 categories from level 25
-  { level: 30, category: 'movies' },             // 10 categories from level 30
-  { level: 35, category: 'songs' },              // 11 categories from level 35
-  { level: 40, category: 'health_issues' },      // 12 categories from level 40
-  { level: 45, category: 'historical_figures' }, // 13 categories from level 45
-  { level: 50, category: 'fruits_vegetables' },  // 14 categories from level 50
+  { level: 2, category: 'sports_games' },        // 5 categories from level 2
+  { level: 3, category: 'brands' },              // 6 categories from level 3
+  { level: 4, category: 'countries' },           // 7 categories from level 4
+  { level: 5, category: 'food_dishes' },         // 8 categories from level 5
+  { level: 6, category: 'professions' },         // 9 categories from level 6
+  { level: 7, category: 'movies' },              // 10 categories from level 7
+  { level: 8, category: 'songs' },               // 11 categories from level 8
+  { level: 9, category: 'health_issues' },       // 12 categories from level 9
+  { level: 10, category: 'historical_figures' }, // 13 categories from level 10
+  { level: 11, category: 'fruits_vegetables' },  // 14 categories from level 11
 ];
 
 /** The four starter categories always available from level 1 */
