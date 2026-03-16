@@ -846,11 +846,18 @@ export const getHintAsync = async (
       console.log(`[Hint] Checking local data for ${category}/${letterUpper}...`);
       const supabaseHints = await getHintsLocally(category, letter, 100);
       if (supabaseHints.length > 0) {
-        // Shuffle and find first valid hint
-        const shuffled = [...supabaseHints].sort(() => Math.random() - 0.5);
-        for (const hint of shuffled) {
+        // Sort by commonality: shorter words first (more likely common), then by length and alphabetically
+        const sortedByCommonality = [...supabaseHints].sort((a, b) => {
+          // Prefer shorter words (more likely to be common/known)
+          if (a.length !== b.length) return a.length - b.length;
+          // Same length, use alphabetical for consistency
+          return a.localeCompare(b);
+        });
+
+        // Check the most common words first
+        for (const hint of sortedByCommonality) {
           if (isValidHint(hint)) {
-            console.log(`[Hint] Using Supabase hint: ${hint}`);
+            console.log(`[Hint] Using common hint: ${hint} (length: ${hint.length})`);
             return hint;
           }
         }

@@ -253,8 +253,8 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 
 // ============================================
 // CATEGORY INTRODUCTION SCHEDULE
-// Levels 1-4: 4 starter categories (Name, Place, Animal, Thing)
-// Level 5+: Add one new category every 5 levels
+// Levels 1-4: BASICS (Name, Place, Animal, Thing) - warm up
+// Level 2+: Add ONE new category EVERY LEVEL - constant variety, never boring!
 // ============================================
 
 interface CategoryMilestone {
@@ -262,18 +262,18 @@ interface CategoryMilestone {
   category: CategoryType;
 }
 
-// New categories unlocked at these milestones (one every 5 levels starting at level 5)
+// New categories unlocked EVERY LEVEL - keeps it fresh and exciting throughout
 const CATEGORY_MILESTONES: CategoryMilestone[] = [
-  { level: 5, category: 'sports_games' },      // 5 categories from level 5
-  { level: 10, category: 'brands' },           // 6 categories from level 10
-  { level: 15, category: 'countries' },        // 7 categories from level 15
-  { level: 20, category: 'food_dishes' },      // 8 categories from level 20
-  { level: 25, category: 'professions' },      // 9 categories from level 25
-  { level: 30, category: 'movies' },           // 10 categories from level 30
-  { level: 35, category: 'songs' },            // 11 categories from level 35
-  { level: 40, category: 'health_issues' },    // 12 categories from level 40
-  { level: 45, category: 'historical_figures' },    // 13 categories from level 45
-  { level: 50, category: 'fruits_vegetables' },// 14 categories from level 50
+  { level: 2, category: 'sports_games' },        // 5 categories from level 2
+  { level: 3, category: 'brands' },              // 6 categories from level 3
+  { level: 4, category: 'countries' },           // 7 categories from level 4
+  { level: 5, category: 'food_dishes' },         // 8 categories from level 5
+  { level: 6, category: 'professions' },         // 9 categories from level 6
+  { level: 7, category: 'movies' },              // 10 categories from level 7
+  { level: 8, category: 'songs' },               // 11 categories from level 8
+  { level: 9, category: 'health_issues' },       // 12 categories from level 9
+  { level: 10, category: 'historical_figures' }, // 13 categories from level 10
+  { level: 11, category: 'fruits_vegetables' },  // 14 categories from level 11
 ];
 
 /** The four starter categories always available from level 1 */
@@ -294,8 +294,11 @@ function getAvailableCategories(level: number): CategoryType[] {
 
 // ============================================
 // CONSTRAINT INTRODUCTION SCHEDULE
-// No constraints for levels 1-29 (pure category learning)
-// First constraint at level 30, then gradual introduction
+// Smooth progression: easy constraints early, harder ones later
+// EASY: min_word_length, max_word_length
+// MEDIUM: ends_with_letter, double_letters
+// HARD: no_repeat_letters, no_common_words
+// VERY HARD: combo, survival, time_pressure
 // ============================================
 
 interface ConstraintMilestone {
@@ -303,22 +306,22 @@ interface ConstraintMilestone {
   type: LevelConstraint['type'];
 }
 
-// Constraints introduced gradually - much more spread out for smoother progression
+// Constraints introduced gradually - easy first, progressively harder
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 30, type: 'min_word_length' },      // First constraint at level 30 (gentle: 4+ letter words)
-  { level: 50, type: 'max_word_length' },       // Words must be X letters or less
-  { level: 75, type: 'ends_with_letter' },      // Words must end with specific letter
-  { level: 100, type: 'double_letters' },       // Words must have double letters
-  { level: 130, type: 'no_repeat_letters' },    // No letter can repeat
-  { level: 160, type: 'no_common_words' },      // Avoid obvious answers
-  { level: 200, type: 'combo' },                // Multiple constraints combined
-  { level: 250, type: 'survival' },             // One wrong = fail
-  { level: 300, type: 'time_pressure' },        // Reduced time
+  { level: 20, type: 'min_word_length' },       // EASY: 4+ letter words (level 20)
+  { level: 35, type: 'max_word_length' },       // EASY: max length limit (level 35)
+  { level: 50, type: 'ends_with_letter' },      // MEDIUM: ends with specific letter (level 50)
+  { level: 70, type: 'double_letters' },        // MEDIUM: words with double letters (level 70)
+  { level: 95, type: 'no_repeat_letters' },     // HARD: no repeating letters (level 95)
+  { level: 130, type: 'no_common_words' },      // HARD: avoid common words (level 130)
+  { level: 190, type: 'combo' },                // VERY HARD: multiple constraints (level 190)
+  { level: 260, type: 'survival' },             // VERY HARD: one wrong = fail (level 260)
+  { level: 350, type: 'time_pressure' },        // VERY HARD: reduced time (level 350)
 ];
 
 /**
  * Build the pool of constraint types available at a given level.
- * Levels 1-29 only get 'none'.
+ * Smooth difficulty curve: constraints start appearing occasionally, then more frequently.
  */
 function getConstraintPool(level: number): LevelConstraint['type'][] {
   const pool: LevelConstraint['type'][] = ['none'];
@@ -328,9 +331,15 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
     }
   }
 
-  // Weight 'none' more heavily for levels that recently unlocked constraints
-  // This ensures constraints don't overwhelm early levels
-  const noneWeight = level < 100 ? 4 : level < 200 ? 2 : 1;
+  // Smooth weighting: 'none' stays common until much later
+  // Prevents constraint overload while keeping progression fresh
+  let noneWeight = 1;
+  if (level < 50) noneWeight = 8;           // Levels 1-49: constraints are rare (1 in 9 chance)
+  else if (level < 100) noneWeight = 5;     // Levels 50-99: constraints appear more (1 in 6 chance)
+  else if (level < 150) noneWeight = 3;     // Levels 100-149: constraints common (1 in 4 chance)
+  else if (level < 200) noneWeight = 2;     // Levels 150-199: constraints very common (1 in 3 chance)
+  else noneWeight = 1;                      // Levels 200+: constraints always present
+
   for (let i = 1; i < noneWeight; i++) pool.push('none');
 
   return pool;
@@ -391,28 +400,37 @@ function isPlayableForAll(
 // ============================================
 
 /**
- * Timer in seconds per category.
- * Generous at the start, gradually decreases.
- * Level 1-10: 18s (easy learning phase, no constraints)
- * Level 11-25: 16s (still comfortable, no constraints)
- * Level 26-50: 14s (warming up, first constraints at 30)
- * Level 51-100: 12s (getting challenging)
- * Level 100+: ramps down to 5s around level 400
+ * Timer in seconds per category - smooth gradual progression.
+ * Level 1-25: Gradual decrease from 18s → 16s (learning phase, safe)
+ * Level 26-75: Gradual decrease from 16s → 13s (constraints introduced gently)
+ * Level 76-150: Gradual decrease from 13s → 10s (ramping up difficulty)
+ * Level 150+: Gradual decrease from 10s → 5s (expert level squeeze)
  *
- * Constraint bonuses applied on top afterward.
+ * No sudden jumps - smooth curve throughout.
  */
 function getBaseTimerSeconds(level: number): number {
-  // Very generous for early levels
-  if (level <= 10) return 18;
-  if (level <= 25) return 16;
-  if (level <= 50) return 14;
-  if (level <= 100) return 12;
+  if (level <= 1) return 18;
 
-  // Smooth curve from level 100+: 12 -> 5 over 300 levels
-  const progress = Math.min((level - 100) / 300, 1);
-  const curved = Math.sqrt(progress); // front-loads the easier section
-  const raw = lerp(12, 5, curved);
-  return Math.round(raw);
+  // Smooth interpolation throughout the entire range
+  let seconds: number;
+
+  if (level <= 25) {
+    // 18s → 16s over 25 levels
+    seconds = lerp(18, 16, (level - 1) / 24);
+  } else if (level <= 75) {
+    // 16s → 13s over 50 levels
+    seconds = lerp(16, 13, (level - 25) / 50);
+  } else if (level <= 150) {
+    // 13s → 10s over 75 levels
+    seconds = lerp(13, 10, (level - 75) / 75);
+  } else {
+    // 10s → 5s over remaining levels (level 150 to 400+)
+    const progress = Math.min((level - 150) / 250, 1);
+    const curved = Math.sqrt(progress); // slightly front-load for pacing
+    seconds = lerp(10, 5, curved);
+  }
+
+  return Math.round(seconds);
 }
 
 /**
@@ -452,21 +470,29 @@ function getCategoryCount(level: number, rng: SeededRandom): number {
 }
 
 /**
- * Pass score percent.
- * Very forgiving early on, gradually increases.
- * Level 1-25: 50% (easy pass, no constraints until level 30)
- * Level 26-50: 55% (moderate, first constraints at 30)
- * Level 51-100: 60% (proper challenge)
- * Level 100+: ramps to 95% around level 400+.
+ * Pass score percent - smooth gradual increases.
+ * Level 1-50: Gradual increase from 50% → 58% (learning and easy constraints)
+ * Level 51-150: Gradual increase from 58% → 75% (getting serious)
+ * Level 150+: Gradual increase from 75% → 95% (expert level challenge)
  */
 function getPassScorePercent(level: number): number {
-  if (level <= 25) return 50;
-  if (level <= 50) return 55;
-  if (level <= 100) return 60;
+  if (level <= 1) return 50;
 
-  // Smooth curve from level 100+: 60 -> 95 over 300 levels
-  const progress = Math.min((level - 100) / 300, 1);
-  return Math.round(lerp(60, 95, progress));
+  let passPercent: number;
+
+  if (level <= 50) {
+    // 50% → 58% over 50 levels (forgiving at start)
+    passPercent = lerp(50, 58, (level - 1) / 49);
+  } else if (level <= 150) {
+    // 58% → 75% over 100 levels (steady increase)
+    passPercent = lerp(58, 75, (level - 50) / 100);
+  } else {
+    // 75% → 95% over remaining levels (expert squeeze)
+    const progress = Math.min((level - 150) / 250, 1);
+    passPercent = lerp(75, 95, progress);
+  }
+
+  return Math.round(passPercent);
 }
 
 /**

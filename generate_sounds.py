@@ -461,10 +461,11 @@ def gen_bg_home():
 
 
 def gen_bg_game():
-    """14. bg_game.wav - Upbeat Cmaj7 drone (C3, E3, G3, B3), 8 seconds, loopable."""
+    """14. bg_game.wav - Fun upbeat C Major drone (C3, E3, G3, C4, E4), 8 seconds, loopable."""
     duration = 8.0
     n = int(SAMPLE_RATE * duration)
-    freqs = [note_freq("C3"), note_freq("E3"), note_freq("G3"), note_freq("B3")]
+    # Use brighter C Major chord with higher octaves for fun, happy feel
+    freqs = [note_freq("C3"), note_freq("E3"), note_freq("G3"), note_freq("C4"), note_freq("E4")]
     voices = []
     for f in freqs:
         voices.append(f)
@@ -475,18 +476,18 @@ def gen_bg_game():
     phases = [random.uniform(0, 2 * math.pi) for _ in voices]
     for i in range(n):
         t = i / SAMPLE_RATE
-        # Slightly faster LFO for more energy
-        lfo = 0.02 * math.sin(2 * math.pi * 0.35 * t)
-        lfo2 = 0.015 * math.sin(2 * math.pi * 0.22 * t)
-        # Add a subtle rhythmic pulse
-        pulse = 1.0 + 0.05 * math.sin(2 * math.pi * 1.0 * t)
+        # Faster, energetic LFO for more playful energy
+        lfo = 0.03 * math.sin(2 * math.pi * 0.5 * t)
+        lfo2 = 0.02 * math.sin(2 * math.pi * 0.33 * t)
+        # More prominent rhythmic pulse for fun game feel
+        pulse = 1.0 + 0.08 * math.sin(2 * math.pi * 1.5 * t)
         val = 0.0
         for vi, f in enumerate(voices):
             mod = 1.0 + lfo * (0.8 if vi % 3 == 0 else 0.5) + lfo2 * (0.6 if vi % 3 == 1 else 0.3)
             val += math.sin(2 * math.pi * f * mod * t + phases[vi])
-            # Add subtle 2nd harmonic for brightness
-            val += 0.08 * math.sin(2 * math.pi * 2 * f * mod * t + phases[vi])
-        val /= len(voices) * 1.08
+            # Add more harmonics for brighter, richer sound
+            val += 0.12 * math.sin(2 * math.pi * 2 * f * mod * t + phases[vi])
+        val /= len(voices) * 1.12
         val *= pulse
         # Seamless loop crossfade
         fade_len = 0.5
@@ -496,7 +497,7 @@ def gen_bg_game():
             fade = 0.5 - 0.5 * math.cos(math.pi * (duration - t) / fade_len)
         else:
             fade = 1.0
-        samples[i] = val * fade * 0.22  # Slightly louder than home
+        samples[i] = val * fade * 0.24  # Slightly louder for more presence
     write_wav("bg_game.wav", samples)
 
 
