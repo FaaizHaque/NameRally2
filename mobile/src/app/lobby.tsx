@@ -31,6 +31,7 @@ import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { CAT_COLORS } from '@/lib/category-colors';
+import { Sounds } from '@/lib/sounds';
 
 // Player avatar emojis + colors — one per slot, consistent per session
 const PLAYER_EMOJIS = ['🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🦋', '🐸', '🦄', '🐙'];
@@ -100,6 +101,13 @@ export default function LobbyScreen() {
     }
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [session?.id]);
+
+  // Start game background music when lobby loads
+  useEffect(() => {
+    if (session) {
+      Sounds.startBackground('game');
+    }
+  }, [session]);
 
   // Navigate to game when status changes to 'playing' or 'picking_letter'
   useEffect(() => {
