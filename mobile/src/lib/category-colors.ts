@@ -67,11 +67,11 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     gradA: '#F472B6', gradB: '#DB2777',
   },
   health_issues: {
-    // Deep amber — medical/alert but not red
-    accent: '#D97706',
-    tab: '#FEF9C3', border: '#D97706', icon: '#713F12',
-    darkBg: '#1A1000', darkBorder: '#FCD34D', darkAccent: '#FEF08A',
-    gradA: '#FCD34D', gradB: '#D97706',
+    // Rose/berry — medical cross, clearly distinct from amber/yellow
+    accent: '#F43F5E',
+    tab: '#FFE4E6', border: '#F43F5E', icon: '#881337',
+    darkBg: '#1A0008', darkBorder: '#FB7185', darkAccent: '#FECDD3',
+    gradA: '#FB7185', gradB: '#F43F5E',
   },
   countries: {
     accent: '#0284C7',
@@ -93,10 +93,11 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     gradA: '#E879F9', gradB: '#D946EF',
   },
   professions: {
-    accent: '#CA8A04',
-    tab: '#FEF9C3', border: '#CA8A04', icon: '#713F12',
-    darkBg: '#181200', darkBorder: '#FDE047', darkAccent: '#FEF9C3',
-    gradA: '#FBBF24', gradB: '#CA8A04',
+    // Cyan — professional/corporate, completely different hue from amber health_issues
+    accent: '#0891B2',
+    tab: '#CFFAFE', border: '#0891B2', icon: '#164E63',
+    darkBg: '#001C24', darkBorder: '#22D3EE', darkAccent: '#A5F3FC',
+    gradA: '#22D3EE', gradB: '#0891B2',
   },
   food_dishes: {
     // Deep orange — rustic warmth, distinct from animal's brighter orange
@@ -113,11 +114,11 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     gradA: '#D97706', gradB: '#B45309',
   },
   music_artists: {
-    // Lime — modern/electric, clearly distinct from mid-green fruits
-    accent: '#65A30D',
-    tab: '#ECFCCB', border: '#65A30D', icon: '#1A2E05',
-    darkBg: '#0C1800', darkBorder: '#A3E635', darkAccent: '#D9F99D',
-    gradA: '#A3E635', gradB: '#65A30D',
+    // Yellow/gold — "gold records", completely different from green fruits_vegetables
+    accent: '#EAB308',
+    tab: '#FEF9C3', border: '#EAB308', icon: '#713F12',
+    darkBg: '#1A1200', darkBorder: '#FACC15', darkAccent: '#FEF08A',
+    gradA: '#FACC15', gradB: '#CA8A04',
   },
   fruits_vegetables: {
     // Mid green — fresh produce, the one true green
