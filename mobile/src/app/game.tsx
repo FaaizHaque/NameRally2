@@ -399,8 +399,9 @@ export default function GameScreen() {
   }, []);
 
   // Show novelty popup when level starts (new categories, constraints, timer changes)
+  // Only in single player mode — multiplayer has no level progression
   useEffect(() => {
-    if (!currentLevel) return;
+    if (!currentLevel || gameMode !== 'single') return;
 
     const levelNum = currentLevel.level;
 
