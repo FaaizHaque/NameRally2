@@ -962,7 +962,7 @@ export default function GameScreen() {
             {/* Letter display */}
             <View style={{ alignItems: 'center', paddingBottom: 14 }}>
               <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
-                Fill Out Words Starting With:
+                Fill Out Words Starting With
               </Text>
               <View style={{
                 width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',

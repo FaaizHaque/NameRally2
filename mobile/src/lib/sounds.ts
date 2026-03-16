@@ -24,9 +24,6 @@ async function ensureAudioMode() {
 
 export function setSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
-  if (!enabled) {
-    Sounds.stopBackground();
-  }
 }
 
 export function isSoundEnabled() {
@@ -66,8 +63,8 @@ const S = {
   HINT:         require('../assets/sounds/hint.wav'),
   JOIN:         require('../assets/sounds/join.wav'),
   LETTER_LOCK:  require('../assets/sounds/letter_lock.wav'),
-  BG_HOME:      require('../assets/sounds/bg_home.wav'),
-  BG_GAME:      require('../assets/sounds/bg_game.wav'),
+  BG_HOME:      require('../assets/sounds/bg_home.mp3'),
+  BG_GAME:      require('../assets/sounds/bg_game.mp3'),
 };
 
 // ─── Public API ───────────────────────────────────────────────────────────────

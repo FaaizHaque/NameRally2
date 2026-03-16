@@ -458,73 +458,66 @@ export default function HomeScreen() {
               ) : null}
             </View>
 
-            {/* FOOTER — "? How to Play ?" centered */}
+            {/* FOOTER — How to Play + Sound toggle, inline */}
             <Animated.View
               entering={splashDone ? FadeIn.duration(600).delay(700) : undefined}
               style={{
+                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: 10,
                 opacity: splashDone ? 1 : 0,
                 marginTop: 28,
               }}
             >
+              {/* Sound toggle — same style as How to Play */}
+              <Pressable
+                onPress={toggleSound}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              >
+                <View style={{
+                  backgroundColor: SKETCH_COLORS.paperDark,
+                  paddingVertical: 11,
+                  paddingHorizontal: 14,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1.5,
+                  borderColor: SKETCH_COLORS.inkFaint + '60',
+                }}>
+                  {soundOn
+                    ? <Volume2 size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2} />
+                    : <VolumeX size={22} color={SKETCH_COLORS.inkFaint} strokeWidth={2} />
+                  }
+                </View>
+              </Pressable>
+
               {/* How to Play Button */}
               <Pressable
                 onPress={handleHowToPlay}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.8 : 1,
-                })}
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
               >
                 <View style={{
-                  backgroundColor: '#D4A84B',
-                  paddingVertical: 13,
-                  paddingHorizontal: 20,
+                  backgroundColor: SKETCH_COLORS.paperDark,
+                  paddingVertical: 11,
+                  paddingHorizontal: 18,
                   borderRadius: 12,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 7,
                   borderWidth: 1.5,
-                  borderColor: '#E8C460',
+                  borderColor: SKETCH_COLORS.inkFaint + '60',
                 }}>
-                  <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
+                  <HelpCircle size={18} color={SKETCH_COLORS.inkFaint} strokeWidth={2} />
                   <Text style={{
-                    color: '#1C120A',
-                    fontSize: 16,
-                    fontWeight: '800',
-                    letterSpacing: 0.5,
+                    color: SKETCH_COLORS.inkLight,
+                    fontSize: 15,
+                    fontWeight: '700',
+                    letterSpacing: 0.3,
                   }}>
                     How to Play
                   </Text>
-                  <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
                 </View>
-              </Pressable>
-            </Animated.View>
-
-            {/* Sound Toggle — bottom-right corner, absolute */}
-            <Animated.View
-              entering={splashDone ? FadeIn.duration(600).delay(700) : undefined}
-              style={{
-                position: 'absolute',
-                bottom: insets.bottom + 20,
-                right: 24,
-                opacity: splashDone ? 1 : 0,
-              }}
-            >
-              <Pressable
-                onPress={toggleSound}
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.6 : 1,
-                  backgroundColor: 'rgba(0,0,0,0.15)',
-                  borderWidth: 1.5,
-                  borderColor: 'rgba(0,0,0,0.25)',
-                  padding: 11,
-                  borderRadius: 12,
-                })}
-              >
-                {soundOn
-                  ? <Volume2 size={20} color="#1C120A" strokeWidth={2} />
-                  : <VolumeX size={20} color="#1C120A" strokeWidth={2} />
-                }
               </Pressable>
             </Animated.View>
 
