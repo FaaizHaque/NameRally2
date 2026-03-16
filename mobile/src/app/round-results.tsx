@@ -59,7 +59,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   songs: <Music size={18} color="#EC4899" />,
   professions: <Briefcase size={18} color="#F59E0B" />,
   food_dishes: <Utensils size={18} color="#EF4444" />,
-  famous_people: <Landmark size={24} color="#6366F1" />,
+  historical_figures: <Landmark size={24} color="#6366F1" />,
   music_artists: <Music size={24} color="#F97316" />,
   fruits_vegetables: <Apple size={24} color="#50B840" />,
 };
@@ -77,7 +77,7 @@ const CATEGORY_COLORS: Record<CategoryType, string> = {
   songs: '#EC4899',
   professions: '#F59E0B',
   food_dishes: '#EF4444',
-  famous_people: '#6366F1',
+  historical_figures: '#6366F1',
   music_artists: '#F97316',
   fruits_vegetables: '#50B840',
 };

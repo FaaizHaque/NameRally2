@@ -18,7 +18,7 @@ export type LevelCategoryType =
   | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'famous_people'
+  | 'historical_figures'
   | 'music_artists';
 
 export interface LevelConstraint {

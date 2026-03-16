@@ -54,7 +54,7 @@ const CATEGORY_ICONS_MODERN: Record<string, React.ReactNode> = {
   songs: <Music size={18} color={MODERN_ICON_COLOR} />,
   professions: <Briefcase size={18} color={MODERN_ICON_COLOR} />,
   food_dishes: <UtensilsCrossed size={18} color={MODERN_ICON_COLOR} />,
-  famous_people: <Landmark size={18} color={MODERN_ICON_COLOR} />,
+  historical_figures: <Landmark size={18} color={MODERN_ICON_COLOR} />,
   music_artists: <Music size={18} color={MODERN_ICON_COLOR} />,
   books_movies: <Film size={18} color={MODERN_ICON_COLOR} />,
   cars: <Car size={18} color={MODERN_ICON_COLOR} />,
@@ -74,7 +74,7 @@ const CATEGORY_ICONS_SKETCH: Record<string, React.ReactNode> = {
   songs: <Music size={18} color={SKETCH_ICON_COLOR} />,
   professions: <Briefcase size={18} color={SKETCH_ICON_COLOR} />,
   food_dishes: <UtensilsCrossed size={18} color={SKETCH_ICON_COLOR} />,
-  famous_people: <Landmark size={18} color={SKETCH_ICON_COLOR} />,
+  historical_figures: <Landmark size={18} color={SKETCH_ICON_COLOR} />,
   music_artists: <Music size={18} color={SKETCH_ICON_COLOR} />,
   books_movies: <Film size={18} color={SKETCH_ICON_COLOR} />,
   cars: <Car size={18} color={SKETCH_ICON_COLOR} />,
@@ -93,7 +93,7 @@ const LEVEL_CATEGORY_NAMES: Record<LevelCategoryType, string> = {
   songs: 'Songs',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  famous_people: 'Famous People',
+  historical_figures: 'Historical Figures',
   music_artists: 'Music Artists/Bands',
   fruits_vegetables: 'Fruits & Vegetables',
 };
@@ -113,7 +113,7 @@ const CATEGORY_PASTEL: Record<string, { bg: string; border: string; selectedBg: 
   songs:              { bg: '#FFD0E8', border: '#D850A0', selectedBg: '#D850A0', ink: '#882060' },   // Pink - music
   professions:        { bg: '#E0DDD0', border: '#908060', selectedBg: '#908060', ink: '#504020' },   // Khaki - work/professional
   food_dishes:        { bg: '#FFF0D0', border: '#D8A030', selectedBg: '#D8A030', ink: '#806010' },   // Golden/warm - food
-  famous_people:      { bg: '#FFE0C8', border: '#D87838', selectedBg: '#D87838', ink: '#783818' },   // Burnt orange - celebrity
+  historical_figures:      { bg: '#FFE0C8', border: '#D87838', selectedBg: '#D87838', ink: '#783818' },   // Burnt orange - historical
   music_artists:      { bg: '#E8D0FF', border: '#9858D8', selectedBg: '#9858D8', ink: '#482080' },   // Violet - artists
   books_movies:       { bg: '#D8E8F0', border: '#6090B8', selectedBg: '#6090B8', ink: '#304860' },   // Slate blue - literature
   cars:               { bg: '#E0E0E0', border: '#808080', selectedBg: '#808080', ink: '#404040' },   // Silver/gray - automotive
@@ -133,7 +133,7 @@ const CATEGORY_MODERN: Record<string, { bg: string; border: string; ink: string 
   songs:              { bg: '#2a1030', border: '#ec4899', ink: '#f9a8d4' },
   professions:        { bg: '#2a2010', border: '#f59e0b', ink: '#fcd34d' },
   food_dishes:        { bg: '#2a1808', border: '#f97316', ink: '#fdba74' },
-  famous_people:      { bg: '#241a08', border: '#d97706', ink: '#fde68a' },
+  historical_figures:      { bg: '#241a08', border: '#d97706', ink: '#fde68a' },
   music_artists:      { bg: '#2a1030', border: '#ec4899', ink: '#f9a8d4' },
   books_movies:       { bg: '#1e1840', border: '#7c3aed', ink: '#c4b5fd' },
   cars:               { bg: '#261810', border: '#ea580c', ink: '#fdba74' },

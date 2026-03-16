@@ -274,7 +274,7 @@ function BasicsContent() {
           Start with basics like Names, Places, Animals, Things. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Famous People', 'History'].map((cat) => (
+          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Historical Figures'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>

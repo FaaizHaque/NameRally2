@@ -38,7 +38,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   songs: <Music size={16} color="#882060" />,
   professions: <Briefcase size={16} color="#705010" />,
   food_dishes: <Utensils size={16} color="#882010" />,
-  famous_people: <Landmark size={16} color="#604010" />,
+  historical_figures: <Landmark size={16} color="#604010" />,
   music_artists: <Music size={16} color="#7A3000" />,
   fruits_vegetables: <Apple size={16} color="#205010" />,
 };
@@ -56,7 +56,7 @@ const MODERN_CAT_COLORS: Record<string, { bg: string; border: string; icon: stri
   songs: { bg: '#2a1030', border: '#ec4899', icon: '#f9a8d4' },
   professions: { bg: '#2a2010', border: '#f59e0b', icon: '#fcd34d' },
   food_dishes: { bg: '#2a1808', border: '#f97316', icon: '#fdba74' },
-  famous_people: { bg: '#241a08', border: '#d97706', icon: '#fde68a' },
+  historical_figures: { bg: '#241a08', border: '#d97706', icon: '#fde68a' },
 };
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';

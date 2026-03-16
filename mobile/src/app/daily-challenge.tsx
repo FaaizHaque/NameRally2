@@ -69,7 +69,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   songs: <Music size={18} color="#EC4899" />,
   professions: <Briefcase size={18} color="#F59E0B" />,
   food_dishes: <Utensils size={18} color="#EF4444" />,
-  famous_people: <Landmark size={18} color="#6366F1" />,
+  historical_figures: <Landmark size={18} color="#6366F1" />,
   music_artists: <Music size={18} color="#F97316" />,
   fruits_vegetables: <Apple size={18} color="#50B840" />,
 };
@@ -89,7 +89,7 @@ const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent
   songs: { bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)', accent: '#EC4899' },
   professions: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)', accent: '#F59E0B' },
   food_dishes: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', accent: '#EF4444' },
-  famous_people: { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', accent: '#6366F1' },
+  historical_figures: { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', accent: '#6366F1' },
   music_artists: { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.25)', accent: '#F97316' },
   fruits_vegetables: { bg: 'rgba(80,184,64,0.12)', border: 'rgba(80,184,64,0.25)', accent: '#50B840' },
 };
@@ -107,7 +107,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   songs: 'Songs',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  famous_people: 'Famous People',
+  historical_figures: 'Historical Figures',
   music_artists: 'Music Artists/Bands',
   fruits_vegetables: 'Fruits & Vegetables',
 };

@@ -87,7 +87,7 @@ const CATEGORY_COLORS: Record<CategoryType, CC> = {
   songs:              { tab: '#FFD8EC', border: '#E05080', icon: '#700030', vivid: '#D04070' },
   professions:        { tab: '#FFF0D0', border: '#D09030', icon: '#604808', vivid: '#C07820' },
   food_dishes:        { tab: '#FFE5D0', border: '#E07840', icon: '#702010', vivid: '#D06030' },
-  famous_people:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010', vivid: '#609020' },
+  historical_figures:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010', vivid: '#609020' },
   music_artists:      { tab: '#FFF0E0', border: '#F97316', icon: '#7A3000', vivid: '#F97316' },
   fruits_vegetables:  { tab: '#E8FFE0', border: '#50B840', icon: '#205010', vivid: '#40A830' },
 };
@@ -105,7 +105,7 @@ const CATEGORY_ICONS: Record<CategoryType, (color: string) => React.ReactNode> =
   songs:              (c: string) => <Music size={20} color={c} strokeWidth={2.5} />,
   professions:        (c: string) => <Briefcase size={20} color={c} strokeWidth={2.5} />,
   food_dishes:        (c: string) => <Utensils size={20} color={c} strokeWidth={2.5} />,
-  famous_people:      (c: string) => <Landmark size={20} color={c} strokeWidth={2.5} />,
+  historical_figures:      (c: string) => <Landmark size={20} color={c} strokeWidth={2.5} />,
   music_artists:      (c: string) => <Music size={20} color={c} strokeWidth={2.5} />,
   fruits_vegetables:  (c: string) => <Apple size={20} color={c} strokeWidth={2.5} />,
 };
@@ -863,7 +863,7 @@ export default function GameScreen() {
       songs:              { bg: '#2a1a22', border: '#ec4899', accent: '#f9a8d4' },
       professions:        { bg: '#2a2010', border: '#eab308', accent: '#fde047' },
       food_dishes:        { bg: '#2a1e14', border: '#f59e0b', accent: '#fcd34d' },
-      famous_people:      { bg: '#1e2010', border: '#84cc16', accent: '#bef264' },
+      historical_figures:      { bg: '#1e2010', border: '#84cc16', accent: '#bef264' },
       fruits_vegetables:  { bg: '#1a2a14', border: '#4ade80', accent: '#86efac' },
       music_artists:      { bg: '#2a1a10', border: '#fb923c', accent: '#fdba74' },
     };

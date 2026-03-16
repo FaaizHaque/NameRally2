@@ -122,7 +122,7 @@ export const SKETCH_CATEGORY_COLORS: Record<string, {
     ink: '#882010',
     inputLine: '#C85030',
   },
-  famous_people: {
+  historical_figures: {
     strip: '#F0E0A0',
     stripBorder: '#C09030',
     ink: '#604010',

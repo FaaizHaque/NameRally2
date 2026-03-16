@@ -71,7 +71,7 @@ const CATEGORY_COLORS: Record<CategoryType, { tab: string; border: string; icon:
   songs:              { tab: '#FFD8EC', border: '#E05080', icon: '#700030' },
   professions:        { tab: '#FFF0D0', border: '#D09030', icon: '#604808' },
   food_dishes:        { tab: '#FFE5D0', border: '#E07840', icon: '#702010' },
-  famous_people:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010' },
+  historical_figures:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010' },
   music_artists:      { tab: '#FFF0E0', border: '#F97316', icon: '#7A3000' },
   fruits_vegetables:  { tab: '#E8FFE0', border: '#50B840', icon: '#205010' },
 };
@@ -89,7 +89,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   songs:              <Music size={13} color="#700030" strokeWidth={2.5} />,
   professions:        <Briefcase size={13} color="#604808" strokeWidth={2.5} />,
   food_dishes:        <Utensils size={13} color="#702010" strokeWidth={2.5} />,
-  famous_people:      <Landmark size={13} color="#305010" strokeWidth={2.5} />,
+  historical_figures:      <Landmark size={13} color="#305010" strokeWidth={2.5} />,
   music_artists:      <Music size={13} color="#7A3000" strokeWidth={2.5} />,
   fruits_vegetables:  <Apple size={13} color="#205010" strokeWidth={2.5} />,
 };

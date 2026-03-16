@@ -21,7 +21,7 @@ type CategoryType =
   | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'famous_people';
+  | 'historical_figures';
 
 interface DailyChallenge {
   id: string;
@@ -35,7 +35,7 @@ interface DailyChallenge {
 const ALL_CATEGORIES: CategoryType[] = [
   'names', 'places', 'animal', 'thing', 'sports_games',
   'brands', 'health_issues', 'countries',
-  'movies', 'songs', 'professions', 'food_dishes', 'famous_people'
+  'movies', 'songs', 'professions', 'food_dishes', 'historical_figures'
 ];
 
 // Letter pools by difficulty
