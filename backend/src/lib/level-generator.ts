@@ -455,9 +455,8 @@ function getCategoryCount(level: number, rng: SeededRandom): number {
  * Level 100+: ramps to 95% around level 400+.
  */
 function getPassScorePercent(level: number): number {
-  if (level <= 10) return 30;
-  if (level <= 25) return 40;
-  if (level <= 50) return 50;
+  if (level <= 25) return 50;
+  if (level <= 50) return 55;
   if (level <= 100) return 60;
 
   // Smooth curve from level 100+: 60 -> 95 over 300 levels

@@ -35,6 +35,7 @@ import { useGameStore, AVAILABLE_CATEGORIES, CategoryType } from '@/lib/state/ga
 import type { LevelCategoryType } from '@/lib/level-types';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 // Icon colors differ by mode
 const MODERN_ICON_COLOR = '#a5b4fc';
@@ -98,45 +99,22 @@ const LEVEL_CATEGORY_NAMES: Record<LevelCategoryType, string> = {
   fruits_vegetables: 'Fruits & Vegetables',
 };
 
-// Pastel notebook colors per category (multiplayer)
+// Pastel notebook colors per category — derived from shared CAT_COLORS
 const CATEGORY_PASTEL: Record<string, { bg: string; border: string; selectedBg: string; ink: string }> = {
-  fruits_vegetables:  { bg: '#E8FFE0', border: '#50B840', selectedBg: '#50B840', ink: '#205010' },   // Lime green - fresh produce
-  names:              { bg: '#FEF3A3', border: '#E8D840', selectedBg: '#F8E040', ink: '#8B7A10' },   // Yellow - warm, personal
-  places:             { bg: '#C8F5D0', border: '#50B870', selectedBg: '#50B870', ink: '#2A6640' },   // Green - nature, geography
-  animal:             { bg: '#FFD4D4', border: '#E07070', selectedBg: '#E07070', ink: '#882020' },   // Coral - living things
-  thing:              { bg: '#D0EAFF', border: '#60A8E0', selectedBg: '#60A8E0', ink: '#205880' },   // Blue - objects
-  sports_games:       { bg: '#E0F5D0', border: '#68B848', selectedBg: '#68B848', ink: '#306820' },   // Lime green - active/sports
-  brands:             { bg: '#F0D8FF', border: '#B060D8', selectedBg: '#B060D8', ink: '#602080' },   // Purple - luxury/brands
-  health_issues:      { bg: '#FFD4D8', border: '#E04050', selectedBg: '#E04050', ink: '#901020' },   // Red - health/medical
-  countries:          { bg: '#D0E8FF', border: '#4880D0', selectedBg: '#4880D0', ink: '#183870' },   // Royal blue - flags/nations
-  movies:             { bg: '#FFE8D0', border: '#E89040', selectedBg: '#E89040', ink: '#804810' },   // Orange - entertainment
-  songs:              { bg: '#FFD0E8', border: '#D850A0', selectedBg: '#D850A0', ink: '#882060' },   // Pink - music
-  professions:        { bg: '#E0DDD0', border: '#908060', selectedBg: '#908060', ink: '#504020' },   // Khaki - work/professional
-  food_dishes:        { bg: '#FFF0D0', border: '#D8A030', selectedBg: '#D8A030', ink: '#806010' },   // Golden/warm - food
-  historical_figures:      { bg: '#FFE0C8', border: '#D87838', selectedBg: '#D87838', ink: '#783818' },   // Burnt orange - historical
-  music_artists:      { bg: '#E8D0FF', border: '#9858D8', selectedBg: '#9858D8', ink: '#482080' },   // Violet - artists
-  books_movies:       { bg: '#D8E8F0', border: '#6090B8', selectedBg: '#6090B8', ink: '#304860' },   // Slate blue - literature
-  cars:               { bg: '#E0E0E0', border: '#808080', selectedBg: '#808080', ink: '#404040' },   // Silver/gray - automotive
+  ...Object.fromEntries(
+    Object.entries(CAT_COLORS).map(([k, v]) => [k, { bg: v.tab, border: v.border, selectedBg: v.accent, ink: v.icon }])
+  ),
+  books_movies: { bg: '#D8E8F0', border: '#6090B8', selectedBg: '#6090B8', ink: '#304860' },
+  cars:         { bg: '#E8E8E8', border: '#888888', selectedBg: '#888888', ink: '#404040' },
 };
 
-// Modern dark colors per category (single player)
+// Modern dark colors per category — derived from shared CAT_COLORS
 const CATEGORY_MODERN: Record<string, { bg: string; border: string; ink: string }> = {
-  names:              { bg: '#1e1b4b', border: '#4F46E5', ink: '#a5b4fc' },
-  places:             { bg: '#0f2a1e', border: '#10b981', ink: '#6ee7b7' },
-  animal:             { bg: '#2a1018', border: '#f43f5e', ink: '#fda4af' },
-  thing:              { bg: '#1a1f3a', border: '#3b82f6', ink: '#93c5fd' },
-  sports_games:       { bg: '#1a2240', border: '#6366f1', ink: '#a5b4fc' },
-  brands:             { bg: '#2a1040', border: '#a855f7', ink: '#d8b4fe' },
-  health_issues:      { bg: '#2a1010', border: '#ef4444', ink: '#fca5a5' },
-  countries:          { bg: '#0f1e38', border: '#2563eb', ink: '#93c5fd' },
-  movies:             { bg: '#1e1040', border: '#8b5cf6', ink: '#c4b5fd' },
-  songs:              { bg: '#2a1030', border: '#ec4899', ink: '#f9a8d4' },
-  professions:        { bg: '#2a2010', border: '#f59e0b', ink: '#fcd34d' },
-  food_dishes:        { bg: '#2a1808', border: '#f97316', ink: '#fdba74' },
-  historical_figures:      { bg: '#241a08', border: '#d97706', ink: '#fde68a' },
-  music_artists:      { bg: '#2a1030', border: '#ec4899', ink: '#f9a8d4' },
-  books_movies:       { bg: '#1e1840', border: '#7c3aed', ink: '#c4b5fd' },
-  cars:               { bg: '#261810', border: '#ea580c', ink: '#fdba74' },
+  ...Object.fromEntries(
+    Object.entries(CAT_COLORS).map(([k, v]) => [k, { bg: v.darkBg, border: v.darkBorder, ink: v.darkAccent }])
+  ),
+  books_movies: { bg: '#1e1840', border: '#7c3aed', ink: '#c4b5fd' },
+  cars:         { bg: '#1a1a1a', border: '#888888', ink: '#cccccc' },
 };
 
 export default function CreateGameScreen() {

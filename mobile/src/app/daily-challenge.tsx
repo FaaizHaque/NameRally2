@@ -53,46 +53,41 @@ import { validateWithFallback } from '@/lib/word-validation';
 import type { DailyChallenge, DailyChallengeAnswer, DailyChallengeResult } from '@/lib/daily-challenge-types';
 import { calculateAnswerScore, SPEED_BONUS_THRESHOLD_MS, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
 import { supabase, type DbDailyChallengeScore } from '@/lib/supabase';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
 const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
-  names: <User size={18} color="#D4A84B" />,
-  places: <MapPin size={18} color="#3BA99C" />,
-  animal: <Cat size={18} color="#FF6B6B" />,
-  thing: <Box size={18} color="#6EC4B8" />,
-  sports_games: <Gamepad2 size={18} color="#5B8DEF" />,
-  brands: <ShoppingBag size={18} color="#D874A6" />,
-  health_issues: <HeartPulse size={18} color="#E85555" />,
-  countries: <Globe size={18} color="#3B82F6" />,
-  movies: <Film size={18} color="#8B5CF6" />,
-  songs: <Music size={18} color="#EC4899" />,
-  professions: <Briefcase size={18} color="#F59E0B" />,
-  food_dishes: <Utensils size={18} color="#EF4444" />,
-  historical_figures: <Landmark size={18} color="#6366F1" />,
-  music_artists: <Music size={18} color="#F97316" />,
-  fruits_vegetables: <Apple size={18} color="#50B840" />,
+  names:              <User size={18} color={CAT_COLORS.names.accent} />,
+  places:             <MapPin size={18} color={CAT_COLORS.places.accent} />,
+  animal:             <Cat size={18} color={CAT_COLORS.animal.accent} />,
+  thing:              <Box size={18} color={CAT_COLORS.thing.accent} />,
+  sports_games:       <Gamepad2 size={18} color={CAT_COLORS.sports_games.accent} />,
+  brands:             <ShoppingBag size={18} color={CAT_COLORS.brands.accent} />,
+  health_issues:      <HeartPulse size={18} color={CAT_COLORS.health_issues.accent} />,
+  countries:          <Globe size={18} color={CAT_COLORS.countries.accent} />,
+  movies:             <Film size={18} color={CAT_COLORS.movies.accent} />,
+  songs:              <Music size={18} color={CAT_COLORS.songs.accent} />,
+  professions:        <Briefcase size={18} color={CAT_COLORS.professions.accent} />,
+  food_dishes:        <Utensils size={18} color={CAT_COLORS.food_dishes.accent} />,
+  historical_figures: <Landmark size={18} color={CAT_COLORS.historical_figures.accent} />,
+  music_artists:      <Music size={18} color={CAT_COLORS.music_artists.accent} />,
+  fruits_vegetables:  <Apple size={18} color={CAT_COLORS.fruits_vegetables.accent} />,
 };
 
-
-
-const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent: string }> = {
-  names: { bg: 'rgba(212,168,75,0.12)', border: 'rgba(212,168,75,0.25)', accent: '#D4A84B' },
-  places: { bg: 'rgba(59,169,156,0.12)', border: 'rgba(59,169,156,0.25)', accent: '#3BA99C' },
-  animal: { bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.25)', accent: '#FF6B6B' },
-  thing: { bg: 'rgba(110,196,184,0.12)', border: 'rgba(110,196,184,0.25)', accent: '#6EC4B8' },
-  sports_games: { bg: 'rgba(91,141,239,0.12)', border: 'rgba(91,141,239,0.25)', accent: '#5B8DEF' },
-  brands: { bg: 'rgba(216,116,166,0.12)', border: 'rgba(216,116,166,0.25)', accent: '#D874A6' },
-  health_issues: { bg: 'rgba(232,85,85,0.12)', border: 'rgba(232,85,85,0.25)', accent: '#E85555' },
-  countries: { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', accent: '#3B82F6' },
-  movies: { bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', accent: '#8B5CF6' },
-  songs: { bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)', accent: '#EC4899' },
-  professions: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)', accent: '#F59E0B' },
-  food_dishes: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', accent: '#EF4444' },
-  historical_figures: { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', accent: '#6366F1' },
-  music_artists: { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.25)', accent: '#F97316' },
-  fruits_vegetables: { bg: 'rgba(80,184,64,0.12)', border: 'rgba(80,184,64,0.25)', accent: '#50B840' },
-};
+const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent: string }> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => {
+    const hex = v.accent.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return [k, {
+      bg:     `rgba(${r},${g},${b},0.12)`,
+      border: `rgba(${r},${g},${b},0.30)`,
+      accent: v.accent,
+    }];
+  })
+) as Record<CategoryType, { bg: string; border: string; accent: string }>;
 
 const CATEGORY_NAMES: Record<CategoryType, string> = {
   names: 'Names',

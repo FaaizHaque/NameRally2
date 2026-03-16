@@ -160,7 +160,6 @@ export default function HomeScreen() {
     loadUser();
     loadLevelProgress();
     Sounds.startBackground('home');
-    return () => { Sounds.stopBackground(); };
     floatAnim.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2200 }),
@@ -168,6 +167,7 @@ export default function HomeScreen() {
       ),
       -1, true
     );
+    return () => { Sounds.stopBackground(); };
   }, []);
 
   useEffect(() => {

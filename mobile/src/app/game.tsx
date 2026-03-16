@@ -46,6 +46,7 @@ import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName, getHintAsync, LevelConstraintCheck } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds } from '@/lib/sounds';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 // ─── PALETTE ──────────────────────────────────────────────────────────────────
 const P = {
@@ -72,25 +73,11 @@ const P = {
   pencilTip:   '#2A1A0A',
 };
 
-// Vivid category colors — dopamine-level saturation
+// Category colors — all derived from shared CAT_COLORS palette
 type CC = { tab: string; border: string; icon: string; vivid: string };
-const CATEGORY_COLORS: Record<CategoryType, CC> = {
-  names:              { tab: '#FFF3C0', border: '#E8C030', icon: '#7A5000', vivid: '#F0A800' },
-  places:             { tab: '#D0F5DF', border: '#40C870', icon: '#106030', vivid: '#28B860' },
-  animal:             { tab: '#FFE0DA', border: '#F06060', icon: '#801818', vivid: '#E84040' },
-  thing:              { tab: '#D8EAFF', border: '#5090E0', icon: '#183880', vivid: '#4080E0' },
-  sports_games:       { tab: '#E0D8FF', border: '#8060E0', icon: '#381880', vivid: '#7050D8' },
-  brands:             { tab: '#FFD8F5', border: '#D050A0', icon: '#680050', vivid: '#C040A0' },
-  health_issues:      { tab: '#FFE8D0', border: '#F07830', icon: '#702010', vivid: '#E06020' },
-  countries:          { tab: '#D0F0FF', border: '#2890D0', icon: '#084870', vivid: '#1880C0' },
-  movies:             { tab: '#F0D8FF', border: '#9050C8', icon: '#480878', vivid: '#8040C0' },
-  songs:              { tab: '#FFD8EC', border: '#E05080', icon: '#700030', vivid: '#D04070' },
-  professions:        { tab: '#FFF0D0', border: '#D09030', icon: '#604808', vivid: '#C07820' },
-  food_dishes:        { tab: '#FFE5D0', border: '#E07840', icon: '#702010', vivid: '#D06030' },
-  historical_figures:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010', vivid: '#609020' },
-  music_artists:      { tab: '#FFF0E0', border: '#F97316', icon: '#7A3000', vivid: '#F97316' },
-  fruits_vegetables:  { tab: '#E8FFE0', border: '#50B840', icon: '#205010', vivid: '#40A830' },
-};
+const CATEGORY_COLORS: Record<CategoryType, CC> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => [k, { tab: v.tab, border: v.border, icon: v.icon, vivid: v.accent }])
+) as Record<CategoryType, CC>;
 
 const CATEGORY_ICONS: Record<CategoryType, (color: string) => React.ReactNode> = {
   names:              (c: string) => <User size={20} color={c} strokeWidth={2.5} />,
@@ -851,21 +838,21 @@ export default function GameScreen() {
   // ── SINGLE PLAYER (level mode) — modern dark UI ──
   if (isLevelMode && currentLevel) {
     const modernCategoryColors: Record<string, { bg: string; border: string; accent: string }> = {
-      names:              { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' },
-      places:             { bg: '#1a2e1a', border: '#22c55e', accent: '#86efac' },
-      animal:             { bg: '#2a1020', border: '#f472b6', accent: '#f9a8d4' },
-      thing:              { bg: '#1a1e2e', border: '#3b82f6', accent: '#93c5fd' },
-      sports_games:       { bg: '#1e1a2e', border: '#8b5cf6', accent: '#c4b5fd' },
-      brands:             { bg: '#2a1a28', border: '#d946ef', accent: '#f0abfc' },
-      health_issues:      { bg: '#2a1e1a', border: '#f97316', accent: '#fdba74' },
-      countries:          { bg: '#1a2030', border: '#0ea5e9', accent: '#7dd3fc' },
-      movies:             { bg: '#201a30', border: '#a855f7', accent: '#d8b4fe' },
-      songs:              { bg: '#2a1a22', border: '#ec4899', accent: '#f9a8d4' },
-      professions:        { bg: '#2a2010', border: '#eab308', accent: '#fde047' },
-      food_dishes:        { bg: '#2a1e14', border: '#f59e0b', accent: '#fcd34d' },
-      historical_figures:      { bg: '#1e2010', border: '#84cc16', accent: '#bef264' },
-      fruits_vegetables:  { bg: '#1a2a14', border: '#4ade80', accent: '#86efac' },
-      music_artists:      { bg: '#2a1a10', border: '#fb923c', accent: '#fdba74' },
+      names:              { bg: CAT_COLORS.names.darkBg,             border: CAT_COLORS.names.darkBorder,             accent: CAT_COLORS.names.darkAccent },
+      places:             { bg: CAT_COLORS.places.darkBg,             border: CAT_COLORS.places.darkBorder,             accent: CAT_COLORS.places.darkAccent },
+      animal:             { bg: CAT_COLORS.animal.darkBg,             border: CAT_COLORS.animal.darkBorder,             accent: CAT_COLORS.animal.darkAccent },
+      thing:              { bg: CAT_COLORS.thing.darkBg,              border: CAT_COLORS.thing.darkBorder,              accent: CAT_COLORS.thing.darkAccent },
+      sports_games:       { bg: CAT_COLORS.sports_games.darkBg,       border: CAT_COLORS.sports_games.darkBorder,       accent: CAT_COLORS.sports_games.darkAccent },
+      brands:             { bg: CAT_COLORS.brands.darkBg,             border: CAT_COLORS.brands.darkBorder,             accent: CAT_COLORS.brands.darkAccent },
+      health_issues:      { bg: CAT_COLORS.health_issues.darkBg,      border: CAT_COLORS.health_issues.darkBorder,      accent: CAT_COLORS.health_issues.darkAccent },
+      countries:          { bg: CAT_COLORS.countries.darkBg,          border: CAT_COLORS.countries.darkBorder,          accent: CAT_COLORS.countries.darkAccent },
+      movies:             { bg: CAT_COLORS.movies.darkBg,             border: CAT_COLORS.movies.darkBorder,             accent: CAT_COLORS.movies.darkAccent },
+      songs:              { bg: CAT_COLORS.songs.darkBg,              border: CAT_COLORS.songs.darkBorder,              accent: CAT_COLORS.songs.darkAccent },
+      professions:        { bg: CAT_COLORS.professions.darkBg,        border: CAT_COLORS.professions.darkBorder,        accent: CAT_COLORS.professions.darkAccent },
+      food_dishes:        { bg: CAT_COLORS.food_dishes.darkBg,        border: CAT_COLORS.food_dishes.darkBorder,        accent: CAT_COLORS.food_dishes.darkAccent },
+      historical_figures: { bg: CAT_COLORS.historical_figures.darkBg, border: CAT_COLORS.historical_figures.darkBorder, accent: CAT_COLORS.historical_figures.darkAccent },
+      fruits_vegetables:  { bg: CAT_COLORS.fruits_vegetables.darkBg,  border: CAT_COLORS.fruits_vegetables.darkBorder,  accent: CAT_COLORS.fruits_vegetables.darkAccent },
+      music_artists:      { bg: CAT_COLORS.music_artists.darkBg,      border: CAT_COLORS.music_artists.darkBorder,      accent: CAT_COLORS.music_artists.darkAccent },
     };
     const urgentTimer = timeRemaining <= 10;
     return (
@@ -955,14 +942,18 @@ export default function GameScreen() {
 
           {/* Constraint banner */}
           {currentLevel.constraint?.type !== 'none' && (
-            <Animated.View entering={FadeInDown.duration(300).delay(100)} style={{
-              flexDirection: 'row', alignItems: 'center', gap: 6,
-              marginHorizontal: 14, marginTop: 4, marginBottom: 2,
-              backgroundColor: '#1a3a6e', paddingHorizontal: 12, paddingVertical: 8,
-              borderRadius: 8, borderWidth: 1, borderColor: 'rgba(80,160,255,0.4)',
+            <Animated.View entering={FadeInDown.duration(350).delay(100)} style={{
+              flexDirection: 'row', alignItems: 'center', gap: 8,
+              marginHorizontal: 14, marginTop: 6, marginBottom: 2,
+              backgroundColor: '#0e1e42',
+              paddingHorizontal: 14, paddingVertical: 10,
+              borderRadius: 10, borderWidth: 2, borderColor: '#6366f1',
+              shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 8,
             }}>
-              <Info size={13} color="#a5b4fc" strokeWidth={2.5} />
-              <Text style={{ color: '#b8d8ff', fontSize: 13, flex: 1 }}>{currentLevel.constraint.description}</Text>
+              <View style={{ backgroundColor: '#6366f1', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ color: '#ffffff', fontSize: 9, fontWeight: '900', letterSpacing: 1 }}>RULE</Text>
+              </View>
+              <Text style={{ color: '#c7d2fe', fontSize: 14, fontWeight: '700', flex: 1 }}>{currentLevel.constraint.description}</Text>
             </Animated.View>
           )}
 

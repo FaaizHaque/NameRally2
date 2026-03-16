@@ -30,6 +30,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 // Player avatar emojis + colors — one per slot, consistent per session
 const PLAYER_EMOJIS = ['🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🦋', '🐸', '🦄', '🐙'];
@@ -57,41 +58,27 @@ const P = {
   wire:       '#8A7055',
 };
 
-// OG sketch category colors
-const CATEGORY_COLORS: Record<CategoryType, { tab: string; border: string; icon: string }> = {
-  names:              { tab: '#FFF3C0', border: '#E8C030', icon: '#7A5000' },
-  places:             { tab: '#D0F5DF', border: '#40C870', icon: '#106030' },
-  animal:             { tab: '#FFE0DA', border: '#F06060', icon: '#801818' },
-  thing:              { tab: '#D8EAFF', border: '#5090E0', icon: '#183880' },
-  sports_games:       { tab: '#E0D8FF', border: '#8060E0', icon: '#381880' },
-  brands:             { tab: '#FFD8F5', border: '#D050A0', icon: '#680050' },
-  health_issues:      { tab: '#FFE8D0', border: '#F07830', icon: '#702010' },
-  countries:          { tab: '#D0F0FF', border: '#2890D0', icon: '#084870' },
-  movies:             { tab: '#F0D8FF', border: '#9050C8', icon: '#480878' },
-  songs:              { tab: '#FFD8EC', border: '#E05080', icon: '#700030' },
-  professions:        { tab: '#FFF0D0', border: '#D09030', icon: '#604808' },
-  food_dishes:        { tab: '#FFE5D0', border: '#E07840', icon: '#702010' },
-  historical_figures:      { tab: '#E8F0D8', border: '#70A030', icon: '#305010' },
-  music_artists:      { tab: '#FFF0E0', border: '#F97316', icon: '#7A3000' },
-  fruits_vegetables:  { tab: '#E8FFE0', border: '#50B840', icon: '#205010' },
-};
+// Category colors derived from shared palette
+const CATEGORY_COLORS: Record<CategoryType, { tab: string; border: string; icon: string }> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => [k, { tab: v.tab, border: v.border, icon: v.icon }])
+) as Record<CategoryType, { tab: string; border: string; icon: string }>;
 
 const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
-  names:              <User size={13} color="#7A5000" strokeWidth={2.5} />,
-  places:             <MapPin size={13} color="#106030" strokeWidth={2.5} />,
-  animal:             <Cat size={13} color="#801818" strokeWidth={2.5} />,
-  thing:              <Box size={13} color="#183880" strokeWidth={2.5} />,
-  sports_games:       <Gamepad2 size={13} color="#381880" strokeWidth={2.5} />,
-  brands:             <ShoppingBag size={13} color="#680050" strokeWidth={2.5} />,
-  health_issues:      <HeartPulse size={13} color="#702010" strokeWidth={2.5} />,
-  countries:          <Globe size={13} color="#084870" strokeWidth={2.5} />,
-  movies:             <Film size={13} color="#480878" strokeWidth={2.5} />,
-  songs:              <Music size={13} color="#700030" strokeWidth={2.5} />,
-  professions:        <Briefcase size={13} color="#604808" strokeWidth={2.5} />,
-  food_dishes:        <Utensils size={13} color="#702010" strokeWidth={2.5} />,
-  historical_figures:      <Landmark size={13} color="#305010" strokeWidth={2.5} />,
-  music_artists:      <Music size={13} color="#7A3000" strokeWidth={2.5} />,
-  fruits_vegetables:  <Apple size={13} color="#205010" strokeWidth={2.5} />,
+  names:              <User size={13} color={CAT_COLORS.names.icon} strokeWidth={2.5} />,
+  places:             <MapPin size={13} color={CAT_COLORS.places.icon} strokeWidth={2.5} />,
+  animal:             <Cat size={13} color={CAT_COLORS.animal.icon} strokeWidth={2.5} />,
+  thing:              <Box size={13} color={CAT_COLORS.thing.icon} strokeWidth={2.5} />,
+  sports_games:       <Gamepad2 size={13} color={CAT_COLORS.sports_games.icon} strokeWidth={2.5} />,
+  brands:             <ShoppingBag size={13} color={CAT_COLORS.brands.icon} strokeWidth={2.5} />,
+  health_issues:      <HeartPulse size={13} color={CAT_COLORS.health_issues.icon} strokeWidth={2.5} />,
+  countries:          <Globe size={13} color={CAT_COLORS.countries.icon} strokeWidth={2.5} />,
+  movies:             <Film size={13} color={CAT_COLORS.movies.icon} strokeWidth={2.5} />,
+  songs:              <Music size={13} color={CAT_COLORS.songs.icon} strokeWidth={2.5} />,
+  professions:        <Briefcase size={13} color={CAT_COLORS.professions.icon} strokeWidth={2.5} />,
+  food_dishes:        <Utensils size={13} color={CAT_COLORS.food_dishes.icon} strokeWidth={2.5} />,
+  historical_figures: <Landmark size={13} color={CAT_COLORS.historical_figures.icon} strokeWidth={2.5} />,
+  music_artists:      <Music size={13} color={CAT_COLORS.music_artists.icon} strokeWidth={2.5} />,
+  fruits_vegetables:  <Apple size={13} color={CAT_COLORS.fruits_vegetables.icon} strokeWidth={2.5} />,
 };
 
 export default function LobbyScreen() {

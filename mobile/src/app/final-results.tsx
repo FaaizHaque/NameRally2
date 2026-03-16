@@ -24,40 +24,29 @@ import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { calculateStars, didPassLevel } from '@/lib/level-types';
 import { getCategoryName } from '@/lib/word-validation';
 import type { LevelData } from '@/lib/level-types';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
-  names: <User size={16} color="#8B7A10" />,
-  places: <MapPin size={16} color="#2A6640" />,
-  animal: <Cat size={16} color="#882020" />,
-  thing: <Box size={16} color="#205880" />,
-  sports_games: <Gamepad2 size={16} color="#204080" />,
-  brands: <ShoppingBag size={16} color="#602880" />,
-  health_issues: <HeartPulse size={16} color="#882010" />,
-  countries: <Globe size={16} color="#183070" />,
-  movies: <Film size={16} color="#402880" />,
-  songs: <Music size={16} color="#882060" />,
-  professions: <Briefcase size={16} color="#705010" />,
-  food_dishes: <Utensils size={16} color="#882010" />,
-  historical_figures: <Landmark size={16} color="#604010" />,
-  music_artists: <Music size={16} color="#7A3000" />,
-  fruits_vegetables: <Apple size={16} color="#205010" />,
+  names:              <User size={16} color={CAT_COLORS.names.icon} />,
+  places:             <MapPin size={16} color={CAT_COLORS.places.icon} />,
+  animal:             <Cat size={16} color={CAT_COLORS.animal.icon} />,
+  thing:              <Box size={16} color={CAT_COLORS.thing.icon} />,
+  sports_games:       <Gamepad2 size={16} color={CAT_COLORS.sports_games.icon} />,
+  brands:             <ShoppingBag size={16} color={CAT_COLORS.brands.icon} />,
+  health_issues:      <HeartPulse size={16} color={CAT_COLORS.health_issues.icon} />,
+  countries:          <Globe size={16} color={CAT_COLORS.countries.icon} />,
+  movies:             <Film size={16} color={CAT_COLORS.movies.icon} />,
+  songs:              <Music size={16} color={CAT_COLORS.songs.icon} />,
+  professions:        <Briefcase size={16} color={CAT_COLORS.professions.icon} />,
+  food_dishes:        <Utensils size={16} color={CAT_COLORS.food_dishes.icon} />,
+  historical_figures: <Landmark size={16} color={CAT_COLORS.historical_figures.icon} />,
+  music_artists:      <Music size={16} color={CAT_COLORS.music_artists.icon} />,
+  fruits_vegetables:  <Apple size={16} color={CAT_COLORS.fruits_vegetables.icon} />,
 };
 
-const MODERN_CAT_COLORS: Record<string, { bg: string; border: string; icon: string }> = {
-  names: { bg: '#1a3a6e', border: 'rgba(80,160,255,0.6)', icon: '#90c0ff' },
-  places: { bg: '#0f2a1e', border: '#10b981', icon: '#6ee7b7' },
-  animal: { bg: '#2a1020', border: '#f472b6', icon: '#f9a8d4' },
-  thing: { bg: '#1a1f3a', border: '#3b82f6', icon: '#93c5fd' },
-  sports_games: { bg: '#1a2240', border: '#4090e8', icon: '#90c0ff' },
-  brands: { bg: '#2a1040', border: '#a855f7', icon: '#d8b4fe' },
-  health_issues: { bg: '#2a1010', border: '#ef4444', icon: '#fca5a5' },
-  countries: { bg: '#0f1e38', border: '#2563eb', icon: '#93c5fd' },
-  movies: { bg: '#1e1040', border: '#8b5cf6', icon: '#c4b5fd' },
-  songs: { bg: '#2a1030', border: '#ec4899', icon: '#f9a8d4' },
-  professions: { bg: '#2a2010', border: '#f59e0b', icon: '#fcd34d' },
-  food_dishes: { bg: '#2a1808', border: '#f97316', icon: '#fdba74' },
-  historical_figures: { bg: '#241a08', border: '#d97706', icon: '#fde68a' },
-};
+const MODERN_CAT_COLORS: Record<string, { bg: string; border: string; icon: string }> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => [k, { bg: v.darkBg, border: v.darkBorder, icon: v.darkAccent }])
+);
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
@@ -346,8 +335,8 @@ export default function FinalResultsScreen() {
                               {isEmpty ? 'No answer' : answer}
                             </Text>
                             {hasBonus && (
-                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: '#f59e0b' }}>
-                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '900' }}>ABC</Text>
+                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: '#f59e0b' }}>
+                                <Zap size={9} color="#fcd34d" fill="#fcd34d" strokeWidth={2} />
                                 <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
                               </View>
                             )}
@@ -392,11 +381,26 @@ export default function FinalResultsScreen() {
                       {i > 0 && <View style={{ width: 1, backgroundColor: 'rgba(80,160,255,0.15)' }} />}
                       <View style={{ alignItems: 'center', flex: 1 }}>
                         <Text style={{ color: '#4090e8', fontSize: 9, marginBottom: 4, fontWeight: '700', letterSpacing: 1 }}>{item.label}</Text>
-                        <Text style={{ color: '#ffffff', fontWeight: '900', fontSize: item.small ? 11 : 16 }} numberOfLines={1}>{item.value}</Text>
+                        <Text style={{ color: '#ffffff', fontWeight: '900', fontSize: 16 }} numberOfLines={1}>{item.value}</Text>
                       </View>
                     </React.Fragment>
                   ))}
                 </View>
+
+                {/* Constraint row */}
+                {currentLevel.constraint?.type !== 'none' && (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 8,
+                    backgroundColor: '#0e1e42', borderRadius: 12, padding: 12,
+                    borderWidth: 2, borderColor: '#6366f1',
+                    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 8,
+                  }}>
+                    <View style={{ backgroundColor: '#6366f1', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                      <Text style={{ color: '#ffffff', fontSize: 9, fontWeight: '900', letterSpacing: 1 }}>RULE</Text>
+                    </View>
+                    <Text style={{ color: '#c7d2fe', fontSize: 13, fontWeight: '700', flex: 1 }}>{currentLevel.constraint.description}</Text>
+                  </View>
+                )}
 
                 {/* Progress card */}
                 <LinearGradient

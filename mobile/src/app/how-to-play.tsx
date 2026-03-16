@@ -355,10 +355,10 @@ function CategoriesContent() {
       description: 'A job, career, or occupation. Doctor, pilot, chef — any line of work.',
     },
     {
-      name: 'History',
+      name: 'Historical Figures',
       emoji: '📜',
       color: '#D4A84B',
-      description: 'A historical figure, event, or era. Must be a real person or moment in time.',
+      description: 'A real historical person — explorer, ruler, scientist, or world leader.',
     },
   ];
 
