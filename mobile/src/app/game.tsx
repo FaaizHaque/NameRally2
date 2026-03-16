@@ -113,12 +113,12 @@ async function playTick() {
 // ─── Category input row (full-width card on notebook paper) ─────────────────
 const CategoryRow = React.memo(({
   category, index, answer, letter, fontsLoaded,
-  onChangeText, usedHint, canUseHint, isLoadingHint, onHint, isSinglePlayer, inputDisabled,
+  onChangeText, usedHint, canUseHint, isLoadingHint, onHint, isSinglePlayer, inputDisabled, isMultiplayer,
 }: {
   category: CategoryType; index: number; answer: string; letter: string; fontsLoaded: boolean;
   onChangeText: (t: string) => void; usedHint?: boolean;
   canUseHint?: boolean; isLoadingHint?: boolean;
-  onHint?: () => void; isSinglePlayer?: boolean; inputDisabled?: boolean;
+  onHint?: () => void; isSinglePlayer?: boolean; inputDisabled?: boolean; isMultiplayer?: boolean;
 }) => {
   const c = CATEGORY_COLORS[category] || CATEGORY_COLORS.thing;
   const hasAnswer = answer.trim().length > letter.length;
@@ -196,7 +196,7 @@ const CategoryRow = React.memo(({
     ],
   }));
 
-  // Bounce when answer becomes valid
+  // Bounce when answer becomes valid (visual + haptic only — sound plays on blur)
   const scaleAnim = useSharedValue(1);
   const glowAnim  = useSharedValue(0);
   const prevComplete = useRef(false);
@@ -208,7 +208,6 @@ const CategoryRow = React.memo(({
       );
       glowAnim.value = withSequence(withTiming(1, { duration: 200 }), withTiming(0, { duration: 600 }));
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      Sounds.answerComplete();
     }
     prevComplete.current = isComplete;
   }, [isComplete]);
@@ -307,11 +306,21 @@ const CategoryRow = React.memo(({
                 const now = Date.now();
                 if (now - lastTypeSoundAt.current > 110) {
                   lastTypeSoundAt.current = now;
-                  Sounds.typing();
+                  if (isMultiplayer) {
+                    Sounds.pencilTyping();
+                  } else {
+                    Sounds.typing();
+                  }
                 }
               }}
               onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
+              onBlur={() => {
+                setIsFocused(false);
+                // Play the "answer done" chime when leaving a completed field
+                if (isComplete) {
+                  Sounds.answerComplete();
+                }
+              }}
               autoCapitalize="characters"
               autoCorrect={false}
               editable={!usedHint && !inputDisabled}
@@ -732,7 +741,7 @@ export default function GameScreen() {
   useEffect(() => {
     if (session?.status === 'playing' && prevStatusRef.current !== 'playing') {
       Sounds.roundStart();
-      Sounds.startBackground('game');
+      Sounds.startBackground(gameMode === 'multiplayer' ? 'game_mp' : 'game');
     }
     prevStatusRef.current = session?.status;
   }, [session?.status]);
@@ -1579,6 +1588,7 @@ export default function GameScreen() {
                   isLoadingHint={isLoad}
                   onHint={() => handleUseHint(cat, i)}
                   isSinglePlayer={gameMode === 'single'}
+                  isMultiplayer={gameMode === 'multiplayer'}
                   inputDisabled={roundInputDisabled}
                 />
               );

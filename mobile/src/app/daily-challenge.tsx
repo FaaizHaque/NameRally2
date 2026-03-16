@@ -219,7 +219,7 @@ export default function DailyChallengeScreen() {
         setAnswers(initialAnswers);
         setGameStartTime(Date.now());
         setPhase('playing');
-        Sounds.startBackground('game');
+        Sounds.startBackground('daily_challenge');
       } catch (err) {
         console.error('Error loading challenge:', err);
       }
