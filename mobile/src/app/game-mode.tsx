@@ -207,14 +207,14 @@ export default function GameModeScreen() {
                               </Text>
                             </View>
                             <View>
-                              <Text style={{ color: 'rgba(160,200,255,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                              <Text style={{ color: '#90c0ff', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
                                 Up next
                               </Text>
                               <Text style={{ color: '#fff', fontSize: 14, fontWeight: '900' }}>
                                 Level {levelProgress.unlockedLevel}
                               </Text>
                             </View>
-                            <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                            <View style={{ marginLeft: 'auto' }}>
                               <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
                             </View>
                           </>
