@@ -387,9 +387,33 @@ export default function GameScreen() {
   const [roundInputDisabled, setRoundInputDisabled] = useState(false);
   const roundEndScheduled = useRef(false);
 
-  // Novelty popup state (shows new features once)
+  // Novelty popup state — persisted to AsyncStorage so each feature is announced exactly once
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
   const shownNovelties = useRef<Set<string>>(new Set());
+  const noveltiesLoaded = useRef(false);
+
+  // Load persisted seen-novelties from AsyncStorage once
+  useEffect(() => {
+    AsyncStorage.getItem('npat_seen_novelties').then((raw) => {
+      if (raw) {
+        try {
+          const arr: string[] = JSON.parse(raw);
+          arr.forEach((k) => shownNovelties.current.add(k));
+        } catch { /* ignore corrupt data */ }
+      }
+      noveltiesLoaded.current = true;
+    });
+  }, []);
+
+  const markNoveltyShown = (key: string) => {
+    shownNovelties.current.add(key);
+    AsyncStorage.getItem('npat_seen_novelties').then((raw) => {
+      const existing: string[] = raw ? JSON.parse(raw) : [];
+      if (!existing.includes(key)) {
+        AsyncStorage.setItem('npat_seen_novelties', JSON.stringify([...existing, key]));
+      }
+    }).catch(() => {});
+  };
 
   // Track keyboard to control STOP button visibility
   useEffect(() => {
@@ -398,54 +422,67 @@ export default function GameScreen() {
     return () => { show.remove(); hide.remove(); };
   }, []);
 
-  // Show novelty popup when level starts (new categories, constraints, timer changes)
+  // Show novelty popup when level starts — once ever per feature, requires tap to dismiss
   // Only in single player mode — multiplayer has no level progression
   useEffect(() => {
     if (!currentLevel || gameMode !== 'single') return;
-
-    const levelNum = currentLevel.level;
-
-    // Check for new category
-    const newCategoryKey = `novelty_category_${levelNum}`;
-    if (!shownNovelties.current.has(newCategoryKey) && levelNum >= 2 && levelNum <= 11) {
-      const categoryOrder = ['sports_games', 'brands', 'countries', 'food_dishes', 'professions', 'movies', 'songs', 'health_issues', 'historical_figures', 'fruits_vegetables'];
-      const newCat = categoryOrder[levelNum - 2];
-      const catName = getCategoryName(newCat as CategoryType);
-      shownNovelties.current.add(newCategoryKey);
-      setNoveltyPopup({
-        type: 'category',
-        title: '🌟 New Category!',
-        message: `Unlock **${catName}**`,
-        icon: <Sparkles size={32} color="#FCD34D" strokeWidth={2} />,
-      });
-      setTimeout(() => setNoveltyPopup(null), 2500);
-      return;
+    if (!noveltiesLoaded.current) {
+      // Retry after a short delay to allow AsyncStorage to load
+      const t = setTimeout(() => {
+        // Re-trigger by checking current level again (deps haven't changed so we force via flag)
+        if (noveltiesLoaded.current) checkNovelty();
+      }, 300);
+      return () => clearTimeout(t);
     }
+    checkNovelty();
 
-    // Check for new constraint
-    if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
-      const constraintKey = `novelty_constraint_${currentLevel.constraint.type}_${levelNum}`;
-      if (!shownNovelties.current.has(constraintKey)) {
-        const constraintNames: Record<string, string> = {
-          min_word_length: '4+ Letter Words Only',
-          max_word_length: 'Short Words Only',
-          ends_with_letter: 'Ends With Letter',
-          double_letters: 'Double Letters',
-          no_repeat_letters: 'No Repeating Letters',
-          no_common_words: 'Avoid Common Words',
-          combo: 'Multiple Constraints!',
-          survival: 'One Wrong = Fail!',
-          time_pressure: 'Time Pressure!',
-        };
-        const constraintName = constraintNames[currentLevel.constraint.type] || currentLevel.constraint.type;
-        shownNovelties.current.add(constraintKey);
-        setNoveltyPopup({
-          type: 'constraint',
-          title: '⚡ New Challenge!',
-          message: constraintName,
-          icon: <AlertTriangle size={32} color="#FF6B6B" strokeWidth={2} />,
-        });
-        setTimeout(() => setNoveltyPopup(null), 2500);
+    function checkNovelty() {
+      if (!currentLevel) return;
+      const levelNum = currentLevel.level;
+
+      // Check for new category (key: category name, fires once ever)
+      if (levelNum >= 2 && levelNum <= 11) {
+        const categoryOrder = ['sports_games', 'brands', 'countries', 'food_dishes', 'professions', 'movies', 'songs', 'health_issues', 'historical_figures', 'fruits_vegetables'];
+        const newCat = categoryOrder[levelNum - 2];
+        const catKey = `novelty_cat_${newCat}`;
+        if (newCat && !shownNovelties.current.has(catKey)) {
+          const catName = getCategoryName(newCat as CategoryType);
+          markNoveltyShown(catKey);
+          setNoveltyPopup({
+            type: 'category',
+            title: 'New Category Unlocked!',
+            message: `${catName} has been added to your categories`,
+            icon: <Sparkles size={36} color="#FCD34D" strokeWidth={2} />,
+          });
+          return;
+        }
+      }
+
+      // Check for new constraint type (key: constraint type, fires once ever)
+      if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
+        const cType = currentLevel.constraint.type;
+        const constraintKey = `novelty_constraint_${cType}`;
+        if (!shownNovelties.current.has(constraintKey)) {
+          const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
+            min_word_length:   { title: 'New Rule: Long Words',       message: 'Answers must be 4+ letters long' },
+            max_word_length:   { title: 'New Rule: Short Words',      message: 'Answers must be short — keep it brief!' },
+            ends_with_letter:  { title: 'New Rule: Ending Letter',    message: 'Each answer must end with a specific letter' },
+            double_letters:    { title: 'New Rule: Double Letters',   message: 'Answers must contain double letters (ee, ll, ss…)' },
+            no_repeat_letters: { title: 'New Rule: No Repeats',       message: 'No letter can appear more than once in your answer' },
+            no_common_words:   { title: 'New Rule: No Common Words',  message: 'Avoid obvious, common answers — get creative!' },
+            combo:             { title: 'New Rule: Multi-Constraint', message: 'Multiple rules apply at the same time' },
+            survival:          { title: 'New Rule: Survival Mode',    message: 'One invalid answer ends the level instantly' },
+            time_pressure:     { title: 'New Rule: Time Pressure',    message: 'The clock is tighter — think fast!' },
+          };
+          const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
+          markNoveltyShown(constraintKey);
+          setNoveltyPopup({
+            type: 'constraint',
+            title: info.title,
+            message: info.message,
+            icon: <AlertTriangle size={36} color="#a78bfa" strokeWidth={2} />,
+          });
+        }
       }
     }
   }, [currentLevel?.level, currentLevel?.constraint?.type]);
@@ -962,7 +999,7 @@ export default function GameScreen() {
             {/* Letter display */}
             <View style={{ alignItems: 'center', paddingBottom: 14 }}>
               <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
-                Fill Out Words Starting With:
+                Fill Out Words Starting With
               </Text>
               <View style={{
                 width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
@@ -997,28 +1034,28 @@ export default function GameScreen() {
           </View>
 
           {/* Stars row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 }}>
-            <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
-            <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '700' }}>{levelProgress.totalStars}</Text>
-            <Text style={{ color: 'rgba(253,211,77,0.35)', fontSize: 12 }}>|</Text>
-            <Lightbulb size={12} color="rgba(253,211,77,0.55)" strokeWidth={1.5} />
-            <Text style={{ color: 'rgba(253,211,77,0.55)', fontSize: 12, fontWeight: '600' }}>hint = {HINT_COST}★</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 }}>
+            <Star size={16} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+            <Text style={{ color: '#FCD34D', fontSize: 15, fontWeight: '800' }}>{levelProgress.totalStars}</Text>
+            <Text style={{ color: 'rgba(253,211,77,0.4)', fontSize: 14 }}>|</Text>
+            <Lightbulb size={15} color="rgba(253,211,77,0.65)" strokeWidth={1.5} />
+            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint = {HINT_COST}★</Text>
           </View>
 
           {/* Constraint banner */}
           {currentLevel.constraint?.type !== 'none' && (
             <Animated.View entering={FadeInDown.duration(350).delay(100)} style={{
-              flexDirection: 'row', alignItems: 'center', gap: 8,
+              flexDirection: 'row', alignItems: 'center', gap: 10,
               marginHorizontal: 14, marginTop: 6, marginBottom: 2,
               backgroundColor: '#0e1e42',
-              paddingHorizontal: 14, paddingVertical: 10,
+              paddingHorizontal: 16, paddingVertical: 12,
               borderRadius: 10, borderWidth: 2, borderColor: '#6366f1',
-              shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 8,
+              shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
             }}>
-              <View style={{ backgroundColor: '#6366f1', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-                <Text style={{ color: '#ffffff', fontSize: 9, fontWeight: '900', letterSpacing: 1 }}>RULE</Text>
+              <View style={{ backgroundColor: '#6366f1', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
+                <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '900', letterSpacing: 1 }}>RULE</Text>
               </View>
-              <Text style={{ color: '#c7d2fe', fontSize: 14, fontWeight: '700', flex: 1 }}>{currentLevel.constraint.description}</Text>
+              <Text style={{ color: '#c7d2fe', fontSize: 16, fontWeight: '700', flex: 1 }}>{currentLevel.constraint.description}</Text>
             </Animated.View>
           )}
 
@@ -1794,24 +1831,44 @@ export default function GameScreen() {
         </Animated.View>
       )}
 
-      {/* ═══ NOVELTY POPUP (New Features) ═══ */}
+      {/* ═══ NOVELTY POPUP (New Features — shown once ever, tap to dismiss) ═══ */}
       {noveltyPopup && (
         <Modal visible={true} transparent animationType="fade">
-          <View style={[s.backdrop, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Pressable
+            style={[s.backdrop, { justifyContent: 'center', alignItems: 'center' }]}
+            onPress={() => setNoveltyPopup(null)}
+          >
             <Animated.View entering={ZoomIn.springify()}>
-              <View style={[s.modalCard, { maxWidth: 280 }]}>
-                <View style={{ alignItems: 'center', marginBottom: 12 }}>
+              <View style={[s.modalCard, { maxWidth: 300, alignItems: 'center' }]}>
+                <View style={{
+                  width: 72, height: 72, borderRadius: 36,
+                  backgroundColor: noveltyPopup.type === 'category' ? 'rgba(253,211,77,0.15)' : 'rgba(167,139,250,0.15)',
+                  alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 14,
+                  borderWidth: 2,
+                  borderColor: noveltyPopup.type === 'category' ? 'rgba(253,211,77,0.4)' : 'rgba(167,139,250,0.4)',
+                }}>
                   {noveltyPopup.icon}
                 </View>
-                <Text style={[s.modalTitle, { fontSize: 22, marginBottom: 10 }]}>
+                <Text style={[s.modalTitle, { fontSize: 19, marginBottom: 8, textAlign: 'center' }]}>
                   {noveltyPopup.title}
                 </Text>
-                <Text style={[s.modalBody, { fontSize: 15 }]}>
+                <Text style={[s.modalBody, { fontSize: 14, textAlign: 'center', marginBottom: 18 }]}>
                   {noveltyPopup.message}
                 </Text>
+                <Pressable
+                  onPress={() => setNoveltyPopup(null)}
+                  style={({ pressed }) => ({
+                    backgroundColor: noveltyPopup.type === 'category' ? '#4090e8' : '#6366f1',
+                    borderRadius: 10, paddingVertical: 11, paddingHorizontal: 28,
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Got it!</Text>
+                </Pressable>
               </View>
             </Animated.View>
-          </View>
+          </Pressable>
         </Modal>
       )}
     </View>

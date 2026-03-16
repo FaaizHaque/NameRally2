@@ -138,27 +138,6 @@ export default function GameModeScreen() {
                   borderTopLeftRadius: 20, borderTopRightRadius: 20,
                 }} />
 
-                {/* Completed Levels mini button — top right corner */}
-                {completedCount > 0 && (
-                  <TouchableOpacity
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      handleCompletedLevels();
-                    }}
-                    style={{
-                      position: 'absolute', top: 12, right: 12, zIndex: 10,
-                      flexDirection: 'row', alignItems: 'center', gap: 5,
-                      backgroundColor: 'rgba(16,185,129,0.18)',
-                      borderWidth: 1.5, borderColor: 'rgba(16,185,129,0.5)',
-                      borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
-                    }}
-                  >
-                    <Trophy size={12} color="#34d399" strokeWidth={2} />
-                    <Text style={{ color: '#34d399', fontSize: 11, fontWeight: '800' }}>
-                      {completedCount}
-                    </Text>
-                  </TouchableOpacity>
-                )}
 
                 {/* Top row */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -228,14 +207,14 @@ export default function GameModeScreen() {
                               </Text>
                             </View>
                             <View>
-                              <Text style={{ color: 'rgba(160,200,255,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                              <Text style={{ color: '#90c0ff', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
                                 Up next
                               </Text>
                               <Text style={{ color: '#fff', fontSize: 14, fontWeight: '900' }}>
                                 Level {levelProgress.unlockedLevel}
                               </Text>
                             </View>
-                            <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                            <View style={{ marginLeft: 'auto' }}>
                               <Text style={{ color: '#fff', fontSize: 22 }}>›</Text>
                             </View>
                           </>
@@ -251,6 +230,38 @@ export default function GameModeScreen() {
                       </Animated.View>
                     )}
                   </View>
+
+                  {/* Completed levels tab — mirrors "Up next" style */}
+                  {completedCount > 0 && (
+                    <TouchableOpacity
+                      onPress={(e) => { e.stopPropagation(); handleCompletedLevels(); }}
+                      style={{
+                        flexDirection: 'row', alignItems: 'center', gap: 10,
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        borderRadius: 11, paddingHorizontal: 12, paddingVertical: 9,
+                        borderWidth: 1.5, borderColor: 'rgba(16,185,129,0.3)',
+                      }}
+                    >
+                      <View style={{
+                        width: 36, height: 36, borderRadius: 8,
+                        backgroundColor: 'rgba(16,185,129,0.2)',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Trophy size={18} color="#34d399" strokeWidth={2} />
+                      </View>
+                      <View>
+                        <Text style={{ color: 'rgba(52,211,153,0.55)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                          Completed
+                        </Text>
+                        <Text style={{ color: '#34d399', fontSize: 14, fontWeight: '900' }}>
+                          {completedCount} level{completedCount !== 1 ? 's' : ''}
+                        </Text>
+                      </View>
+                      <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                        <Text style={{ color: '#34d399', fontSize: 22 }}>›</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </LinearGradient>
             </TouchableOpacity>

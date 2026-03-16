@@ -837,6 +837,9 @@ export const getHintAsync = async (
     if (!hint.toUpperCase().startsWith(letterUpper)) {
       return false;
     }
+    if (isCategoryName(hint, category)) {
+      return false;
+    }
     return passesConstraint(hint);
   };
 

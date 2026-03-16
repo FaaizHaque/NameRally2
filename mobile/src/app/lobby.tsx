@@ -102,10 +102,10 @@ export default function LobbyScreen() {
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [session?.id]);
 
-  // Start game background music when lobby loads
+  // Start lobby background music (calm home track) when lobby loads
   useEffect(() => {
     if (session) {
-      Sounds.startBackground('game');
+      Sounds.startBackground('home');
     }
   }, [session]);
 
