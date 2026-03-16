@@ -84,6 +84,7 @@ export const Sounds = {
   roundStart:   () => playSound(S.ROUND_START, 0.28),
   answerComplete: () => playSound(S.ANSWER_DONE, 0.22),
   timerWarning: () => playSound(S.TIMER_TICK, 0.18),
+  timerTick:    () => playSound(S.TIMER_TICK, 0.15),
   roundEnd:     () => playSound(S.ROUND_END, 0.22),
   success:      () => playSound(S.SUCCESS, 0.32),
   fail:         () => playSound(S.FAIL, 0.25),

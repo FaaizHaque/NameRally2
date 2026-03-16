@@ -350,6 +350,7 @@ export default function GameScreen() {
   const pollingRef        = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasEndedRound     = useRef(false);
   const prevTimeRef       = useRef<number>(999);
+  const prevStopCountdownRef = useRef<number>(999);
 
   const session           = useGameStore(s => s.session);
   const localAnswers      = useGameStore(s => s.localAnswers);
@@ -751,9 +752,15 @@ export default function GameScreen() {
   useEffect(() => {
     if (!session?.stopRequested || !session?.stopCountdownStart) return;
     const start = session.stopCountdownStart;
+    prevStopCountdownRef.current = 999;
     stopCountdownRef.current = setInterval(() => {
       const remaining = Math.max(0, 5 - Math.floor((Date.now() - start) / 1000));
       setStopCountdown(remaining);
+      // Play tick sound each second during countdown
+      if (remaining < prevStopCountdownRef.current && remaining > 0) {
+        Sounds.timerTick();
+      }
+      prevStopCountdownRef.current = remaining;
       if (remaining === 0 && !hasEndedRound.current) { if (stopCountdownRef.current) clearInterval(stopCountdownRef.current); handleRoundEnd(); }
     }, 100);
     return () => { if (stopCountdownRef.current) clearInterval(stopCountdownRef.current); };
