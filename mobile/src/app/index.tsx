@@ -195,8 +195,8 @@ export default function HomeScreen() {
     const chosenName = username.trim() || 'Guest';
     setCurrentUser({ id: `user_${Date.now()}`, username: chosenName });
     setShowInput(false);
-    // Show how-to-play prompt for new users
-    setShowHowToPlayModal(true);
+    // Show how-to-play prompt for new users with a slight delay
+    setTimeout(() => setShowHowToPlayModal(true), 400);
   };
 
   const handleStartEditName = () => {
