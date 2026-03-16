@@ -310,7 +310,7 @@ interface ConstraintMilestone {
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
   { level: 20, type: 'min_word_length' },       // EASY: 4+ letter words (level 20)
   { level: 35, type: 'max_word_length' },       // EASY: max length limit (level 35)
-  { level: 50, type: 'ends_with_letter' },      // MEDIUM: ends with specific letter (level 50)
+  { level: 75, type: 'ends_with_letter' },      // MEDIUM: ends with specific letter (level 75)
   { level: 70, type: 'double_letters' },        // MEDIUM: words with double letters (level 70)
   { level: 95, type: 'no_repeat_letters' },     // HARD: no repeating letters (level 95)
   { level: 130, type: 'no_common_words' },      // HARD: avoid common words (level 130)
@@ -343,6 +343,53 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
   for (let i = 1; i < noneWeight; i++) pool.push('none');
 
   return pool;
+}
+
+// ============================================
+// ENDS-WITH + START-LETTER CROSS-RESTRICTIONS
+// Some (startLetter, endLetter) pairs are near-impossible for certain categories.
+// E.g. countries starting with A ending with L — no common countries exist.
+// Key: endLetter → { startLetter → restricted categories }
+// ============================================
+
+const START_END_BLOCKED: Record<string, Record<string, CategoryType[]>> = {
+  L: {
+    A: ['countries', 'places'],
+    I: ['countries'],
+    O: ['countries'],
+    U: ['countries'],
+    K: ['countries'],
+    V: ['countries'],
+    E: ['countries'],
+  },
+  D: {
+    A: ['countries'],
+    I: ['countries'],
+    O: ['countries'],
+    U: ['countries'],
+    K: ['countries'],
+  },
+  M: {
+    A: ['countries'],
+    I: ['countries'],
+    K: ['countries'],
+    V: ['countries'],
+  },
+};
+
+/**
+ * Returns true if the given endLetter is viable for ALL categories with the given startLetter.
+ */
+function isEndLetterViable(
+  startLetter: string,
+  endLetter: string,
+  categories: CategoryType[]
+): boolean {
+  const byEnd = START_END_BLOCKED[endLetter];
+  if (!byEnd) return true;
+  const restricted = byEnd[startLetter];
+  if (!restricted) return true;
+  return !categories.some((cat) => restricted.includes(cat));
 }
 
 // ============================================
@@ -720,7 +767,8 @@ function createSingleConstraint(
   level: number,
   letter: string,
   rng: SeededRandom,
-  lettersPerCategory?: string[]
+  lettersPerCategory?: string[],
+  categories?: CategoryType[]
 ): LevelConstraint {
   switch (type) {
     case 'none':
@@ -764,7 +812,17 @@ function createSingleConstraint(
       return { type: 'survival', description: 'One invalid answer = level failed!' };
 
     case 'ends_with_letter': {
-      const endLetter = rng.pick(LETTER_POOLS.endLetters);
+      // Pick an endLetter that doesn't form an impossible combo with the start letter
+      const candidateLetters = [...LETTER_POOLS.endLetters];
+      // Shuffle so selection is still random
+      for (let i = candidateLetters.length - 1; i > 0; i--) {
+        const j = Math.floor(rng.next() * (i + 1));
+        [candidateLetters[i], candidateLetters[j]] = [candidateLetters[j], candidateLetters[i]];
+      }
+      const viableCats = categories ?? [];
+      const endLetter =
+        candidateLetters.find((el) => isEndLetterViable(letter, el, viableCats)) ??
+        candidateLetters[0]!;
       return {
         type: 'ends_with_letter',
         endLetter,
@@ -844,7 +902,8 @@ function selectConstraint(
         level,
         letter,
         rng,
-        lettersPerCategory
+        lettersPerCategory,
+        categories
       );
     }
 
@@ -853,7 +912,7 @@ function selectConstraint(
     const selected = rng.pickMultiple(playable, count);
 
     const comboConstraints = selected.map((t) => {
-      const c = createSingleConstraint(t, level, letter, rng, lettersPerCategory);
+      const c = createSingleConstraint(t, level, letter, rng, lettersPerCategory, categories);
       return { type: c.type, value: c.value, endLetter: c.endLetter };
     });
 
@@ -861,7 +920,7 @@ function selectConstraint(
       if (c.type === 'min_word_length') return `${c.value}+ letters`;
       if (c.type === 'max_word_length') return `${c.value} letters or less`;
       if (c.type === 'ends_with_letter') return `ends with "${c.endLetter}"`;
-      const full = createSingleConstraint(c.type, level, letter, rng, lettersPerCategory);
+      const full = createSingleConstraint(c.type, level, letter, rng, lettersPerCategory, categories);
       return full.description;
     });
 
@@ -872,7 +931,7 @@ function selectConstraint(
     };
   }
 
-  return createSingleConstraint(constraintType, level, letter, rng, lettersPerCategory);
+  return createSingleConstraint(constraintType, level, letter, rng, lettersPerCategory, categories);
 }
 
 // ============================================
