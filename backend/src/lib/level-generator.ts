@@ -28,7 +28,7 @@ export type CategoryType =
   | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'famous_people';
+  | 'historical_figures';
 
 export interface LevelConstraint {
   type:
@@ -175,25 +175,25 @@ const LETTER_POOLS = {
 const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'famous_people', 'countries',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
     'movies', 'songs', 'fruits_vegetables',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'famous_people', 'songs', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'songs', 'fruits_vegetables',
   ],
   Z: [
     'sports_games', 'food_dishes', 'thing', 'health_issues', 'professions',
-    'songs', 'famous_people', 'fruits_vegetables',
+    'songs', 'historical_figures', 'fruits_vegetables',
   ],
   Y: [
-    'health_issues', 'sports_games', 'professions', 'famous_people', 'thing',
+    'health_issues', 'sports_games', 'professions', 'historical_figures', 'thing',
     'brands', 'food_dishes', 'fruits_vegetables',
   ],
-  U: ['health_issues', 'sports_games', 'thing', 'famous_people'],
-  V: ['sports_games', 'health_issues', 'thing', 'famous_people'],
-  K: ['health_issues', 'famous_people', 'thing'],
-  J: ['health_issues', 'sports_games', 'thing', 'famous_people'],
+  U: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
+  V: ['sports_games', 'health_issues', 'thing', 'historical_figures'],
+  K: ['health_issues', 'historical_figures', 'thing'],
+  J: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
   I: ['sports_games', 'thing', 'health_issues'],
   O: ['health_issues', 'sports_games', 'thing'],
   W: ['health_issues'],
@@ -206,37 +206,37 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
 const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   J: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'famous_people', 'health_issues',
+    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Q: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'famous_people', 'health_issues',
+    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   X: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'famous_people', 'health_issues',
+    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Z: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'famous_people', 'health_issues',
+    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Y: [
     'animal', 'thing', 'places', 'brands', 'food_dishes', 'professions',
-    'famous_people', 'health_issues', 'sports_games',
+    'historical_figures', 'health_issues', 'sports_games',
   ],
   U: [
-    'animal', 'thing', 'brands', 'professions', 'famous_people',
+    'animal', 'thing', 'brands', 'professions', 'historical_figures',
     'health_issues', 'sports_games',
   ],
   V: [
-    'animal', 'thing', 'brands', 'professions', 'famous_people',
+    'animal', 'thing', 'brands', 'professions', 'historical_figures',
     'health_issues', 'sports_games',
   ],
-  K: ['thing', 'professions', 'famous_people', 'health_issues', 'sports_games'],
+  K: ['thing', 'professions', 'historical_figures', 'health_issues', 'sports_games'],
   I: ['thing', 'professions', 'sports_games'],
   O: ['thing', 'health_issues', 'sports_games', 'professions'],
 };
@@ -272,7 +272,7 @@ const CATEGORY_MILESTONES: CategoryMilestone[] = [
   { level: 30, category: 'movies' },           // 10 categories from level 30
   { level: 35, category: 'songs' },            // 11 categories from level 35
   { level: 40, category: 'health_issues' },    // 12 categories from level 40
-  { level: 45, category: 'famous_people' },    // 13 categories from level 45
+  { level: 45, category: 'historical_figures' },    // 13 categories from level 45
   { level: 50, category: 'fruits_vegetables' },// 14 categories from level 50
 ];
 
@@ -455,9 +455,8 @@ function getCategoryCount(level: number, rng: SeededRandom): number {
  * Level 100+: ramps to 95% around level 400+.
  */
 function getPassScorePercent(level: number): number {
-  if (level <= 10) return 30;
-  if (level <= 25) return 40;
-  if (level <= 50) return 50;
+  if (level <= 25) return 50;
+  if (level <= 50) return 55;
   if (level <= 100) return 60;
 
   // Smooth curve from level 100+: 60 -> 95 over 300 levels
@@ -883,7 +882,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
   },
   {
@@ -902,7 +901,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
   },
   {
@@ -925,7 +924,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
   },
   {
@@ -948,7 +947,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
     multiLetterMode: true,
   },
@@ -972,7 +971,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
     multiLetterMode: true,
   },
@@ -996,7 +995,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
       'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'famous_people', 'fruits_vegetables',
+      'health_issues', 'historical_figures', 'fruits_vegetables',
     ],
     multiLetterMode: true,
   },

@@ -65,7 +65,7 @@ export type CategoryType =
   | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'famous_people'
+  | 'historical_figures'
   | 'music_artists';
 
 export interface Category {
@@ -89,7 +89,7 @@ export const AVAILABLE_CATEGORIES: Category[] = [
   { id: 'songs', name: 'Songs', icon: 'music' },
   { id: 'professions', name: 'Professions', icon: 'briefcase' },
   { id: 'food_dishes', name: 'Food & Dishes', icon: 'utensils' },
-  { id: 'famous_people', name: 'Famous People', icon: 'landmark' },
+  { id: 'historical_figures', name: 'Historical Figures', icon: 'landmark' },
   { id: 'music_artists', name: 'Music Artists/Bands', icon: 'music-2' },
 ];
 

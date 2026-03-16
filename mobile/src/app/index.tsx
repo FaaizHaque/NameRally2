@@ -159,6 +159,7 @@ export default function HomeScreen() {
     ExpoSplashScreen.hideAsync();
     loadUser();
     loadLevelProgress();
+    Sounds.startBackground('home');
     floatAnim.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2200 }),
@@ -166,6 +167,7 @@ export default function HomeScreen() {
       ),
       -1, true
     );
+    return () => { Sounds.stopBackground(); };
   }, []);
 
   useEffect(() => {
@@ -214,6 +216,7 @@ export default function HomeScreen() {
 
   const handlePlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Sounds.stopBackground();
     Sounds.navigate();
     router.push('/game-mode');
   };
@@ -542,7 +545,7 @@ export default function HomeScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setShowHowToPlayModal(false);
               }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 10, alignItems: 'center' })}
+              style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 14, alignItems: 'center', marginTop: 6 })}
             >
               <Text style={{
                 color: SKETCH_COLORS.inkFaint,

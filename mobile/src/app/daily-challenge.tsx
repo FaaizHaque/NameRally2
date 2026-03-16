@@ -53,46 +53,41 @@ import { validateWithFallback } from '@/lib/word-validation';
 import type { DailyChallenge, DailyChallengeAnswer, DailyChallengeResult } from '@/lib/daily-challenge-types';
 import { calculateAnswerScore, SPEED_BONUS_THRESHOLD_MS, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
 import { supabase, type DbDailyChallengeScore } from '@/lib/supabase';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 
 const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
-  names: <User size={18} color="#D4A84B" />,
-  places: <MapPin size={18} color="#3BA99C" />,
-  animal: <Cat size={18} color="#FF6B6B" />,
-  thing: <Box size={18} color="#6EC4B8" />,
-  sports_games: <Gamepad2 size={18} color="#5B8DEF" />,
-  brands: <ShoppingBag size={18} color="#D874A6" />,
-  health_issues: <HeartPulse size={18} color="#E85555" />,
-  countries: <Globe size={18} color="#3B82F6" />,
-  movies: <Film size={18} color="#8B5CF6" />,
-  songs: <Music size={18} color="#EC4899" />,
-  professions: <Briefcase size={18} color="#F59E0B" />,
-  food_dishes: <Utensils size={18} color="#EF4444" />,
-  famous_people: <Landmark size={18} color="#6366F1" />,
-  music_artists: <Music size={18} color="#F97316" />,
-  fruits_vegetables: <Apple size={18} color="#50B840" />,
+  names:              <User size={18} color={CAT_COLORS.names.accent} />,
+  places:             <MapPin size={18} color={CAT_COLORS.places.accent} />,
+  animal:             <Cat size={18} color={CAT_COLORS.animal.accent} />,
+  thing:              <Box size={18} color={CAT_COLORS.thing.accent} />,
+  sports_games:       <Gamepad2 size={18} color={CAT_COLORS.sports_games.accent} />,
+  brands:             <ShoppingBag size={18} color={CAT_COLORS.brands.accent} />,
+  health_issues:      <HeartPulse size={18} color={CAT_COLORS.health_issues.accent} />,
+  countries:          <Globe size={18} color={CAT_COLORS.countries.accent} />,
+  movies:             <Film size={18} color={CAT_COLORS.movies.accent} />,
+  songs:              <Music size={18} color={CAT_COLORS.songs.accent} />,
+  professions:        <Briefcase size={18} color={CAT_COLORS.professions.accent} />,
+  food_dishes:        <Utensils size={18} color={CAT_COLORS.food_dishes.accent} />,
+  historical_figures: <Landmark size={18} color={CAT_COLORS.historical_figures.accent} />,
+  music_artists:      <Music size={18} color={CAT_COLORS.music_artists.accent} />,
+  fruits_vegetables:  <Apple size={18} color={CAT_COLORS.fruits_vegetables.accent} />,
 };
 
-
-
-const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent: string }> = {
-  names: { bg: 'rgba(212,168,75,0.12)', border: 'rgba(212,168,75,0.25)', accent: '#D4A84B' },
-  places: { bg: 'rgba(59,169,156,0.12)', border: 'rgba(59,169,156,0.25)', accent: '#3BA99C' },
-  animal: { bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.25)', accent: '#FF6B6B' },
-  thing: { bg: 'rgba(110,196,184,0.12)', border: 'rgba(110,196,184,0.25)', accent: '#6EC4B8' },
-  sports_games: { bg: 'rgba(91,141,239,0.12)', border: 'rgba(91,141,239,0.25)', accent: '#5B8DEF' },
-  brands: { bg: 'rgba(216,116,166,0.12)', border: 'rgba(216,116,166,0.25)', accent: '#D874A6' },
-  health_issues: { bg: 'rgba(232,85,85,0.12)', border: 'rgba(232,85,85,0.25)', accent: '#E85555' },
-  countries: { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)', accent: '#3B82F6' },
-  movies: { bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.25)', accent: '#8B5CF6' },
-  songs: { bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.25)', accent: '#EC4899' },
-  professions: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)', accent: '#F59E0B' },
-  food_dishes: { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)', accent: '#EF4444' },
-  famous_people: { bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.25)', accent: '#6366F1' },
-  music_artists: { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.25)', accent: '#F97316' },
-  fruits_vegetables: { bg: 'rgba(80,184,64,0.12)', border: 'rgba(80,184,64,0.25)', accent: '#50B840' },
-};
+const CATEGORY_COLORS: Record<CategoryType, { bg: string; border: string; accent: string }> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => {
+    const hex = v.accent.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return [k, {
+      bg:     `rgba(${r},${g},${b},0.12)`,
+      border: `rgba(${r},${g},${b},0.30)`,
+      accent: v.accent,
+    }];
+  })
+) as Record<CategoryType, { bg: string; border: string; accent: string }>;
 
 const CATEGORY_NAMES: Record<CategoryType, string> = {
   names: 'Names',
@@ -107,7 +102,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   songs: 'Songs',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  famous_people: 'Famous People',
+  historical_figures: 'Historical Figures',
   music_artists: 'Music Artists/Bands',
   fruits_vegetables: 'Fruits & Vegetables',
 };
@@ -142,6 +137,7 @@ export default function DailyChallengeScreen() {
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [history, setHistory] = useState<Array<{ date: string; score: number; correct: number; speedBonuses: number; grid: string }>>([]);
 
   // Game state
   const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
@@ -171,11 +167,9 @@ export default function DailyChallengeScreen() {
         const calcStreak = async (todayDate: string) => {
           let count = 0;
           let d = new Date(todayDate);
-          // Walk backwards through dates
           for (let i = 0; i < 365; i++) {
             const dateStr = d.toISOString().split('T')[0];
-            const key = `daily_challenge_result_${dateStr}`;
-            const stored = await AsyncStorage.getItem(key);
+            const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
             if (!stored) break;
             count++;
             d.setDate(d.getDate() - 1);
@@ -183,11 +177,36 @@ export default function DailyChallengeScreen() {
           setStreak(count);
         };
 
+        // Load past results (last 30 days, excluding today)
+        const loadHistory = async (todayDate: string) => {
+          const items: Array<{ date: string; score: number; correct: number; speedBonuses: number; grid: string }> = [];
+          const today = new Date(todayDate);
+          for (let i = 1; i <= 30 && items.length < 14; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
+            if (stored) {
+              const r: DailyChallengeResult = JSON.parse(stored);
+              const grid = r.answers.map(a => !a.isValid ? '❌' : a.hasSpeedBonus ? '⚡' : '✅').join('');
+              items.push({
+                date: dateStr,
+                score: r.totalScore,
+                correct: r.answers.filter(a => a.isValid).length,
+                speedBonuses: r.answers.filter(a => a.hasSpeedBonus).length,
+                grid,
+              });
+            }
+          }
+          setHistory(items);
+        };
+
         if (storedResult) {
           setResult(JSON.parse(storedResult));
           setPhase('already_completed');
           fetchLeaderboard(challengeData.date);
           calcStreak(challengeData.date);
+          loadHistory(challengeData.date);
           return;
         }
 
@@ -199,7 +218,7 @@ export default function DailyChallengeScreen() {
         setAnswers(initialAnswers);
         setGameStartTime(Date.now());
         setPhase('playing');
-        Sounds.startBackground();
+        Sounds.startBackground('game');
       } catch (err) {
         console.error('Error loading challenge:', err);
       }
@@ -389,6 +408,26 @@ export default function DailyChallengeScreen() {
         d2.setDate(d2.getDate() - 1);
       }
       setStreak(streakCount);
+      // Load past results for the history section
+      const histItems: typeof history = [];
+      const hToday = new Date(challenge.date);
+      for (let i = 1; i <= 30 && histItems.length < 14; i++) {
+        const hd = new Date(hToday);
+        hd.setDate(hToday.getDate() - i);
+        const hDateStr = hd.toISOString().split('T')[0];
+        const hStored = await AsyncStorage.getItem(`daily_challenge_result_${hDateStr}`);
+        if (hStored) {
+          const hr: DailyChallengeResult = JSON.parse(hStored);
+          histItems.push({
+            date: hDateStr,
+            score: hr.totalScore,
+            correct: hr.answers.filter(a => a.isValid).length,
+            speedBonuses: hr.answers.filter(a => a.hasSpeedBonus).length,
+            grid: hr.answers.map(a => !a.isValid ? '❌' : a.hasSpeedBonus ? '⚡' : '✅').join(''),
+          });
+        }
+      }
+      setHistory(histItems);
     } catch (error) {
       console.error('Error submitting challenge:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -639,9 +678,9 @@ export default function DailyChallengeScreen() {
                               {isEmptyAnswer ? 'No answer' : answer.answer}
                             </Text>
                             {answer.hasSpeedBonus && (
-                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: '#f59e0b' }}>
-                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '900' }}>ABC</Text>
-                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
+                              <View style={{ backgroundColor: 'rgba(251,191,36,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: 'rgba(251,191,36,0.5)' }}>
+                                <Zap size={9} color="#fbbf24" fill="#fbbf24" strokeWidth={0} />
+                                <Text style={{ color: '#fbbf24', fontSize: 10, fontWeight: '900' }}>+2</Text>
                               </View>
                             )}
                           </View>
@@ -726,6 +765,44 @@ export default function DailyChallengeScreen() {
                   )}
                 </View>
               </Animated.View>
+
+              {/* Past Results History */}
+              {history.length > 0 && (
+                <Animated.View entering={FadeInUp.duration(400).delay(1000)} style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
+                    <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 }}>Previous Results</Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.15)' }} />
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 8, paddingRight: 4 }}
+                    style={{ flexGrow: 0 }}
+                  >
+                    {history.map((item) => {
+                      const d = new Date(item.date + 'T12:00:00');
+                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      return (
+                        <View
+                          key={item.date}
+                          style={{
+                            backgroundColor: 'rgba(74,222,128,0.07)',
+                            borderRadius: 14, padding: 12, minWidth: 90,
+                            borderWidth: 1, borderColor: 'rgba(74,222,128,0.15)',
+                            alignItems: 'center', gap: 4,
+                          }}
+                        >
+                          <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 }}>{label}</Text>
+                          <Text style={{ color: '#E8FFE8', fontSize: 22, fontWeight: '900', lineHeight: 26 }}>{item.score}</Text>
+                          <Text style={{ color: 'rgba(74,222,128,0.55)', fontSize: 10 }}>{item.correct}/6</Text>
+                          <Text style={{ fontSize: 11, lineHeight: 14 }}>{item.grid}</Text>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </Animated.View>
+              )}
 
               {/* Actions */}
               <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ paddingBottom: insets.bottom + 16 }}>

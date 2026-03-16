@@ -274,7 +274,7 @@ function BasicsContent() {
           Start with basics like Names, Places, Animals, Things. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Famous People', 'History'].map((cat) => (
+          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Historical Figures'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -355,10 +355,10 @@ function CategoriesContent() {
       description: 'A job, career, or occupation. Doctor, pilot, chef — any line of work.',
     },
     {
-      name: 'History',
+      name: 'Historical Figures',
       emoji: '📜',
       color: '#D4A84B',
-      description: 'A historical figure, event, or era. Must be a real person or moment in time.',
+      description: 'A real historical person — explorer, ruler, scientist, or world leader.',
     },
   ];
 

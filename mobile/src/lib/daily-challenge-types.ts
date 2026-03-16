@@ -94,15 +94,15 @@ export function generateShareMessage(result: DailyChallengeResult, challenge: Da
     return '✅';
   }).join('');
 
-  return `NPAT Daily Challenge ${result.date}
+  return `NameRally Daily Challenge — ${result.date}
 
 ${grid}
 Letter: ${challenge.letter}
-Score: ${result.totalScore} points
+Score: ${result.totalScore} pts · ${correctCount}/6 correct${speedBonusCount > 0 ? ` · ⚡${speedBonusCount}` : ''}
 Time: ${timeStr}
-${correctCount}/6 correct${speedBonusCount > 0 ? ` | ${speedBonusCount} speed bonus` : ''}
 
-Can you beat my score? Play with code: ${result.shareCode}`;
+Can you beat my score? Download NameRally on the App Store:
+https://apps.apple.com/app/namerally`;
 }
 
 /**

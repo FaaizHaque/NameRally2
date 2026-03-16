@@ -43,44 +43,31 @@ import * as Haptics from 'expo-haptics';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName } from '@/lib/word-validation';
 import { supabase } from '@/lib/supabase';
+import { CAT_COLORS } from '@/lib/category-colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
-  names: <User size={24} color="#D4A84B" />,
-  places: <MapPin size={24} color="#3BA99C" />,
-  animal: <Cat size={24} color="#FF6B6B" />,
-  thing: <Box size={24} color="#6EC4B8" />,
-  sports_games: <Gamepad2 size={24} color="#5B8DEF" />,
-  brands: <ShoppingBag size={24} color="#D874A6" />,
-  health_issues: <HeartPulse size={24} color="#E85555" />,
-  countries: <Globe size={18} color="#3B82F6" />,
-  movies: <Film size={18} color="#8B5CF6" />,
-  songs: <Music size={18} color="#EC4899" />,
-  professions: <Briefcase size={18} color="#F59E0B" />,
-  food_dishes: <Utensils size={18} color="#EF4444" />,
-  famous_people: <Landmark size={24} color="#6366F1" />,
-  music_artists: <Music size={24} color="#F97316" />,
-  fruits_vegetables: <Apple size={24} color="#50B840" />,
+  names:              <User size={24} color={CAT_COLORS.names.accent} />,
+  places:             <MapPin size={24} color={CAT_COLORS.places.accent} />,
+  animal:             <Cat size={24} color={CAT_COLORS.animal.accent} />,
+  thing:              <Box size={24} color={CAT_COLORS.thing.accent} />,
+  sports_games:       <Gamepad2 size={24} color={CAT_COLORS.sports_games.accent} />,
+  brands:             <ShoppingBag size={24} color={CAT_COLORS.brands.accent} />,
+  health_issues:      <HeartPulse size={24} color={CAT_COLORS.health_issues.accent} />,
+  countries:          <Globe size={24} color={CAT_COLORS.countries.accent} />,
+  movies:             <Film size={24} color={CAT_COLORS.movies.accent} />,
+  songs:              <Music size={24} color={CAT_COLORS.songs.accent} />,
+  professions:        <Briefcase size={24} color={CAT_COLORS.professions.accent} />,
+  food_dishes:        <Utensils size={24} color={CAT_COLORS.food_dishes.accent} />,
+  historical_figures: <Landmark size={24} color={CAT_COLORS.historical_figures.accent} />,
+  music_artists:      <Music size={24} color={CAT_COLORS.music_artists.accent} />,
+  fruits_vegetables:  <Apple size={24} color={CAT_COLORS.fruits_vegetables.accent} />,
 };
 
-const CATEGORY_COLORS: Record<CategoryType, string> = {
-  names: '#D4A84B',
-  places: '#3BA99C',
-  animal: '#FF6B6B',
-  thing: '#6EC4B8',
-  sports_games: '#5B8DEF',
-  brands: '#D874A6',
-  health_issues: '#E85555',
-  countries: '#3B82F6',
-  movies: '#8B5CF6',
-  songs: '#EC4899',
-  professions: '#F59E0B',
-  food_dishes: '#EF4444',
-  famous_people: '#6366F1',
-  music_artists: '#F97316',
-  fruits_vegetables: '#50B840',
-};
+const CATEGORY_COLORS: Record<CategoryType, string> = Object.fromEntries(
+  Object.entries(CAT_COLORS).map(([k, v]) => [k, v.accent])
+) as Record<CategoryType, string>;
 
 // Animated score counter component
 const AnimatedScore = ({ targetScore, delay }: { targetScore: number; delay: number }) => {
