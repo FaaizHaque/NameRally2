@@ -3,10 +3,12 @@ import { Audio } from 'expo-av';
 let soundEnabled = true;
 let audioModeSet = false;
 
-// Two separate background tracks: home (calm ambient) and game (upbeat)
+// One background track at a time
 let bgMusic: Audio.Sound | null = null;
 let bgMusicLoading = false;
-let bgMusicType: 'home' | 'game' | null = null;
+let bgMusicType: BackgroundType | null = null;
+
+type BackgroundType = 'home' | 'game' | 'lobby_mp' | 'game_mp' | 'daily_challenge';
 
 async function ensureAudioMode() {
   if (audioModeSet) return;
@@ -51,20 +53,42 @@ async function playSound(source: number, volume: number = 0.3) {
 // ─── Bundled sound assets ──────────────────────────────────────────────────────
 
 const S = {
-  TAP:          require('../assets/sounds/tap.wav'),
-  NAVIGATE:     require('../assets/sounds/navigate.wav'),
-  TYPING:       require('../assets/sounds/typing.wav'),
-  ANSWER_DONE:  require('../assets/sounds/answer_done.wav'),
-  TIMER_TICK:   require('../assets/sounds/timer_tick.wav'),
-  ROUND_START:  require('../assets/sounds/round_start.wav'),
-  ROUND_END:    require('../assets/sounds/round_end.wav'),
-  SUCCESS:      require('../assets/sounds/success.wav'),
-  FAIL:         require('../assets/sounds/fail.wav'),
-  HINT:         require('../assets/sounds/hint.wav'),
-  JOIN:         require('../assets/sounds/join.wav'),
-  LETTER_LOCK:  require('../assets/sounds/letter_lock.wav'),
-  BG_HOME:      require('../assets/sounds/bg_home.mp3'),
-  BG_GAME:      require('../assets/sounds/bg_game.mp3'),
+  TAP:            require('../assets/sounds/tap.wav'),
+  NAVIGATE:       require('../assets/sounds/navigate.wav'),
+  TYPING:         require('../assets/sounds/typing.wav'),
+  PENCIL_TYPING:  require('../assets/sounds/pencil_typing.wav'),
+  ANSWER_DONE:    require('../assets/sounds/answer_done.wav'),
+  TIMER_TICK:     require('../assets/sounds/timer_tick.wav'),
+  ROUND_START:    require('../assets/sounds/round_start.wav'),
+  ROUND_END:      require('../assets/sounds/round_end.wav'),
+  SUCCESS:        require('../assets/sounds/success.wav'),
+  FAIL:           require('../assets/sounds/fail.wav'),
+  HINT:           require('../assets/sounds/hint.wav'),
+  JOIN:           require('../assets/sounds/join.wav'),
+  LETTER_LOCK:    require('../assets/sounds/letter_lock.wav'),
+  // Background tracks — each mode has its own vibe
+  BG_HOME:            require('../assets/sounds/bg_home.mp3'),          // retro arcade chiptune
+  BG_GAME:            require('../assets/sounds/bg_game.mp3'),          // single player lo-fi
+  BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_mp.mp3'),      // multiplayer lobby — chill fireplace
+  BG_GAME_MP:         require('../assets/sounds/bg_game_mp.mp3'),       // multiplayer game — chill but prominent
+  BG_DAILY_CHALLENGE: require('../assets/sounds/bg_daily_challenge.mp3'), // daily challenge — fun, slight pressure
+};
+
+// Volume per background type
+const BG_VOLUME: Record<BackgroundType, number> = {
+  home:            0.32,
+  game:            0.40,
+  lobby_mp:        0.28,  // very chill, subdued
+  game_mp:         0.38,  // chill but present
+  daily_challenge: 0.36,
+};
+
+const BG_SOURCE: Record<BackgroundType, number> = {
+  home:            S.BG_HOME,
+  game:            S.BG_GAME,
+  lobby_mp:        S.BG_LOBBY_MP,
+  game_mp:         S.BG_GAME_MP,
+  daily_challenge: S.BG_DAILY_CHALLENGE,
 };
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -75,22 +99,23 @@ export const Sounds = {
   navigate:     () => playSound(S.NAVIGATE, 0.14),
 
   // Typing in answer field — throttle at the call site
-  typing:       () => playSound(S.TYPING, 0.12),
+  typing:        () => playSound(S.TYPING, 0.12),
+  pencilTyping:  () => playSound(S.PENCIL_TYPING, 0.14),
 
   // Game events
-  roundStart:   () => playSound(S.ROUND_START, 0.28),
+  roundStart:     () => playSound(S.ROUND_START, 0.28),
   answerComplete: () => playSound(S.ANSWER_DONE, 0.22),
-  timerWarning: () => playSound(S.TIMER_TICK, 0.18),
-  timerTick:    () => playSound(S.TIMER_TICK, 0.15),
-  roundEnd:     () => playSound(S.ROUND_END, 0.22),
-  success:      () => playSound(S.SUCCESS, 0.32),
-  fail:         () => playSound(S.FAIL, 0.25),
-  hint:         () => playSound(S.HINT, 0.28),
-  join:         () => playSound(S.JOIN, 0.22),
-  letterLock:   () => playSound(S.LETTER_LOCK, 0.25),
+  timerWarning:   () => playSound(S.TIMER_TICK, 0.18),
+  timerTick:      () => playSound(S.TIMER_TICK, 0.15),
+  roundEnd:       () => playSound(S.ROUND_END, 0.22),
+  success:        () => playSound(S.SUCCESS, 0.32),
+  fail:           () => playSound(S.FAIL, 0.25),
+  hint:           () => playSound(S.HINT, 0.28),
+  join:           () => playSound(S.JOIN, 0.22),
+  letterLock:     () => playSound(S.LETTER_LOCK, 0.25),
 
   // ─── Background music ────────────────────────────────────────────────────────
-  startBackground: async (type: 'home' | 'game' = 'game') => {
+  startBackground: async (type: BackgroundType = 'game') => {
     if (!soundEnabled) return;
     // Already playing the right track — do nothing
     if (bgMusic && bgMusicType === type) return;
@@ -105,11 +130,9 @@ export const Sounds = {
     bgMusicLoading = true;
     try {
       await ensureAudioMode();
-      const source = type === 'home' ? S.BG_HOME : S.BG_GAME;
-      const vol = type === 'home' ? 0.35 : 0.40;
       const { sound } = await Audio.Sound.createAsync(
-        source,
-        { shouldPlay: true, volume: vol, isLooping: true }
+        BG_SOURCE[type],
+        { shouldPlay: true, volume: BG_VOLUME[type], isLooping: true }
       );
       bgMusic = sound;
       bgMusicType = type;
