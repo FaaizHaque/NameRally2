@@ -650,7 +650,7 @@ export default function DailyChallengeScreen() {
                 </Text>
                 <View style={{ backgroundColor: 'rgba(74,222,128,0.05)', borderRadius: 16, padding: 10, borderWidth: 1, borderColor: 'rgba(74,222,128,0.12)' }}>
                   {result?.answers.map((answer, index) => {
-                    const colors = CATEGORY_COLORS[answer.category];
+                    const colors = CATEGORY_COLORS[answer.category] ?? { bg: 'rgba(100,180,255,0.12)', border: 'rgba(100,180,255,0.30)', accent: '#60a5fa' };
                     const isEmptyAnswer = !answer.answer || answer.answer.length <= challenge.letter.length;
 
                     return (
@@ -672,7 +672,7 @@ export default function DailyChallengeScreen() {
                           {CATEGORY_ICONS[answer.category]}
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11 }}>{CATEGORY_NAMES[answer.category]}</Text>
+                          <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 11 }}>{CATEGORY_NAMES[answer.category] ?? answer.category.replace(/_/g, ' ')}</Text>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                             <Text style={{ color: isEmptyAnswer ? 'rgba(255,255,255,0.25)' : '#E8FFE8', fontSize: 15, fontWeight: '700', fontStyle: isEmptyAnswer ? 'italic' : 'normal' }} numberOfLines={1}>
                               {isEmptyAnswer ? 'No answer' : answer.answer}
@@ -959,7 +959,7 @@ export default function DailyChallengeScreen() {
                   const answer = answers[category] || '';
                   const startsWithLetter = answer.trim().toLowerCase().startsWith(challenge.letter.toLowerCase());
                   const hasAnswer = answer.trim().length > challenge.letter.length;
-                  const colors = CATEGORY_COLORS[category];
+                  const colors = CATEGORY_COLORS[category] ?? { bg: 'rgba(100,180,255,0.12)', border: 'rgba(100,180,255,0.30)', accent: '#60a5fa' };
                   const startTime = categoryStartTimes[category];
                   const isWithinSpeedBonus = startTime && (Date.now() - startTime) <= SPEED_BONUS_THRESHOLD_MS;
 
@@ -982,7 +982,7 @@ export default function DailyChallengeScreen() {
                         }}>
                           {CATEGORY_ICONS[category]}
                         </View>
-                        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 14 }}>{CATEGORY_NAMES[category]}</Text>
+                        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 14 }}>{CATEGORY_NAMES[category] ?? category.replace(/_/g, ' ')}</Text>
                         {hasAnswer && startsWithLetter && (
                           <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
                             <Check size={12} color="#4ADE80" strokeWidth={3} />
