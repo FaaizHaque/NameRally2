@@ -162,8 +162,12 @@ function generateDailyChallenge(dateString: string): DailyChallenge {
   const seed = dateToSeed(dateString);
   const rng = new SeededRandom(seed);
 
-  // Always use 'P' for the daily challenge
-  const letter = 'P';
+  // Determine difficulty for this date
+  const difficulty = getDifficultyForDate(dateString);
+
+  // Pick ONE single letter based on difficulty (no two-letter combos)
+  const letterPool = getLetterPoolForDifficulty(difficulty);
+  const letter = rng.pick(letterPool);
 
   // Pick 6 random categories that work with this letter and don't form incompatible pairs
   const shuffledCategories = rng.shuffle(
