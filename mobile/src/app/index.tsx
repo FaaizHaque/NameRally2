@@ -335,10 +335,9 @@ export default function HomeScreen() {
                     this is how others will see you
                   </Text>
                   {/* Play button — always black, Guest name used if no name typed */}
-                  <Pressable
-                    onPress={handleCreateAccount}
-                    style={({ pressed }) => ({
-                      backgroundColor: pressed ? '#2a2a2a' : SKETCH_COLORS.ink,
+                  <Pressable onPress={handleCreateAccount}>
+                    <View style={{
+                      backgroundColor: SKETCH_COLORS.ink,
                       borderRadius: 18, paddingVertical: 20,
                       alignItems: 'center', justifyContent: 'center',
                       flexDirection: 'row', gap: 12,
@@ -349,15 +348,15 @@ export default function HomeScreen() {
                       shadowOffset: { width: 0, height: 8 },
                       shadowOpacity: 0.35,
                       shadowRadius: 16, elevation: 10,
-                    })}
-                  >
-                    <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                    <Text style={{
-                      color: '#fff',
-                      fontWeight: '900', fontSize: 22, letterSpacing: 2,
                     }}>
-                      LET&apos;S PLAY!
-                    </Text>
+                      <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                      <Text style={{
+                        color: '#fff',
+                        fontWeight: '900', fontSize: 22, letterSpacing: 2,
+                      }}>
+                        LET&apos;S PLAY!
+                      </Text>
+                    </View>
                   </Pressable>
                 </Animated.View>
 
@@ -420,11 +419,8 @@ export default function HomeScreen() {
                     entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
                     style={{ opacity: splashDone ? 1 : 0, marginTop: 6, alignItems: 'center' }}
                   >
-                    <Pressable
-                      onPress={handlePlay}
-                      style={({ pressed }) => ({
-                        opacity: pressed ? 0.88 : 1,
-                        transform: [{ scale: pressed ? 0.96 : 1 }],
+                    <Pressable onPress={handlePlay}>
+                      <View style={{
                         alignSelf: 'center',
                         minWidth: '70%',
                         backgroundColor: SKETCH_COLORS.ink,
@@ -435,12 +431,12 @@ export default function HomeScreen() {
                         shadowColor: SKETCH_COLORS.ink,
                         shadowOffset: { width: 0, height: 8 },
                         shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
-                      })}
-                    >
-                      <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
-                        PLAY
-                      </Text>
+                      }}>
+                        <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
+                          PLAY
+                        </Text>
+                      </View>
                     </Pressable>
                   </Animated.View>
                 </View>
@@ -526,18 +522,19 @@ export default function HomeScreen() {
                 setShowHowToPlayModal(false);
                 router.push('/how-to-play');
               }}
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? '#2a2a2a' : SKETCH_COLORS.ink,
+            >
+              <View style={{
+                backgroundColor: SKETCH_COLORS.ink,
                 borderRadius: 14, paddingVertical: 16,
                 alignItems: 'center', marginBottom: 12,
                 shadowColor: SKETCH_COLORS.ink,
                 shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.3, shadowRadius: 12, elevation: 8,
-              })}
-            >
-              <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: 1 }}>
-                Show me how to play
-              </Text>
+              }}>
+                <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: 1 }}>
+                  Show me how to play
+                </Text>
+              </View>
             </Pressable>
             {/* Skip button */}
             <Pressable

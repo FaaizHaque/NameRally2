@@ -126,7 +126,11 @@ export default function MultiplayerOptionsScreen() {
               router.back();
             }}
             style={({ pressed }) => ({
-              backgroundColor: pressed ? SKETCH_COLORS.paperLine : SKETCH_COLORS.paperDark,
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <View style={{
+              backgroundColor: SKETCH_COLORS.paperDark,
               padding: 10,
               borderRadius: 10,
               borderWidth: 1.5,
@@ -135,9 +139,9 @@ export default function MultiplayerOptionsScreen() {
               shadowOffset: { width: 1, height: 2 },
               shadowOpacity: 0.1,
               shadowRadius: 0,
-            })}
-          >
-            <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+            }}>
+              <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+            </View>
           </Pressable>
           <View style={{
             marginLeft: 12,

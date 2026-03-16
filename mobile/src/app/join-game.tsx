@@ -54,14 +54,18 @@ export default function JoinGameScreen() {
             <Pressable
               onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
               style={({ pressed }) => ({
-                backgroundColor: pressed ? SKETCH_COLORS.paperLine : SKETCH_COLORS.paperDark,
+                opacity: pressed ? 0.85 : 1,
+              })}
+            >
+              <View style={{
+                backgroundColor: SKETCH_COLORS.paperDark,
                 padding: 10, borderRadius: 10, borderWidth: 1.5,
                 borderColor: SKETCH_COLORS.paperLine,
                 shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 1, height: 2 },
                 shadowOpacity: 0.1, shadowRadius: 0,
-              })}
-            >
-              <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+              }}>
+                <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+              </View>
             </Pressable>
             {/* Title tag — amber, matching multiplayer theme */}
             <View style={{

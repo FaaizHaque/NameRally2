@@ -294,8 +294,8 @@ function getAvailableCategories(level: number): CategoryType[] {
 
 // ============================================
 // CONSTRAINT INTRODUCTION SCHEDULE
-// No constraints for levels 1-9 (pure category learning)
-// First constraint at level 10, then a new constraint every 5 levels
+// No constraints for levels 1-29 (pure category learning)
+// First constraint at level 30, then gradual introduction
 // ============================================
 
 interface ConstraintMilestone {
@@ -303,22 +303,22 @@ interface ConstraintMilestone {
   type: LevelConstraint['type'];
 }
 
-// Constraints introduced progressively - one new type every 5 levels starting at level 10
+// Constraints introduced gradually - much more spread out for smoother progression
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 10, type: 'min_word_length' },      // First constraint: 4+ letter words
-  { level: 15, type: 'ends_with_letter' },     // Words must end with specific letter
-  { level: 20, type: 'max_word_length' },      // Words must be X letters or less
-  { level: 25, type: 'double_letters' },       // Words must have double letters
-  { level: 30, type: 'no_repeat_letters' },    // No letter can repeat
-  { level: 40, type: 'no_common_words' },      // Avoid obvious answers
-  { level: 50, type: 'combo' },                // Multiple constraints combined
-  { level: 75, type: 'survival' },             // One wrong = fail
-  { level: 100, type: 'time_pressure' },       // Reduced time
+  { level: 30, type: 'min_word_length' },      // First constraint at level 30 (gentle: 4+ letter words)
+  { level: 50, type: 'max_word_length' },       // Words must be X letters or less
+  { level: 75, type: 'ends_with_letter' },      // Words must end with specific letter
+  { level: 100, type: 'double_letters' },       // Words must have double letters
+  { level: 130, type: 'no_repeat_letters' },    // No letter can repeat
+  { level: 160, type: 'no_common_words' },      // Avoid obvious answers
+  { level: 200, type: 'combo' },                // Multiple constraints combined
+  { level: 250, type: 'survival' },             // One wrong = fail
+  { level: 300, type: 'time_pressure' },        // Reduced time
 ];
 
 /**
  * Build the pool of constraint types available at a given level.
- * Levels 1-9 only get 'none'.
+ * Levels 1-29 only get 'none'.
  */
 function getConstraintPool(level: number): LevelConstraint['type'][] {
   const pool: LevelConstraint['type'][] = ['none'];
@@ -327,6 +327,12 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
       pool.push(milestone.type);
     }
   }
+
+  // Weight 'none' more heavily for levels that recently unlocked constraints
+  // This ensures constraints don't overwhelm early levels
+  const noneWeight = level < 100 ? 4 : level < 200 ? 2 : 1;
+  for (let i = 1; i < noneWeight; i++) pool.push('none');
+
   return pool;
 }
 
@@ -387,9 +393,9 @@ function isPlayableForAll(
 /**
  * Timer in seconds per category.
  * Generous at the start, gradually decreases.
- * Level 1-10: 18s (easy learning phase)
- * Level 11-25: 16s (still comfortable)
- * Level 26-50: 14s (warming up)
+ * Level 1-10: 18s (easy learning phase, no constraints)
+ * Level 11-25: 16s (still comfortable, no constraints)
+ * Level 26-50: 14s (warming up, first constraints at 30)
  * Level 51-100: 12s (getting challenging)
  * Level 100+: ramps down to 5s around level 400
  *
@@ -448,9 +454,8 @@ function getCategoryCount(level: number, rng: SeededRandom): number {
 /**
  * Pass score percent.
  * Very forgiving early on, gradually increases.
- * Level 1-10: 30% (easy pass)
- * Level 11-25: 40% (still comfortable)
- * Level 26-50: 50% (moderate challenge)
+ * Level 1-25: 50% (easy pass, no constraints until level 30)
+ * Level 26-50: 55% (moderate, first constraints at 30)
  * Level 51-100: 60% (proper challenge)
  * Level 100+: ramps to 95% around level 400+.
  */
@@ -762,7 +767,7 @@ function selectConstraint(
   const pool = getConstraintPool(level);
 
   // For the very first few levels, keep it simple
-  if (level < 10) {
+  if (level < 30) {
     return { type: 'none', description: 'No special constraints' };
   }
 

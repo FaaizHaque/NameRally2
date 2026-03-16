@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'reac
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays, RotateCcw } from 'lucide-react-native';
+import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useGameStore } from '@/lib/state/game-store';
@@ -54,12 +54,6 @@ export default function GameModeScreen() {
       setIsStartingGame(false);
     }
   }, [isStartingGame, levelLoaded, levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
-
-  const handleRevisit = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Sounds.tap();
-    router.push('/level-select');
-  };
 
   const handleMultiplayer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -229,24 +223,6 @@ export default function GameModeScreen() {
                     )}
                   </View>
 
-                  {/* Revisit button — only show after first level has been completed */}
-                  {levelLoaded && completedCount > 0 && (
-                    <TouchableOpacity
-                      onPress={(e) => { e.stopPropagation?.(); handleRevisit(); }}
-                      activeOpacity={0.75}
-                      style={{
-                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-                        backgroundColor: 'rgba(80,140,255,0.15)',
-                        borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9,
-                        borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.4)',
-                      }}
-                    >
-                      <RotateCcw size={15} color="#90c0ff" strokeWidth={2.5} />
-                      <Text style={{ color: '#90c0ff', fontSize: 14, fontWeight: '800', letterSpacing: 0.3 }}>
-                        Revisit completed levels ({completedCount})
-                      </Text>
-                    </TouchableOpacity>
-                  )}
                 </View>
               </LinearGradient>
             </TouchableOpacity>

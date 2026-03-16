@@ -185,14 +185,18 @@ export default function CreateGameScreen() {
                 router.back();
               }}
               style={({ pressed }) => ({
-                backgroundColor: pressed ? '#2a2a4a' : '#1e1b4b',
+                opacity: pressed ? 0.85 : 1,
+              })}
+            >
+              <View style={{
+                backgroundColor: '#1e1b4b',
                 padding: 10,
                 borderRadius: 10,
                 borderWidth: 1.5,
                 borderColor: '#4F46E5',
-              })}
-            >
-              <ChevronLeft size={22} color="#a5b4fc" strokeWidth={2.5} />
+              }}>
+                <ChevronLeft size={22} color="#a5b4fc" strokeWidth={2.5} />
+              </View>
             </Pressable>
             <LinearGradient
               colors={['#1e1b4b', '#2d2a6e']}
@@ -422,14 +426,18 @@ export default function CreateGameScreen() {
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
             style={({ pressed }) => ({
-              backgroundColor: pressed ? SKETCH_COLORS.paperLine : SKETCH_COLORS.paperDark,
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <View style={{
+              backgroundColor: SKETCH_COLORS.paperDark,
               padding: 10, borderRadius: 10, borderWidth: 1.5,
               borderColor: SKETCH_COLORS.paperLine,
               shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 1, height: 2 },
               shadowOpacity: 0.1, shadowRadius: 0,
-            })}
-          >
-            <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+            }}>
+              <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+            </View>
           </Pressable>
           <View style={{
             marginLeft: 12,
@@ -481,13 +489,17 @@ export default function CreateGameScreen() {
                 <Pressable
                   onPress={() => handleRoundsChange(-1)}
                   style={({ pressed }) => ({
-                    width: 52, height: 52, borderRadius: 8,
-                    alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: pressed ? SKETCH_COLORS.paperDark : SKETCH_COLORS.paper,
-                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                    opacity: pressed ? 0.85 : 1,
                   })}
                 >
-                  <Minus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                  <View style={{
+                    width: 52, height: 52, borderRadius: 8,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: SKETCH_COLORS.paper,
+                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                  }}>
+                    <Minus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                  </View>
                 </Pressable>
                 <View style={{ alignItems: 'center' }}>
                   <View style={{
@@ -503,13 +515,17 @@ export default function CreateGameScreen() {
                 <Pressable
                   onPress={() => handleRoundsChange(1)}
                   style={({ pressed }) => ({
-                    width: 52, height: 52, borderRadius: 8,
-                    alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: pressed ? SKETCH_COLORS.paperDark : SKETCH_COLORS.paper,
-                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                    opacity: pressed ? 0.85 : 1,
                   })}
                 >
-                  <Plus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                  <View style={{
+                    width: 52, height: 52, borderRadius: 8,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: SKETCH_COLORS.paper,
+                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                  }}>
+                    <Plus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                  </View>
                 </Pressable>
               </View>
               {/* Underline */}
