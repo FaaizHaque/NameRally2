@@ -473,6 +473,9 @@ export default function HomeScreen() {
                 onPress={handleHowToPlay}
                 style={({ pressed }) => ({
                   opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <View style={{
                   backgroundColor: '#D4A84B',
                   paddingVertical: 13,
                   paddingHorizontal: 20,
@@ -482,18 +485,18 @@ export default function HomeScreen() {
                   gap: 8,
                   borderWidth: 1.5,
                   borderColor: '#E8C460',
-                })}
-              >
-                <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
-                <Text style={{
-                  color: '#1C120A',
-                  fontSize: 16,
-                  fontWeight: '800',
-                  letterSpacing: 0.5,
                 }}>
-                  How to Play
-                </Text>
-                <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
+                  <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
+                  <Text style={{
+                    color: '#1C120A',
+                    fontSize: 16,
+                    fontWeight: '800',
+                    letterSpacing: 0.5,
+                  }}>
+                    How to Play
+                  </Text>
+                  <HelpCircle size={20} color="#1C120A" strokeWidth={2.5} />
+                </View>
               </Pressable>
             </Animated.View>
 
