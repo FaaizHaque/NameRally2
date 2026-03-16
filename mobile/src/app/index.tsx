@@ -423,16 +423,21 @@ export default function HomeScreen() {
                         opacity: pressed ? 0.88 : 1,
                         transform: [{ scale: pressed ? 0.96 : 1 }],
                         alignSelf: 'center',
+                        minWidth: '70%',
                         backgroundColor: SKETCH_COLORS.ink,
-                        borderRadius: 20,
-                        width: 72, height: 72,
+                        borderRadius: 18, paddingVertical: 20,
+                        paddingHorizontal: 40,
                         alignItems: 'center', justifyContent: 'center',
+                        flexDirection: 'row', gap: 12,
                         shadowColor: SKETCH_COLORS.ink,
                         shadowOffset: { width: 0, height: 8 },
                         shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
                       })}
                     >
-                      <Gamepad2 size={34} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                      <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                      <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
+                        PLAY
+                      </Text>
                     </Pressable>
                   </Animated.View>
                 </View>
