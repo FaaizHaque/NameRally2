@@ -238,8 +238,11 @@ export default function FinalResultsScreen() {
               entering={FadeInDown.duration(600).springify().damping(14)}
               style={{ alignItems: 'center', paddingBottom: 4 }}
             >
-              <View style={{ backgroundColor: '#1a3a6e', paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, marginBottom: 14, borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.6)' }}>
-                <Text style={{ color: '#90c0ff', fontSize: 11, fontWeight: '700', letterSpacing: 2 }}>LEVEL {currentLevel.level}</Text>
+              <View style={{ backgroundColor: '#1a3a6e', paddingHorizontal: 18, paddingVertical: 7, borderRadius: 14, marginBottom: 14, borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.6)' }}>
+                <Text style={{ color: '#90c0ff', fontSize: 12, fontWeight: '700', letterSpacing: 2 }}>
+                  {'LEVEL '}
+                  <Text style={{ color: '#ffffff', fontSize: 15, fontWeight: '900', letterSpacing: 0 }}>{currentLevel.level}</Text>
+                </Text>
               </View>
 
               <Animated.View style={trophyAnimStyle}>
@@ -283,9 +286,13 @@ export default function FinalResultsScreen() {
                   ))}
                 </View>
 
-                <Animated.View entering={FadeInDown.duration(400).delay(100)}>
-                  <Text style={{ color: '#ffffff', fontSize: 58, fontWeight: '900', textAlign: 'center' }}>{playerScore}</Text>
-                  <Text style={{ color: '#4090e8', fontSize: 14, textAlign: 'center', marginTop: -4 }}>/ {currentLevel.maxPossibleScore} points</Text>
+                <Animated.View entering={FadeInDown.duration(400).delay(100)} style={{ alignItems: 'center' }}>
+                  <Text style={{ color: 'rgba(144,192,255,0.55)', fontSize: 10, fontWeight: '700', letterSpacing: 2, marginBottom: 2 }}>SCORE</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                    <Text style={{ color: '#ffffff', fontSize: 58, fontWeight: '900', lineHeight: 62 }}>{playerScore}</Text>
+                    <Text style={{ color: '#4090e8', fontSize: 24, fontWeight: '700', marginBottom: 9 }}>/{currentLevel.maxPossibleScore}</Text>
+                    <Text style={{ color: 'rgba(144,192,255,0.45)', fontSize: 13, fontWeight: '600', marginBottom: 11 }}>pts</Text>
+                  </View>
                 </Animated.View>
 
                 <Animated.View entering={FadeIn.duration(350).delay(250)} style={{
