@@ -434,7 +434,7 @@ export default function FinalResultsScreen() {
           </ScrollView>
 
           {/* ── Sticky action buttons — always visible ── */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: insets.bottom + 16, gap: 10, borderTopWidth: 1, borderTopColor: 'rgba(80,160,255,0.12)', backgroundColor: 'rgba(26,58,110,0.95)' }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16, gap: 10, borderTopWidth: 1, borderTopColor: 'rgba(80,160,255,0.12)', backgroundColor: 'rgba(26,58,110,0.95)' }}>
             {levelPassed ? (
               <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
                 <LinearGradient
@@ -473,35 +473,25 @@ export default function FinalResultsScreen() {
                 </View>
               </Pressable>
             )}
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
               <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 14,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
+                  backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14, paddingVertical: 15,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
                 }}>
-                  <Home size={17} color="#a0c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 13 }}>Home</Text>
+                  <Home size={18} color="#a0c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Home</Text>
                 </View>
               </Pressable>
               <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/level-select'); }} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                 <View style={{
-                  backgroundColor: 'rgba(80,160,255,0.12)', borderRadius: 14, paddingVertical: 14,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.5)',
+                  backgroundColor: 'rgba(64,144,232,0.1)', borderRadius: 14, paddingVertical: 15,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.45)',
                 }}>
-                  <LayoutList size={17} color="#90c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#90c8ff', fontWeight: '800', fontSize: 13 }}>All Levels</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 14, paddingVertical: 14,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.35)',
-                }}>
-                  <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 13 }}>Menu</Text>
+                  <LayoutList size={18} color="#90c8ff" strokeWidth={2.5} />
+                  <Text style={{ color: '#90c8ff', fontWeight: '800', fontSize: 15 }}>All Levels</Text>
                 </View>
               </Pressable>
             </View>

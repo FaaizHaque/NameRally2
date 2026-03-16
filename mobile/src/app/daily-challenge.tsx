@@ -142,6 +142,7 @@ export default function DailyChallengeScreen() {
   const [leaderboard, setLeaderboard] = useState<DbDailyChallengeScore[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [history, setHistory] = useState<Array<{ date: string; score: number; correct: number; speedBonuses: number; grid: string }>>([]);
 
   // Game state
   const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
@@ -171,11 +172,9 @@ export default function DailyChallengeScreen() {
         const calcStreak = async (todayDate: string) => {
           let count = 0;
           let d = new Date(todayDate);
-          // Walk backwards through dates
           for (let i = 0; i < 365; i++) {
             const dateStr = d.toISOString().split('T')[0];
-            const key = `daily_challenge_result_${dateStr}`;
-            const stored = await AsyncStorage.getItem(key);
+            const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
             if (!stored) break;
             count++;
             d.setDate(d.getDate() - 1);
@@ -183,11 +182,36 @@ export default function DailyChallengeScreen() {
           setStreak(count);
         };
 
+        // Load past results (last 30 days, excluding today)
+        const loadHistory = async (todayDate: string) => {
+          const items: Array<{ date: string; score: number; correct: number; speedBonuses: number; grid: string }> = [];
+          const today = new Date(todayDate);
+          for (let i = 1; i <= 30 && items.length < 14; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const stored = await AsyncStorage.getItem(`daily_challenge_result_${dateStr}`);
+            if (stored) {
+              const r: DailyChallengeResult = JSON.parse(stored);
+              const grid = r.answers.map(a => !a.isValid ? '❌' : a.hasSpeedBonus ? '⚡' : '✅').join('');
+              items.push({
+                date: dateStr,
+                score: r.totalScore,
+                correct: r.answers.filter(a => a.isValid).length,
+                speedBonuses: r.answers.filter(a => a.hasSpeedBonus).length,
+                grid,
+              });
+            }
+          }
+          setHistory(items);
+        };
+
         if (storedResult) {
           setResult(JSON.parse(storedResult));
           setPhase('already_completed');
           fetchLeaderboard(challengeData.date);
           calcStreak(challengeData.date);
+          loadHistory(challengeData.date);
           return;
         }
 
@@ -389,6 +413,26 @@ export default function DailyChallengeScreen() {
         d2.setDate(d2.getDate() - 1);
       }
       setStreak(streakCount);
+      // Load past results for the history section
+      const histItems: typeof history = [];
+      const hToday = new Date(challenge.date);
+      for (let i = 1; i <= 30 && histItems.length < 14; i++) {
+        const hd = new Date(hToday);
+        hd.setDate(hToday.getDate() - i);
+        const hDateStr = hd.toISOString().split('T')[0];
+        const hStored = await AsyncStorage.getItem(`daily_challenge_result_${hDateStr}`);
+        if (hStored) {
+          const hr: DailyChallengeResult = JSON.parse(hStored);
+          histItems.push({
+            date: hDateStr,
+            score: hr.totalScore,
+            correct: hr.answers.filter(a => a.isValid).length,
+            speedBonuses: hr.answers.filter(a => a.hasSpeedBonus).length,
+            grid: hr.answers.map(a => !a.isValid ? '❌' : a.hasSpeedBonus ? '⚡' : '✅').join(''),
+          });
+        }
+      }
+      setHistory(histItems);
     } catch (error) {
       console.error('Error submitting challenge:', error);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -639,9 +683,9 @@ export default function DailyChallengeScreen() {
                               {isEmptyAnswer ? 'No answer' : answer.answer}
                             </Text>
                             {answer.hasSpeedBonus && (
-                              <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, borderColor: '#f59e0b' }}>
-                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '900' }}>ABC</Text>
-                                <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
+                              <View style={{ backgroundColor: 'rgba(251,191,36,0.15)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: 'rgba(251,191,36,0.5)' }}>
+                                <Zap size={9} color="#fbbf24" fill="#fbbf24" strokeWidth={0} />
+                                <Text style={{ color: '#fbbf24', fontSize: 10, fontWeight: '900' }}>+2</Text>
                               </View>
                             )}
                           </View>
@@ -726,6 +770,44 @@ export default function DailyChallengeScreen() {
                   )}
                 </View>
               </Animated.View>
+
+              {/* Past Results History */}
+              {history.length > 0 && (
+                <Animated.View entering={FadeInUp.duration(400).delay(1000)} style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
+                    <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 }}>Previous Results</Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.15)' }} />
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 8, paddingRight: 4 }}
+                    style={{ flexGrow: 0 }}
+                  >
+                    {history.map((item) => {
+                      const d = new Date(item.date + 'T12:00:00');
+                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      return (
+                        <View
+                          key={item.date}
+                          style={{
+                            backgroundColor: 'rgba(74,222,128,0.07)',
+                            borderRadius: 14, padding: 12, minWidth: 90,
+                            borderWidth: 1, borderColor: 'rgba(74,222,128,0.15)',
+                            alignItems: 'center', gap: 4,
+                          }}
+                        >
+                          <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 }}>{label}</Text>
+                          <Text style={{ color: '#E8FFE8', fontSize: 22, fontWeight: '900', lineHeight: 26 }}>{item.score}</Text>
+                          <Text style={{ color: 'rgba(74,222,128,0.55)', fontSize: 10 }}>{item.correct}/6</Text>
+                          <Text style={{ fontSize: 11, lineHeight: 14 }}>{item.grid}</Text>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                </Animated.View>
+              )}
 
               {/* Actions */}
               <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ paddingBottom: insets.bottom + 16 }}>
