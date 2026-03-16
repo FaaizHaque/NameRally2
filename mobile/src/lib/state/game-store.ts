@@ -433,9 +433,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         const completedLevels = Object.keys(parsed.levelScores || {}).map(Number).filter(n => !isNaN(n));
         if (completedLevels.length > 0) {
           const highestCompletedLevel = Math.max(...completedLevels);
-          // If we have completed levels beyond what's unlocked, fix it
+          // If we have completed levels beyond what's unlocked, fix it (cap at 500)
           if (highestCompletedLevel >= parsed.unlockedLevel) {
-            const correctUnlockedLevel = highestCompletedLevel + 1;
+            const correctUnlockedLevel = Math.min(highestCompletedLevel + 1, 500);
             console.log('[LevelProgress] REPAIR: Fixing unlockedLevel from', parsed.unlockedLevel, 'to', correctUnlockedLevel);
             parsed.unlockedLevel = correctUnlockedLevel;
             // Save the repaired data

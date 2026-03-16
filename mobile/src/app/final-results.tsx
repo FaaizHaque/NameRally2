@@ -454,7 +454,7 @@ export default function FinalResultsScreen() {
                     <>
                       <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
                       <Text style={{ color: '#fff', fontWeight: '900', fontSize: 19, letterSpacing: 0.5 }}>
-                        {`Next Level  ${currentLevel.level + 1}`}
+                        {currentLevel.level >= 500 ? 'All Levels Done! 🏆' : `Next Level  ${currentLevel.level + 1}`}
                       </Text>
                     </>
                   )}

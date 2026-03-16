@@ -77,6 +77,8 @@ export default function GameModeScreen() {
   };
 
   const completedCount = Math.max(0, levelProgress.unlockedLevel - 1);
+  // All 500 levels completed: unlockedLevel is capped at 500, but level 500 itself has a score
+  const allLevelsCompleted = levelProgress.unlockedLevel >= 500 && !!levelProgress.levelScores[500];
 
   return (
     <View style={{ flex: 1, backgroundColor: '#1a2540' }}>
@@ -170,6 +172,27 @@ export default function GameModeScreen() {
                               Loading level {levelProgress.unlockedLevel}...
                             </Text>
                           </>
+                        ) : allLevelsCompleted ? (
+                          <>
+                            <View style={{
+                              width: 36, height: 36, borderRadius: 8,
+                              backgroundColor: '#f59e0b',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Text style={{ color: '#fff', fontSize: 20 }}>🏆</Text>
+                            </View>
+                            <View>
+                              <Text style={{ color: 'rgba(251,191,36,0.7)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>
+                                All done!
+                              </Text>
+                              <Text style={{ color: '#fde68a', fontSize: 14, fontWeight: '900' }}>
+                                500/500 Completed
+                              </Text>
+                            </View>
+                            <View style={{ marginLeft: 'auto', opacity: 0.5 }}>
+                              <Text style={{ color: '#fde68a', fontSize: 22 }}>›</Text>
+                            </View>
+                          </>
                         ) : (
                           <>
                             <View style={{
@@ -206,15 +229,20 @@ export default function GameModeScreen() {
                     )}
                   </View>
 
-                  {/* Revisit link — only show if they have completed levels */}
+                  {/* Revisit button — only show after first level has been completed */}
                   {levelLoaded && completedCount > 0 && (
                     <TouchableOpacity
                       onPress={(e) => { e.stopPropagation?.(); handleRevisit(); }}
-                      activeOpacity={0.65}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' }}
+                      activeOpacity={0.75}
+                      style={{
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+                        backgroundColor: 'rgba(80,140,255,0.15)',
+                        borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9,
+                        borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.4)',
+                      }}
                     >
-                      <RotateCcw size={11} color="rgba(120,170,255,0.55)" strokeWidth={2.5} />
-                      <Text style={{ color: 'rgba(120,170,255,0.55)', fontSize: 11, fontWeight: '700', letterSpacing: 0.3 }}>
+                      <RotateCcw size={15} color="#90c0ff" strokeWidth={2.5} />
+                      <Text style={{ color: '#90c0ff', fontSize: 14, fontWeight: '800', letterSpacing: 0.3 }}>
                         Revisit completed levels ({completedCount})
                       </Text>
                     </TouchableOpacity>

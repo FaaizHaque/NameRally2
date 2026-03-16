@@ -8,7 +8,6 @@ import { ChevronLeft, Zap, Flame, Skull, Clock, Brain, Trophy } from 'lucide-rea
 import * as Haptics from 'expo-haptics';
 import { useGameStore, DifficultyLevel } from '@/lib/state/game-store';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface DifficultyOption {
   id: DifficultyLevel;
@@ -94,69 +93,72 @@ export default function DifficultySelectScreen() {
                 const bestScore = highScores[option.id] || 0;
 
                 return (
-                  <AnimatedPressable
+                  <Animated.View
                     key={option.id}
-                    onPress={() => handleSelectDifficulty(option.id)}
-                    className="active:scale-98"
                     entering={FadeInUp.duration(500).delay(150 + index * 100)}
                   >
-                    <LinearGradient
-                      colors={option.colors}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={{
-                        borderRadius: 20,
-                        padding: 20,
-                        shadowColor: option.colors[0],
-                        shadowOffset: { width: 0, height: 6 },
-                        shadowOpacity: 0.4,
-                        shadowRadius: 12,
-                        elevation: 6,
-                      }}
+                    <Pressable
+                      onPress={() => handleSelectDifficulty(option.id)}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}
                     >
-                      <View className="flex-row items-start justify-between">
-                        <View className="flex-1">
-                          <View className="flex-row items-center gap-3 mb-2">
-                            <View className="bg-white/20 p-2.5 rounded-xl">
-                              {option.icon}
-                            </View>
-                            <View>
-                              <Text className="text-white text-2xl font-black">
-                                {option.name}
-                              </Text>
-                              <Text className="text-white/80 text-sm">
-                                {option.description}
-                              </Text>
-                            </View>
-                          </View>
-
-                          {/* Features */}
-                          <View className="flex-row flex-wrap gap-2 mt-2 ml-1">
-                            {option.features.map((feature, i) => (
-                              <View
-                                key={i}
-                                className="bg-white/20 px-2.5 py-1 rounded-full"
-                              >
-                                <Text className="text-white/90 text-xs font-medium">
-                                  {feature}
+                      <LinearGradient
+                        colors={option.colors}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{
+                          borderRadius: 20,
+                          padding: 20,
+                          shadowColor: option.colors[0],
+                          shadowOffset: { width: 0, height: 6 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 12,
+                          elevation: 6,
+                        }}
+                      >
+                        <View className="flex-row items-start justify-between">
+                          <View className="flex-1">
+                            <View className="flex-row items-center gap-3 mb-2">
+                              <View className="bg-white/20 p-2.5 rounded-xl">
+                                {option.icon}
+                              </View>
+                              <View>
+                                <Text className="text-white text-2xl font-black">
+                                  {option.name}
+                                </Text>
+                                <Text className="text-white/80 text-sm">
+                                  {option.description}
                                 </Text>
                               </View>
-                            ))}
-                          </View>
-                        </View>
+                            </View>
 
-                        {/* High Score Badge */}
-                        {bestScore > 0 && (
-                          <View className="bg-white/20 px-3 py-2 rounded-xl items-center">
-                            <Trophy size={16} color="#FFD700" />
-                            <Text className="text-white text-sm font-bold mt-1">
-                              {bestScore}
-                            </Text>
+                            {/* Features */}
+                            <View className="flex-row flex-wrap gap-2 mt-2 ml-1">
+                              {option.features.map((feature, i) => (
+                                <View
+                                  key={i}
+                                  className="bg-white/20 px-2.5 py-1 rounded-full"
+                                >
+                                  <Text className="text-white/90 text-xs font-medium">
+                                    {feature}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
                           </View>
-                        )}
-                      </View>
-                    </LinearGradient>
-                  </AnimatedPressable>
+
+                          {/* High Score Badge */}
+                          {bestScore > 0 && (
+                            <View className="bg-white/20 px-3 py-2 rounded-xl items-center">
+                              <Trophy size={16} color="#FFD700" />
+                              <Text className="text-white text-sm font-bold mt-1">
+                                {bestScore}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </LinearGradient>
+                    </Pressable>
+                  </Animated.View>
                 );
               })}
             </Animated.View>

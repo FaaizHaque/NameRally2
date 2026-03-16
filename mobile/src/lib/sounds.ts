@@ -33,12 +33,12 @@ export function isSoundEnabled() {
   return soundEnabled;
 }
 
-async function playSound(uri: string, volume: number = 0.3) {
+async function playSound(source: number, volume: number = 0.3) {
   if (!soundEnabled) return;
   try {
     await ensureAudioMode();
     const { sound } = await Audio.Sound.createAsync(
-      { uri },
+      source,
       { shouldPlay: true, volume }
     );
     sound.setOnPlaybackStatusUpdate((s) => {
@@ -51,38 +51,23 @@ async function playSound(uri: string, volume: number = 0.3) {
   }
 }
 
-// ─── Sound URLs ───────────────────────────────────────────────────────────────
-// All from freesound.org CDN previews — distinct sounds per action
+// ─── Bundled sound assets ──────────────────────────────────────────────────────
 
 const S = {
-  // Soft UI click — buttons, taps
-  TAP:            'https://cdn.freesound.org/previews/528/528561_Jummit-lq.mp3',
-  // Paper rustle / page turn — screen navigation
-  NAVIGATE:       'https://cdn.freesound.org/previews/353/353125_BenjaminNelan-lq.mp3',
-  // Pencil scratch — typing in answer fields
-  TYPING:         'https://cdn.freesound.org/previews/448/448968_groupe1bts-lq.mp3',
-  // Satisfying stamp/pop — answer row complete
-  ANSWER_DONE:    'https://cdn.freesound.org/previews/448/448474_eddies2000-lq.mp3',
-  // Single clock tick — timer warning
-  TIMER_TICK:     'https://cdn.freesound.org/previews/174/174721_DrMinky-lq.mp3',
-  // Upbeat start chime — round / game begins
-  ROUND_START:    'https://cdn.freesound.org/previews/810/810178_mokasza-lq.mp3',
-  // Buzzer — round ends / STOP pressed
-  ROUND_END:      'https://cdn.freesound.org/previews/211/211103_qubodup-lq.mp3',
-  // Short victory jingle — level complete
-  SUCCESS:        'https://cdn.freesound.org/previews/688/688273_xkeril-lq.mp3',
-  // Descending fail tone — level failed
-  FAIL:           'https://cdn.freesound.org/previews/335/335906_LittleRainySeasons-lq.mp3',
-  // Sparkle / magic — hint used
-  HINT:           'https://cdn.freesound.org/previews/825/825544_newlocknew-lq.mp3',
-  // Notification chime — joining a game
-  JOIN:           'https://cdn.freesound.org/previews/351/351879_marlonnnnnn-lq.mp3',
-  // Lock click — letter locked in
-  LETTER_LOCK:    'https://cdn.freesound.org/previews/815/815492_xkeril-lq.mp3',
-  // Calm ambient lo-fi — home screen background
-  BG_HOME:        'https://cdn.freesound.org/previews/610/610747_kjartan_abel-lq.mp3',
-  // Upbeat game loop — in-game background
-  BG_GAME:        'https://cdn.freesound.org/previews/506/506893_Mrthenoronha-lq.mp3',
+  TAP:          require('../assets/sounds/tap.wav'),
+  NAVIGATE:     require('../assets/sounds/navigate.wav'),
+  TYPING:       require('../assets/sounds/typing.wav'),
+  ANSWER_DONE:  require('../assets/sounds/answer_done.wav'),
+  TIMER_TICK:   require('../assets/sounds/timer_tick.wav'),
+  ROUND_START:  require('../assets/sounds/round_start.wav'),
+  ROUND_END:    require('../assets/sounds/round_end.wav'),
+  SUCCESS:      require('../assets/sounds/success.wav'),
+  FAIL:         require('../assets/sounds/fail.wav'),
+  HINT:         require('../assets/sounds/hint.wav'),
+  JOIN:         require('../assets/sounds/join.wav'),
+  LETTER_LOCK:  require('../assets/sounds/letter_lock.wav'),
+  BG_HOME:      require('../assets/sounds/bg_home.wav'),
+  BG_GAME:      require('../assets/sounds/bg_game.wav'),
 };
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -122,10 +107,10 @@ export const Sounds = {
     bgMusicLoading = true;
     try {
       await ensureAudioMode();
-      const uri = type === 'home' ? S.BG_HOME : S.BG_GAME;
+      const source = type === 'home' ? S.BG_HOME : S.BG_GAME;
       const vol = type === 'home' ? 0.10 : 0.13;
       const { sound } = await Audio.Sound.createAsync(
-        { uri },
+        source,
         { shouldPlay: true, volume: vol, isLooping: true }
       );
       bgMusic = sound;
