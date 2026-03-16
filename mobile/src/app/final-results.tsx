@@ -17,7 +17,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark, LayoutList } from 'lucide-react-native';
+import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
@@ -477,28 +477,16 @@ export default function FinalResultsScreen() {
                 </View>
               </Pressable>
             )}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14, paddingVertical: 15,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
-                }}>
-                  <Home size={18} color="#a0c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 15 }}>Home</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/level-select'); }} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                <View style={{
-                  backgroundColor: 'rgba(64,144,232,0.1)', borderRadius: 14, paddingVertical: 15,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-                  borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.45)',
-                }}>
-                  <LayoutList size={18} color="#90c8ff" strokeWidth={2.5} />
-                  <Text style={{ color: '#90c8ff', fontWeight: '800', fontSize: 15 }}>All Levels</Text>
-                </View>
-              </Pressable>
-            </View>
+            <Pressable onPress={handleGoHome} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+              <View style={{
+                backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, paddingVertical: 16,
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
+              }}>
+                <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
+                <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back to Home</Text>
+              </View>
+            </Pressable>
           </View>
 
       </LinearGradient>
@@ -707,27 +695,29 @@ export default function FinalResultsScreen() {
           </Animated.View>
 
           {/* Action Buttons */}
-          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ marginTop: 20, paddingBottom: insets.bottom + 16 }}>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Pressable onPress={handleGoHome} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                <View style={{ backgroundColor: SKETCH_COLORS.paperDark, borderRadius: 12, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine }}>
-                  <Home size={18} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
-                  <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Home</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ flex: 2, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                <View style={{
-                  borderRadius: 12, paddingVertical: 16,
-                  backgroundColor: SKETCH_COLORS.pastelMint,
-                  borderWidth: 2, borderColor: '#3ABAA0',
-                  shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 2, height: 3 }, shadowOpacity: 0.12, shadowRadius: 0,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}>
-                  <RotateCcw size={18} color="#1A5040" strokeWidth={2.5} />
-                  <Text style={{ color: '#1A5040', fontWeight: '900', fontSize: 15 }}>Play Again</Text>
-                </View>
-              </Pressable>
-            </View>
+          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ marginTop: 20, paddingBottom: insets.bottom + 16, gap: 10 }}>
+            <Pressable onPress={handlePlayAgain} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
+              <View style={{
+                borderRadius: 16, paddingVertical: 18,
+                backgroundColor: SKETCH_COLORS.ink,
+                shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+              }}>
+                <RotateCcw size={20} color={SKETCH_COLORS.amberLight} strokeWidth={2.5} />
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 18, letterSpacing: 1 }}>Play Again</Text>
+              </View>
+            </Pressable>
+            <Pressable onPress={handleGoHome} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+              <View style={{
+                borderRadius: 14, paddingVertical: 15,
+                backgroundColor: SKETCH_COLORS.paperDark,
+                borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine,
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+              }}>
+                <Home size={18} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Back to Home</Text>
+              </View>
+            </Pressable>
           </Animated.View>
         </ScrollView>
       </View>
