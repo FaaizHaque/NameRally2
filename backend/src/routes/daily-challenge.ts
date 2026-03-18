@@ -58,7 +58,7 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'songs',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'songs', 'fruits_vegetables',
   ],
   Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'songs', 'historical_figures'],
   Y: ['health_issues', 'sports_games', 'professions', 'historical_figures', 'thing', 'brands', 'food_dishes'],
@@ -170,7 +170,8 @@ function getLetterPoolForDifficulty(difficulty: DifficultyLevel): string[] {
   }
 }
 
-const MIN_VALID_CATEGORIES_FOR_LETTER = 4; // Minimum categories that must be playable
+// Must be able to fill a full challenge — if a letter can't supply this many valid categories, skip it
+const MIN_VALID_CATEGORIES_FOR_LETTER = DAILY_CHALLENGE_CATEGORY_COUNT; // = 6
 
 /**
  * Count how many categories are valid for a given letter
