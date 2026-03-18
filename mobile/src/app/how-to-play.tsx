@@ -274,7 +274,7 @@ function BasicsContent() {
           Start with basics like Names, Places, Animals, Things. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Sports', 'Fruits', 'Brands', 'Movies', 'Songs', 'Food', 'Professions', 'Historical Figures'].map((cat) => (
+          {['Sports & Games', 'Fruits & Vegetables', 'Brands', 'Movies', 'Songs', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Historical Figures'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -313,22 +313,22 @@ function CategoriesContent() {
       description: 'Any physical object or item. If you can touch it, it counts.',
     },
     {
-      name: 'Food',
+      name: 'Food & Dishes',
       emoji: '🍽️',
       color: '#FF6B6B',
-      description: 'Anything edible — meals, ingredients, snacks, drinks, and cuisines.',
+      description: 'Any meal, dish, or cuisine from around the world. Think restaurants, not raw ingredients.',
     },
     {
-      name: 'Sports',
+      name: 'Sports & Games',
       emoji: '⚽',
       color: '#3BA99C',
-      description: 'A sport, sporting event, or athletic discipline played worldwide.',
+      description: 'A sport, game, or athletic discipline — from football to chess.',
     },
     {
-      name: 'Fruits',
+      name: 'Fruits & Vegetables',
       emoji: '🍎',
       color: '#D4A84B',
-      description: 'Any fruit — common or exotic. Berries, citrus, tropical, all included.',
+      description: 'Any fruit or vegetable — common or exotic. Berries, citrus, tropical, root veg, all included.',
     },
     {
       name: 'Brands',
@@ -349,9 +349,21 @@ function CategoriesContent() {
       description: 'A song title from any genre or era. The name of the track, not the artist.',
     },
     {
+      name: 'Countries',
+      emoji: '🌍',
+      color: '#3BA99C',
+      description: 'Any sovereign country in the world — from Afghanistan to Zimbabwe.',
+    },
+    {
+      name: 'Health Issues',
+      emoji: '🏥',
+      color: '#9B6ED8',
+      description: 'Medical conditions, illnesses, symptoms, and health ailments.',
+    },
+    {
       name: 'Professions',
       emoji: '💼',
-      color: '#3BA99C',
+      color: '#6EC4B8',
       description: 'A job, career, or occupation. Doctor, pilot, chef — any line of work.',
     },
     {
@@ -452,7 +464,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Special Constraints</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Later levels add challenges: minimum word length, no repeat letters, must end with specific letter
+                Constraints unlock as you progress: minimum word length, no repeat letters, survival mode (one wrong = fail), time pressure, double letters, and more
               </Text>
             </View>
           </View>
@@ -464,7 +476,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                New categories unlock as you progress: Movies, Songs, Professions, Historical Figures
+                New categories unlock as you progress: Countries, Movies, Songs, Health Issues, Professions, Historical Figures, Fruits & Vegetables, and more
               </Text>
             </View>
           </View>
