@@ -1510,8 +1510,8 @@ export default function GameScreen() {
           {/* ── Banners ── */}
           {isLevelMode && currentLevel?.constraint?.type !== 'none' && (
             <Animated.View entering={FadeInDown.duration(300).delay(100)} style={s.constraintBanner}>
-              <Info size={12} color="#604898" strokeWidth={2.5} />
-              <Text style={[s.constraintTxt, { fontWeight: '500' }]}>{currentLevel!.constraint.description}</Text>
+              <Info size={16} color="#604898" strokeWidth={2.5} />
+              <Text style={s.constraintTxt}>{currentLevel!.constraint.description}</Text>
             </Animated.View>
           )}
           {session.stopRequested && (
@@ -1992,16 +1992,16 @@ const s = StyleSheet.create({
 
   // ── Banners ──
   constraintBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginHorizontal: 14, marginTop: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginHorizontal: 14, marginTop: 10,
     backgroundColor: '#EAE0FF',
-    paddingHorizontal: 12, paddingVertical: 7,
-    borderRadius: 5, borderWidth: 1.5, borderColor: '#B090D8',
+    paddingHorizontal: 14, paddingVertical: 11,
+    borderRadius: 8, borderWidth: 1.5, borderColor: '#B090D8',
     transform: [{ rotate: '-0.5deg' }],
     shadowColor: '#B090D8', shadowOffset: { width: 2, height: 2 }, shadowOpacity: 0.3, shadowRadius: 0,
     zIndex: 2,
   },
-  constraintTxt: { color: '#604898', fontSize: 15, flex: 1 },
+  constraintTxt: { color: '#604898', fontSize: 17, flex: 1, fontWeight: '600' },
 
   stopBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

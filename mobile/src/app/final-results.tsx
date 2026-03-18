@@ -447,26 +447,40 @@ export default function FinalResultsScreen() {
           {/* ── Sticky action buttons — always visible ── */}
           <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16, gap: 10, borderTopWidth: 1, borderTopColor: 'rgba(80,160,255,0.12)', backgroundColor: 'rgba(26,58,110,0.95)' }}>
             {levelPassed ? (
-              <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-                <LinearGradient
-                  colors={['#5aa0f0', '#3070d8']}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                  style={{
-                    borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                    shadowColor: '#4090e8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 10,
-                  }}
-                >
-                  {isLoadingNextLevel ? <ActivityIndicator color="#ffffff" size="small" /> : (
-                    <>
-                      <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
-                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 19, letterSpacing: 0.5 }}>
-                        {currentLevel.level >= 500 ? 'All Levels Done! 🏆' : `Next Level  ${currentLevel.level + 1}`}
-                      </Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </Pressable>
+              <>
+                <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
+                  <LinearGradient
+                    colors={['#5aa0f0', '#3070d8']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                      shadowColor: '#4090e8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 10,
+                    }}
+                  >
+                    {isLoadingNextLevel ? <ActivityIndicator color="#ffffff" size="small" /> : (
+                      <>
+                        <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
+                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 19, letterSpacing: 0.5 }}>
+                          {currentLevel.level >= 500 ? 'All Levels Done! 🏆' : `Next Level  ${currentLevel.level + 1}`}
+                        </Text>
+                      </>
+                    )}
+                  </LinearGradient>
+                </Pressable>
+                {starsEarned < 3 && (
+                  <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                    <View style={{
+                      borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,
+                      backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    }}>
+                      <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
+                      <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>Replay Level</Text>
+                    </View>
+                  </Pressable>
+                )}
+              </>
             ) : (
               <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
                 <View style={{
