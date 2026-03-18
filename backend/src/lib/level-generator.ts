@@ -33,7 +33,6 @@ export type CategoryType =
 export interface LevelConstraint {
   type:
     | 'none'
-    | 'no_common_words'
     | 'min_word_length'
     | 'no_repeat_letters'
     | 'time_pressure'
@@ -296,9 +295,8 @@ function getAvailableCategories(level: number): CategoryType[] {
 // CONSTRAINT INTRODUCTION SCHEDULE
 // Smooth progression: easy constraints early, harder ones later
 // EASY: min_word_length, max_word_length
-// MEDIUM: double_letters
-// HARD: no_repeat_letters, no_common_words
-// VERY HARD: combo, survival, time_pressure
+// HARD: no_repeat_letters
+// VERY HARD: survival, time_pressure, double_letters, combo, ends_with_letter
 // ============================================
 
 interface ConstraintMilestone {
@@ -308,15 +306,14 @@ interface ConstraintMilestone {
 
 // Constraints introduced gradually - easy first, progressively harder
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 20, type: 'min_word_length' },       // EASY: 4+ letter words (level 20)
-  { level: 35, type: 'max_word_length' },       // EASY: max length limit (level 35)
-  { level: 401, type: 'ends_with_letter' },     // HARD: ends with specific letter — Legendary only (level 401)
-  { level: 70, type: 'double_letters' },        // MEDIUM: words with double letters (level 70)
-  { level: 95, type: 'no_repeat_letters' },     // HARD: no repeating letters (level 95)
-  { level: 130, type: 'no_common_words' },      // HARD: avoid common words (level 130)
-  { level: 190, type: 'combo' },                // VERY HARD: multiple constraints (level 190)
-  { level: 260, type: 'survival' },             // VERY HARD: one wrong = fail (level 260)
-  { level: 350, type: 'time_pressure' },        // VERY HARD: reduced time (level 350)
+  { level: 20,  type: 'min_word_length' },  // EASY: 4+ letter words (level 20)
+  { level: 35,  type: 'max_word_length' },  // EASY: max length limit (level 35)
+  { level: 160, type: 'no_repeat_letters' },// HARD: no repeating letters (level 160)
+  { level: 220, type: 'survival' },         // VERY HARD: one wrong = fail (level 220)
+  { level: 290, type: 'time_pressure' },    // VERY HARD: reduced time (level 290)
+  { level: 350, type: 'double_letters' },   // VERY HARD: words with double letters (level 350)
+  { level: 401, type: 'ends_with_letter' }, // LEGENDARY: ends with specific letter (level 401)
+  { level: 450, type: 'combo' },            // LEGENDARY: two constraints simultaneously (level 450)
 ];
 
 /**
@@ -774,8 +771,6 @@ function createSingleConstraint(
     case 'none':
       return { type: 'none', description: 'No special constraints' };
 
-    case 'no_common_words':
-      return { type: 'no_common_words', description: 'Avoid common/obvious answers' };
 
     case 'min_word_length': {
       const hardLetters = ['Q', 'X', 'Z', 'J', 'Y', 'K', 'V', 'U'];
@@ -965,7 +960,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [35, 50],
     categoryCountRange: [5, 6],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length', 'double_letters', 'no_repeat_letters'],
+    constraintPool: ['none', 'min_word_length', 'max_word_length'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.0, 1.1],
@@ -979,14 +974,14 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bandNumber: 3,
     name: 'Picking Up Speed',
     levelRange: [51, 100],
-    description: 'All 14 categories unlocked, combo constraints introduced',
+    description: 'All 14 categories unlocked, difficulty ramps up',
     timerRange: [12, 10],
     passScoreRange: [45, 60],
     categoryCountRange: [5, 7],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'no_repeat_letters', 'max_word_length', 'double_letters', 'no_common_words', 'combo', 'survival'],
-    allowComboConstraints: true,
-    survivalModeChance: 0.05,
+    constraintPool: ['none', 'min_word_length', 'max_word_length'],
+    allowComboConstraints: false,
+    survivalModeChance: 0,
     bonusMultiplierRange: [1.1, 1.2],
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
@@ -1003,13 +998,9 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [55, 72],
     categoryCountRange: [6, 7],
     letterDifficulties: ['normal', 'hard'],
-    constraintPool: [
-      'none', 'min_word_length', 'no_repeat_letters',
-      'max_word_length', 'double_letters', 'no_common_words', 'combo',
-      'survival', 'time_pressure',
-    ],
-    allowComboConstraints: true,
-    survivalModeChance: 0.15,
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters'],
+    allowComboConstraints: false,
+    survivalModeChance: 0,
     bonusMultiplierRange: [1.2, 1.4],
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
@@ -1021,18 +1012,14 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bandNumber: 5,
     name: 'Expert',
     levelRange: [201, 300],
-    description: 'Multi-letter mode appears; triple combos at 300',
+    description: 'Multi-letter mode appears; survival and time pressure kick in',
     timerRange: [8, 6],
     passScoreRange: [68, 82],
     categoryCountRange: [6, 8],
     letterDifficulties: ['normal', 'hard'],
-    constraintPool: [
-      'min_word_length', 'no_repeat_letters',
-      'max_word_length', 'double_letters', 'no_common_words', 'combo',
-      'survival', 'time_pressure',
-    ],
-    allowComboConstraints: true,
-    survivalModeChance: 0.3,
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure'],
+    allowComboConstraints: false,
+    survivalModeChance: 0.15,
     bonusMultiplierRange: [1.4, 1.6],
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
@@ -1050,13 +1037,9 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [78, 90],
     categoryCountRange: [7, 8],
     letterDifficulties: ['hard', 'normal'],
-    constraintPool: [
-      'min_word_length', 'no_repeat_letters',
-      'max_word_length', 'double_letters', 'no_common_words', 'combo',
-      'survival', 'time_pressure',
-    ],
-    allowComboConstraints: true,
-    survivalModeChance: 0.45,
+    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters'],
+    allowComboConstraints: false,
+    survivalModeChance: 0.3,
     bonusMultiplierRange: [1.6, 1.8],
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
@@ -1074,13 +1057,9 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [88, 95],
     categoryCountRange: [7, 8],
     letterDifficulties: ['hard'],
-    constraintPool: [
-      'min_word_length', 'ends_with_letter', 'no_repeat_letters',
-      'max_word_length', 'double_letters', 'no_common_words', 'combo',
-      'survival', 'time_pressure',
-    ],
+    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
-    survivalModeChance: 0.6,
+    survivalModeChance: 0.45,
     bonusMultiplierRange: [1.8, 2.0],
     availableCategories: [
       'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
