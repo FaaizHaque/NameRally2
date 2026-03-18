@@ -38,10 +38,10 @@ const ALL_CATEGORIES: CategoryType[] = [
   'movies', 'songs', 'professions', 'food_dishes', 'historical_figures'
 ];
 
-// Letter pools by difficulty
+// Letter pools by difficulty (mirrors single-player level-generator pools)
 const EASY_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'W'];
 const MEDIUM_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'U', 'V', 'W'];
-const HARD_LETTERS = ['I', 'J', 'K', 'O', 'Q', 'U', 'V', 'X', 'Y', 'Z'];
+const HARD_LETTERS = ['I', 'J', 'K', 'O', 'Q', 'U', 'V', 'Y', 'Z']; // X removed — no valid categories
 
 // Difficulty levels for daily challenges
 type DifficultyLevel = 'easy' | 'medium' | 'hard';
@@ -49,11 +49,26 @@ type DifficultyLevel = 'easy' | 'medium' | 'hard';
 // Category count: minimum 6 categories per day
 const DAILY_CHALLENGE_CATEGORY_COUNT = 6;
 
-// Impossible letter-category combinations to avoid
+// Impossible letter-category combinations — kept in sync with level-generator.ts
 const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
-  'X': ['animal', 'names', 'places', 'sports_games', 'food_dishes'],
-  'Q': ['animal', 'names', 'sports_games', 'food_dishes'],
-  'Z': ['sports_games', 'food_dishes'],
+  X: [
+    'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
+    'movies', 'songs',
+  ],
+  Q: [
+    'animal', 'names', 'sports_games', 'food_dishes', 'thing',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'songs',
+  ],
+  Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'songs', 'historical_figures'],
+  Y: ['health_issues', 'sports_games', 'professions', 'historical_figures', 'thing', 'brands', 'food_dishes'],
+  U: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
+  V: ['sports_games', 'health_issues', 'thing', 'historical_figures'],
+  K: ['health_issues', 'historical_figures', 'thing'],
+  J: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
+  I: ['sports_games', 'thing', 'health_issues'],
+  O: ['health_issues', 'sports_games', 'thing'],
+  W: ['health_issues'],
 };
 
 // Category pairs that should NOT appear together in the same challenge
@@ -155,6 +170,16 @@ function getLetterPoolForDifficulty(difficulty: DifficultyLevel): string[] {
   }
 }
 
+const MIN_VALID_CATEGORIES_FOR_LETTER = 4; // Minimum categories that must be playable
+
+/**
+ * Count how many categories are valid for a given letter
+ */
+function getValidCategoryCount(letter: string): number {
+  const blocked = IMPOSSIBLE_COMBOS[letter] ?? [];
+  return ALL_CATEGORIES.filter((c) => !blocked.includes(c)).length;
+}
+
 /**
  * Generate a daily challenge for a specific date
  */
@@ -165,9 +190,11 @@ function generateDailyChallenge(dateString: string): DailyChallenge {
   // Determine difficulty for this date
   const difficulty = getDifficultyForDate(dateString);
 
-  // Pick ONE single letter based on difficulty (no two-letter combos)
+  // Pick a letter that has enough valid categories (mirrors single-player logic)
   const letterPool = getLetterPoolForDifficulty(difficulty);
-  const letter = rng.pick(letterPool);
+  const shuffledPool = rng.shuffle([...letterPool]);
+  const letter = shuffledPool.find((l) => getValidCategoryCount(l) >= MIN_VALID_CATEGORIES_FOR_LETTER)
+    ?? rng.pick(EASY_LETTERS); // Fallback to easy letter if nothing qualifies
 
   // Pick 6 random categories that work with this letter and don't form incompatible pairs
   const shuffledCategories = rng.shuffle(
