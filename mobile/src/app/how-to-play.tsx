@@ -292,7 +292,7 @@ function CategoriesContent() {
       name: 'Name',
       emoji: '👤',
       color: '#3BA99C',
-      description: 'A person\'s first or full name. Real or fictional — anyone counts!',
+      description: 'A person\'s first or full name — real people, fictional characters, heroes, villains, legends. Anyone counts!',
     },
     {
       name: 'Place',
