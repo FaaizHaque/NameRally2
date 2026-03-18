@@ -425,15 +425,10 @@ export default function CreateGameScreen() {
       <View style={{ paddingTop: insets.top, flex: 1 }}>
 
         {/* Header */}
-        <View
-          
-          style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}
-        >
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.85 : 1,
-            })}
+            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
           >
             <View style={{
               backgroundColor: SKETCH_COLORS.paperDark,
@@ -445,14 +440,9 @@ export default function CreateGameScreen() {
               <ChevronLeft size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
             </View>
           </Pressable>
-          <View style={{
-            marginLeft: 12,
-            backgroundColor: '#F8E080',
-            paddingHorizontal: 12, paddingVertical: 5,
-            borderRadius: 6, borderWidth: 1.5, borderColor: '#C8A030',
-            transform: [{ rotate: '-0.5deg' }],
-          }}>
-            <Text style={{ color: '#7A5000', fontSize: 18, fontWeight: '900' }}>Create Game</Text>
+          <View style={{ marginLeft: 12 }}>
+            <Text style={{ color: SKETCH_COLORS.ink, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }}>Create Game</Text>
+            <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 12, fontWeight: '500', letterSpacing: 0.3, marginTop: 1 }}>Set up your multiplayer match</Text>
           </View>
         </View>
 
@@ -463,190 +453,154 @@ export default function CreateGameScreen() {
         >
 
           {/* ── ROUNDS SECTION ── */}
-          <View  style={{ marginBottom: 22 }}>
-            {/* Hand-written section label */}
+          <View style={{ marginBottom: 22 }}>
             <Text style={{
-              color: SKETCH_COLORS.inkLight, fontSize: 13, fontWeight: '700',
-              fontStyle: 'italic', marginBottom: 8, marginLeft: 2,
+              color: SKETCH_COLORS.inkLight, fontSize: 11, fontWeight: '700',
+              letterSpacing: 1.5, marginBottom: 10, marginLeft: 1,
             }}>
-              Number of Rounds:
+              ROUNDS
             </Text>
 
-            {/* Tape */}
-            <View style={{
-              alignSelf: 'center', width: 50, height: 14,
-              backgroundColor: 'rgba(205,190,120,0.65)', borderRadius: 3,
-              marginBottom: -7, zIndex: 2,
-              borderWidth: 1, borderColor: 'rgba(160,140,80,0.4)',
-            }} />
-
-            {/* Rounds control — sits on notebook page */}
             <View style={{
               backgroundColor: SKETCH_COLORS.paper,
-              borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
-              borderRadius: 4,
+              borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine,
+              borderRadius: 12,
               paddingHorizontal: 16, paddingVertical: 14,
               shadowColor: SKETCH_COLORS.ink,
               shadowOffset: { width: 2, height: 3 },
-              shadowOpacity: 0.1, shadowRadius: 0, elevation: 2,
-              transform: [{ rotate: '-0.3deg' }],
+              shadowOpacity: 0.08, shadowRadius: 0, elevation: 2,
             }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Pressable
                   onPress={() => handleRoundsChange(-1)}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.94 : 1 }] })}
                 >
                   <View style={{
-                    width: 52, height: 52, borderRadius: 8,
+                    width: 52, height: 52, borderRadius: 26,
                     alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: SKETCH_COLORS.paper,
-                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                    backgroundColor: SKETCH_COLORS.paperDark,
+                    borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine,
                   }}>
-                    <Minus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                    <Minus size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
                   </View>
                 </Pressable>
                 <View style={{ alignItems: 'center' }}>
-                  <View style={{
-                    backgroundColor: SKETCH_COLORS.amberLight,
-                    paddingHorizontal: 28, paddingVertical: 4,
-                    borderRadius: 4, borderWidth: 2, borderColor: SKETCH_COLORS.amber,
-                    transform: [{ rotate: '-0.5deg' }],
-                  }}>
-                    <Text style={{ color: SKETCH_COLORS.ink, fontSize: 48, fontWeight: '900', lineHeight: 58 }}>{rounds}</Text>
-                  </View>
-                  <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, marginTop: 3, fontStyle: 'italic' }}>rounds</Text>
+                  <Text style={{ color: SKETCH_COLORS.ink, fontSize: 52, fontWeight: '900', lineHeight: 58, letterSpacing: -2 }}>{rounds}</Text>
+                  <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, fontWeight: '600', letterSpacing: 1, marginTop: 1 }}>ROUNDS</Text>
                 </View>
                 <Pressable
                   onPress={() => handleRoundsChange(1)}
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.94 : 1 }] })}
                 >
                   <View style={{
-                    width: 52, height: 52, borderRadius: 8,
+                    width: 52, height: 52, borderRadius: 26,
                     alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: SKETCH_COLORS.paper,
-                    borderWidth: 2, borderColor: SKETCH_COLORS.paperLine,
+                    backgroundColor: SKETCH_COLORS.paperDark,
+                    borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine,
                   }}>
-                    <Plus size={24} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+                    <Plus size={22} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
                   </View>
                 </Pressable>
-              </View>
-              {/* Underline */}
-              <View style={{ height: 1, backgroundColor: SKETCH_COLORS.paperLine, opacity: 0.5, marginTop: 12 }} />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
-                <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 10, fontStyle: 'italic' }}>min: 1</Text>
-                <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 10, fontStyle: 'italic' }}>max: 20</Text>
               </View>
             </View>
           </View>
 
           {/* ── CATEGORIES SECTION ── */}
-          <View >
-            {/* Hand-written section label + count */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginLeft: 2 }}>
-              <Text style={{ color: SKETCH_COLORS.inkLight, fontSize: 13, fontWeight: '700', fontStyle: 'italic' }}>
-                Categories:
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginLeft: 1 }}>
+              <Text style={{ color: SKETCH_COLORS.inkLight, fontSize: 11, fontWeight: '700', letterSpacing: 1.5 }}>
+                CATEGORIES
               </Text>
               <View style={{
                 backgroundColor: SKETCH_COLORS.amberLight,
-                paddingHorizontal: 8, paddingVertical: 2,
-                borderRadius: 4, borderWidth: 1.5, borderColor: SKETCH_COLORS.amber,
-                transform: [{ rotate: '0.4deg' }],
+                paddingHorizontal: 10, paddingVertical: 3,
+                borderRadius: 20, borderWidth: 1.5, borderColor: SKETCH_COLORS.amber,
               }}>
-                <Text style={{ color: '#7A5000', fontSize: 11, fontWeight: '800' }}>{selectedCategories.length} selected</Text>
+                <Text style={{ color: '#7A5000', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>{selectedCategories.length} selected</Text>
               </View>
             </View>
 
-            {/* Category rows — directly on notebook, look like torn strips */}
             <View style={{ gap: 6 }}>
-              {AVAILABLE_CATEGORIES.map((category, index) => {
+              {AVAILABLE_CATEGORIES.map((category) => {
                 const isSelected = selectedCategories.includes(category.id);
                 const colors = CATEGORY_PASTEL[category.id] || { bg: SKETCH_COLORS.paper, border: SKETCH_COLORS.paperLine, selectedBg: SKETCH_COLORS.paperLine, ink: SKETCH_COLORS.inkLight };
-                const tilt = index % 3 === 0 ? '-0.4deg' : index % 3 === 1 ? '0.3deg' : '-0.2deg';
                 return (
-                  <View key={category.id} >
-                    <Pressable onPress={() => toggleCategory(category.id)}
-                      style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.98 : 1 }, { rotate: tilt }] })}>
-                      <View style={{
-                        flexDirection: 'row', alignItems: 'center',
-                        justifyContent: 'space-between',
-                        paddingVertical: 9, paddingHorizontal: 10,
-                        borderRadius: 4,
-                        backgroundColor: isSelected ? colors.bg : SKETCH_COLORS.paper,
-                        borderWidth: isSelected ? 2 : 1,
-                        borderColor: isSelected ? colors.border : SKETCH_COLORS.paperLine,
-                        shadowColor: SKETCH_COLORS.ink,
-                        shadowOffset: { width: 1, height: 2 },
-                        shadowOpacity: isSelected ? 0.1 : 0.06,
-                        shadowRadius: 0, elevation: isSelected ? 2 : 1,
-                      }}>
-                        {/* Left margin accent when selected */}
-                        {isSelected && (
-                          <View style={{
-                            position: 'absolute', left: 0, top: 0, bottom: 0,
-                            width: 4, borderRadius: 4,
-                            backgroundColor: colors.border,
-                          }} />
-                        )}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, paddingLeft: isSelected ? 6 : 2 }}>
-                          <View style={{
-                            width: 30, height: 30, borderRadius: 6,
-                            alignItems: 'center', justifyContent: 'center',
-                            backgroundColor: isSelected ? colors.border + '28' : SKETCH_COLORS.paperDark,
-                          }}>
-                            {CATEGORY_ICONS_SKETCH[category.id]}
-                          </View>
-                          <Text style={{
-                            color: isSelected ? colors.ink : SKETCH_COLORS.inkLight,
-                            fontSize: 13, fontWeight: isSelected ? '800' : '600',
-                          }} numberOfLines={1}>
-                            {category.name}
-                          </Text>
-                        </View>
-                        {/* Checkbox */}
+                  <Pressable
+                    key={category.id}
+                    onPress={() => toggleCategory(category.id)}
+                    style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.98 : 1 }], opacity: pressed ? 0.9 : 1 })}
+                  >
+                    <View style={{
+                      flexDirection: 'row', alignItems: 'center',
+                      justifyContent: 'space-between',
+                      paddingVertical: 10, paddingHorizontal: 12,
+                      borderRadius: 10,
+                      backgroundColor: isSelected ? colors.bg : SKETCH_COLORS.paper,
+                      borderWidth: isSelected ? 2 : 1.5,
+                      borderColor: isSelected ? colors.border : SKETCH_COLORS.paperLine,
+                      shadowColor: SKETCH_COLORS.ink,
+                      shadowOffset: { width: 1, height: 2 },
+                      shadowOpacity: isSelected ? 0.1 : 0.05,
+                      shadowRadius: 0, elevation: isSelected ? 2 : 1,
+                    }}>
+                      {isSelected && (
                         <View style={{
-                          width: 22, height: 22, borderRadius: 3,
+                          position: 'absolute', left: 0, top: 0, bottom: 0,
+                          width: 3, borderRadius: 10,
+                          backgroundColor: colors.border,
+                        }} />
+                      )}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, paddingLeft: isSelected ? 6 : 2 }}>
+                        <View style={{
+                          width: 32, height: 32, borderRadius: 8,
                           alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: isSelected ? colors.border : 'transparent',
-                          borderWidth: 2,
-                          borderColor: isSelected ? colors.border : SKETCH_COLORS.paperLine,
+                          backgroundColor: isSelected ? colors.border + '22' : SKETCH_COLORS.paperDark,
                         }}>
-                          {isSelected && <Check size={13} color="#fff" strokeWidth={3} />}
+                          {CATEGORY_ICONS_SKETCH[category.id]}
                         </View>
+                        <Text style={{
+                          color: isSelected ? colors.ink : SKETCH_COLORS.inkLight,
+                          fontSize: 14, fontWeight: isSelected ? '700' : '500',
+                          letterSpacing: 0.1,
+                        }} numberOfLines={1}>
+                          {category.name}
+                        </Text>
                       </View>
-                    </Pressable>
-                  </View>
+                      <View style={{
+                        width: 22, height: 22, borderRadius: 11,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: isSelected ? colors.border : 'transparent',
+                        borderWidth: 2,
+                        borderColor: isSelected ? colors.border : SKETCH_COLORS.paperLine,
+                      }}>
+                        {isSelected && <Check size={12} color="#fff" strokeWidth={3} />}
+                      </View>
+                    </View>
+                  </Pressable>
                 );
               })}
             </View>
-            <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, marginTop: 8, fontStyle: 'italic', marginLeft: 2 }}>
-              Tap to select / deselect (minimum 1)
+            <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, fontWeight: '500', letterSpacing: 0.3, marginTop: 8, marginLeft: 1 }}>
+              Minimum 1 category required
             </Text>
           </View>
         </ScrollView>
 
         {/* Create Game Button */}
-        <View
-          
-          style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: insets.bottom + 16 }}
-        >
+        <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: insets.bottom + 16 }}>
           <Pressable
             onPress={handleCreateGame}
-            style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }, { rotate: '-0.3deg' }] })}
+            style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}
           >
             <View style={{
-              backgroundColor: SKETCH_COLORS.red,
-              borderRadius: 8, paddingVertical: 18,
+              backgroundColor: SKETCH_COLORS.ink,
+              borderRadius: 14, paddingVertical: 18,
               alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 10,
-              borderWidth: 2.5, borderColor: '#991111',
-              shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 3, height: 5 },
-              shadowOpacity: 0.2, shadowRadius: 0, elevation: 5,
+              shadowColor: SKETCH_COLORS.ink, shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.25, shadowRadius: 12, elevation: 5,
             }}>
-              <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
-              <Text style={{ color: '#fff', fontSize: 18, fontWeight: '900' }}>Create Game</Text>
+              <Play size={20} color="#fff" fill="#fff" strokeWidth={2} />
+              <Text style={{ color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.5 }}>Create Game</Text>
             </View>
           </Pressable>
         </View>
