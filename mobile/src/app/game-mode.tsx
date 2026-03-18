@@ -57,9 +57,8 @@ export default function GameModeScreen() {
 
   const handleMultiplayer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Sounds.tap();
-    setGameMode('multiplayer');
     Sounds.navigate();
+    setGameMode('multiplayer');
     router.push('/multiplayer-options');
   };
 

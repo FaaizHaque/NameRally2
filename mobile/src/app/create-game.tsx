@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,6 +31,7 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { Sounds } from '@/lib/sounds';
 import { useGameStore, AVAILABLE_CATEGORIES, CategoryType } from '@/lib/state/game-store';
 import type { LevelCategoryType } from '@/lib/level-types';
 import { SKETCH_COLORS } from '@/lib/theme';
@@ -131,6 +132,11 @@ export default function CreateGameScreen() {
   const currentLevel = useGameStore((s) => s.currentLevel);
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
+
+  // Chill background while setting up — lobby_mp plays here, arcade kicks in when people join
+  useEffect(() => {
+    Sounds.startBackground('lobby_mp');
+  }, []);
 
   const handleRoundsChange = (delta: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
