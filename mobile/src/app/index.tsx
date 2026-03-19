@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -190,14 +191,21 @@ export default function HomeScreen() {
   }));
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
 
+  // Show tutorial modal if user exists but hasn't explicitly dismissed it yet
+  useEffect(() => {
+    if (!currentUser) return;
+    AsyncStorage.getItem('npat_tutorial_dismissed').then((val) => {
+      if (!val) setTimeout(() => setShowHowToPlayModal(true), 400);
+    });
+  }, [currentUser?.id]);
+
   const handleCreateAccount = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
     const chosenName = username.trim() || 'Guest';
     setCurrentUser({ id: `user_${Date.now()}`, username: chosenName });
     setShowInput(false);
-    // Show how-to-play prompt for new users with a slight delay
-    setTimeout(() => setShowHowToPlayModal(true), 400);
+    // Tutorial will show via the useEffect above once currentUser is set
   };
 
   const handleStartEditName = () => {
@@ -534,7 +542,7 @@ export default function HomeScreen() {
         visible={showHowToPlayModal}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowHowToPlayModal(false)}
+        onRequestClose={() => { /* back button intentionally does nothing — must tap Skip or Start */ }}
       >
         <View style={{
           flex: 1, backgroundColor: 'rgba(28,18,10,0.65)',
@@ -574,6 +582,7 @@ export default function HomeScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 Sounds.tap();
+                AsyncStorage.setItem('npat_tutorial_dismissed', 'true');
                 setShowHowToPlayModal(false);
                 router.push('/how-to-play');
               }}
@@ -595,6 +604,7 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                AsyncStorage.setItem('npat_tutorial_dismissed', 'true');
                 setShowHowToPlayModal(false);
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 14, alignItems: 'center', marginTop: 6 })}

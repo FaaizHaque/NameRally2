@@ -447,20 +447,18 @@ export default function GameScreen() {
 
     function checkNovelty() {
       if (!currentLevel) return;
-      const levelNum = currentLevel.level;
 
-      // Check for new category (key: category name, fires once ever)
-      if (levelNum >= 2 && levelNum <= 11) {
-        const categoryOrder = ['sports_games', 'brands', 'countries', 'food_dishes', 'professions', 'movies', 'songs', 'health_issues', 'historical_figures', 'fruits_vegetables'];
-        const newCat = categoryOrder[levelNum - 2];
-        const catKey = `novelty_cat_${newCat}`;
-        if (newCat && !shownNovelties.current.has(catKey)) {
-          const catName = getCategoryName(newCat as CategoryType);
+      // Check each category in this level — show a popup the very first time
+      // any category is encountered, regardless of level number.
+      for (const cat of currentLevel.categories) {
+        const catKey = `novelty_cat_${cat}`;
+        if (!shownNovelties.current.has(catKey)) {
+          const catName = getCategoryName(cat as CategoryType);
           markNoveltyShown(catKey);
           setNoveltyPopup({
             type: 'category',
-            title: 'New Category Unlocked!',
-            message: `${catName} has been added to your categories`,
+            title: 'New Category!',
+            message: `${catName} joins the rally for the first time!`,
             icon: <Sparkles size={36} color="#FCD34D" strokeWidth={2} />,
           });
           return;
