@@ -16,7 +16,7 @@ export type LevelCategoryType =
   | 'countries'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures';
+  | 'celebrities';
 
 export interface LevelConstraint {
   type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'contains_vowel' | 'odd_length' | 'combo';

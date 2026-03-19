@@ -19,7 +19,7 @@ type CategoryType =
   | 'countries'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures';
+  | 'celebrities';
 
 interface DailyChallenge {
   id: string;
@@ -33,7 +33,7 @@ interface DailyChallenge {
 const ALL_CATEGORIES: CategoryType[] = [
   'names', 'places', 'animal', 'thing', 'sports_games',
   'brands', 'health_issues', 'countries',
-  'professions', 'food_dishes', 'historical_figures'
+  'professions', 'food_dishes', 'celebrities'
 ];
 
 // Letter pools by difficulty (mirrors single-player level-generator pools)
@@ -51,18 +51,18 @@ const DAILY_CHALLENGE_CATEGORY_COUNT = 6;
 const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
+    'health_issues', 'brands', 'professions', 'celebrities', 'countries',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'celebrities', 'fruits_vegetables',
   ],
-  Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'historical_figures'],
-  Y: ['health_issues', 'sports_games', 'professions', 'historical_figures', 'thing', 'brands', 'food_dishes'],
-  U: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
-  V: ['sports_games', 'health_issues', 'thing', 'historical_figures'],
-  K: ['health_issues', 'historical_figures', 'thing'],
-  J: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
+  Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'celebrities'],
+  Y: ['health_issues', 'sports_games', 'professions', 'celebrities', 'thing', 'brands', 'food_dishes'],
+  U: ['health_issues', 'sports_games', 'thing', 'celebrities'],
+  V: ['sports_games', 'health_issues', 'thing', 'celebrities'],
+  K: ['health_issues', 'celebrities', 'thing'],
+  J: ['health_issues', 'sports_games', 'thing', 'celebrities'],
   I: ['sports_games', 'thing', 'health_issues'],
   O: ['health_issues', 'sports_games', 'thing'],
   W: ['health_issues'],

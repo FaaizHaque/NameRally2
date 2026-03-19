@@ -54,7 +54,7 @@ const CATEGORY_ICONS_MODERN: Record<string, React.ReactNode> = {
   countries: <Globe size={18} color={MODERN_ICON_COLOR} />,
   professions: <Briefcase size={18} color={MODERN_ICON_COLOR} />,
   food_dishes: <UtensilsCrossed size={18} color={MODERN_ICON_COLOR} />,
-  historical_figures: <Landmark size={18} color={MODERN_ICON_COLOR} />,
+  celebrities: <Landmark size={18} color={MODERN_ICON_COLOR} />,
   books_movies: <Film size={18} color={MODERN_ICON_COLOR} />,
   cars: <Car size={18} color={MODERN_ICON_COLOR} />,
 };
@@ -71,7 +71,7 @@ const CATEGORY_ICONS_SKETCH: Record<string, React.ReactNode> = {
   countries: <Globe size={18} color={SKETCH_ICON_COLOR} />,
   professions: <Briefcase size={18} color={SKETCH_ICON_COLOR} />,
   food_dishes: <UtensilsCrossed size={18} color={SKETCH_ICON_COLOR} />,
-  historical_figures: <Landmark size={18} color={SKETCH_ICON_COLOR} />,
+  celebrities: <Landmark size={18} color={SKETCH_ICON_COLOR} />,
   books_movies: <Film size={18} color={SKETCH_ICON_COLOR} />,
   cars: <Car size={18} color={SKETCH_ICON_COLOR} />,
 };
@@ -87,7 +87,7 @@ const LEVEL_CATEGORY_NAMES: Record<LevelCategoryType, string> = {
   countries: 'Countries',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  historical_figures: 'Historical Figures',
+  celebrities: 'Celebrities',
   fruits_vegetables: 'Fruits & Vegetables',
 };
 

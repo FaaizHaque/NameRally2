@@ -93,7 +93,7 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     darkBg: '#1A0800', darkBorder: '#FB923C', darkAccent: '#FED7AA',
     gradA: '#FB923C', gradB: '#EA580C',
   },
-  historical_figures: {
+  celebrities: {
     // Bronze/copper — antiquity, clearly not green
     accent: '#B45309',
     tab: '#FEF3C7', border: '#B45309', icon: '#B45309',
