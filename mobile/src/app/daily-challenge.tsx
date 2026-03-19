@@ -66,12 +66,9 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   brands:             <ShoppingBag size={18} color={CAT_COLORS.brands.accent} />,
   health_issues:      <HeartPulse size={18} color={CAT_COLORS.health_issues.accent} />,
   countries:          <Globe size={18} color={CAT_COLORS.countries.accent} />,
-  movies:             <Film size={18} color={CAT_COLORS.movies.accent} />,
-  songs:              <Music size={18} color={CAT_COLORS.songs.accent} />,
   professions:        <Briefcase size={18} color={CAT_COLORS.professions.accent} />,
   food_dishes:        <Utensils size={18} color={CAT_COLORS.food_dishes.accent} />,
   historical_figures: <Landmark size={18} color={CAT_COLORS.historical_figures.accent} />,
-  music_artists:      <Music size={18} color={CAT_COLORS.music_artists.accent} />,
   fruits_vegetables:  <Apple size={18} color={CAT_COLORS.fruits_vegetables.accent} />,
 };
 
@@ -98,12 +95,9 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   brands: 'Brands',
   health_issues: 'Health Issues',
   countries: 'Countries',
-  movies: 'Movies',
-  songs: 'Songs',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
   historical_figures: 'Historical Figures',
-  music_artists: 'Music Artists/Bands',
   fruits_vegetables: 'Fruits & Vegetables',
 };
 

@@ -73,12 +73,9 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   brands:             <ShoppingBag size={13} color={CAT_COLORS.brands.icon} strokeWidth={2.5} />,
   health_issues:      <HeartPulse size={13} color={CAT_COLORS.health_issues.icon} strokeWidth={2.5} />,
   countries:          <Globe size={13} color={CAT_COLORS.countries.icon} strokeWidth={2.5} />,
-  movies:             <Film size={13} color={CAT_COLORS.movies.icon} strokeWidth={2.5} />,
-  songs:              <Music size={13} color={CAT_COLORS.songs.icon} strokeWidth={2.5} />,
   professions:        <Briefcase size={13} color={CAT_COLORS.professions.icon} strokeWidth={2.5} />,
   food_dishes:        <Utensils size={13} color={CAT_COLORS.food_dishes.icon} strokeWidth={2.5} />,
   historical_figures: <Landmark size={13} color={CAT_COLORS.historical_figures.icon} strokeWidth={2.5} />,
-  music_artists:      <Music size={13} color={CAT_COLORS.music_artists.icon} strokeWidth={2.5} />,
   fruits_vegetables:  <Apple size={13} color={CAT_COLORS.fruits_vegetables.icon} strokeWidth={2.5} />,
 };
 

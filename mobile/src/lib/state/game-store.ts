@@ -61,12 +61,9 @@ export type CategoryType =
   | 'health_issues'
   // Advanced categories (unlocked at higher levels)
   | 'countries'
-  | 'movies'
-  | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures'
-  | 'music_artists';
+  | 'historical_figures';
 
 export interface Category {
   id: CategoryType;
@@ -85,12 +82,9 @@ export const AVAILABLE_CATEGORIES: Category[] = [
   { id: 'health_issues', name: 'Health Issues', icon: 'heart-pulse' },
   // Advanced categories
   { id: 'countries', name: 'Countries', icon: 'globe' },
-  { id: 'movies', name: 'Movies', icon: 'film' },
-  { id: 'songs', name: 'Songs', icon: 'music' },
   { id: 'professions', name: 'Professions', icon: 'briefcase' },
   { id: 'food_dishes', name: 'Food & Dishes', icon: 'utensils' },
   { id: 'historical_figures', name: 'Historical Figures', icon: 'landmark' },
-  { id: 'music_artists', name: 'Music Artists/Bands', icon: 'music-2' },
 ];
 
 export interface Player {

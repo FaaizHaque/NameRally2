@@ -79,19 +79,6 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     darkBg: '#001828', darkBorder: '#38BDF8', darkAccent: '#BAE6FD',
     gradA: '#38BDF8', gradB: '#0284C7',
   },
-  movies: {
-    accent: '#6366F1',
-    tab: '#EEF2FF', border: '#6366F1', icon: '#4F46E5',
-    darkBg: '#0C0A20', darkBorder: '#818CF8', darkAccent: '#C7D2FE',
-    gradA: '#818CF8', gradB: '#6366F1',
-  },
-  songs: {
-    // Fuchsia/magenta — distinct from brands pink and movies indigo
-    accent: '#D946EF',
-    tab: '#FAE8FF', border: '#D946EF', icon: '#C026D3',
-    darkBg: '#1A0020', darkBorder: '#E879F9', darkAccent: '#F5D0FE',
-    gradA: '#E879F9', gradB: '#D946EF',
-  },
   professions: {
     // Cyan — professional/corporate, completely different hue from amber health_issues
     accent: '#0891B2',
@@ -112,13 +99,6 @@ export const CAT_COLORS: Record<CategoryType, CatColor> = {
     tab: '#FEF3C7', border: '#B45309', icon: '#B45309',
     darkBg: '#1A0E00', darkBorder: '#D97706', darkAccent: '#FDE68A',
     gradA: '#D97706', gradB: '#B45309',
-  },
-  music_artists: {
-    // Yellow/gold — "gold records", completely different from green fruits_vegetables
-    accent: '#EAB308',
-    tab: '#FEF9C3', border: '#EAB308', icon: '#CA8A04',
-    darkBg: '#1A1200', darkBorder: '#FACC15', darkAccent: '#FEF08A',
-    gradA: '#FACC15', gradB: '#CA8A04',
   },
   fruits_vegetables: {
     // Mid green — fresh produce, the one true green

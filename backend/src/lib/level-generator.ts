@@ -24,8 +24,6 @@ export type CategoryType =
   | 'brands'
   | 'health_issues'
   | 'countries'
-  | 'movies'
-  | 'songs'
   | 'professions'
   | 'food_dishes'
   | 'historical_figures';
@@ -175,15 +173,15 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
     'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
-    'movies', 'songs', 'fruits_vegetables',
+    'fruits_vegetables',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'songs', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'fruits_vegetables',
   ],
   Z: [
     'sports_games', 'food_dishes', 'thing', 'health_issues', 'professions',
-    'songs', 'historical_figures', 'fruits_vegetables',
+    'historical_figures', 'fruits_vegetables',
   ],
   Y: [
     'health_issues', 'sports_games', 'professions', 'historical_figures', 'thing',
@@ -204,23 +202,23 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
 
 const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   J: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Q: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   X: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Z: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Y: [
@@ -252,8 +250,21 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 
 // ============================================
 // CATEGORY INTRODUCTION SCHEDULE
-// Levels 1-4: BASICS (Name, Place, Animal, Thing) - warm up
-// Level 2+: Add ONE new category EVERY LEVEL - constant variety, never boring!
+// Ordered easiest → hardest so early levels feel approachable.
+// Each milestone level ALWAYS includes the new category in its round,
+// giving players a pop-up introduction on first encounter.
+//
+// Level 1-2:  3 cats  — Names, Animal, Places
+// Level 3-5:  4 cats  — + Thing
+// Level 6-10: 5 cats  — + Fruits & Vegetables
+// Level 11-30:  6 cats  — + Sports & Games
+// Level 31-50:  7 cats  — + Brands
+// Level 51-100: 8 cats  — + Health Issues
+// Level 101-200: 9 cats  — + Countries
+// Level 201-300: 10 cats — + Food & Dishes
+// Level 301-400: 11 cats — + Movies
+// Level 401-450: 11 cats — + Professions
+// Level 481-500: 12 cats — + Historical Figures (ALL)
 // ============================================
 
 interface CategoryMilestone {
@@ -261,22 +272,20 @@ interface CategoryMilestone {
   category: CategoryType;
 }
 
-// New categories unlocked EVERY LEVEL - keeps it fresh and exciting throughout
 const CATEGORY_MILESTONES: CategoryMilestone[] = [
-  { level: 2, category: 'sports_games' },        // 5 categories from level 2
-  { level: 3, category: 'brands' },              // 6 categories from level 3
-  { level: 4, category: 'countries' },           // 7 categories from level 4
-  { level: 5, category: 'food_dishes' },         // 8 categories from level 5
-  { level: 6, category: 'professions' },         // 9 categories from level 6
-  { level: 7, category: 'movies' },              // 10 categories from level 7
-  { level: 8, category: 'songs' },               // 11 categories from level 8
-  { level: 9, category: 'health_issues' },       // 12 categories from level 9
-  { level: 10, category: 'historical_figures' }, // 13 categories from level 10
-  { level: 11, category: 'fruits_vegetables' },  // 14 categories from level 11
+  { level: 3,   category: 'thing' },              // 4 cats
+  { level: 6,   category: 'fruits_vegetables' },  // 5 cats
+  { level: 11,  category: 'sports_games' },       // 6 cats
+  { level: 31,  category: 'brands' },             // 7 cats
+  { level: 51,  category: 'health_issues' },      // 8 cats
+  { level: 101, category: 'countries' },          // 9 cats
+  { level: 201, category: 'food_dishes' },        // 10 cats
+  { level: 401, category: 'professions' },        // 11 cats
+  { level: 481, category: 'historical_figures' }, // 12 cats (ALL)
 ];
 
-/** The four starter categories always available from level 1 */
-const STARTER_CATEGORIES: CategoryType[] = ['names', 'places', 'animal', 'thing'];
+/** Three starter categories (easiest) — always available from level 1 */
+const STARTER_CATEGORIES: CategoryType[] = ['names', 'animal', 'places'];
 
 /**
  * Return the full set of unlocked categories for a given level number.
@@ -305,15 +314,16 @@ interface ConstraintMilestone {
 }
 
 // Constraints introduced gradually - easy first, progressively harder
+// Designed for 100-level play; higher-level types kept for 500-level future use
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 20,  type: 'min_word_length' },  // EASY: 4+ letter words (level 20)
-  { level: 35,  type: 'max_word_length' },  // EASY: max length limit (level 35)
-  { level: 160, type: 'no_repeat_letters' },// HARD: no repeating letters (level 160)
-  { level: 220, type: 'survival' },         // VERY HARD: one wrong = fail (level 220)
-  { level: 290, type: 'time_pressure' },    // VERY HARD: reduced time (level 290)
-  { level: 350, type: 'double_letters' },   // VERY HARD: words with double letters (level 350)
-  { level: 401, type: 'ends_with_letter' }, // LEGENDARY: ends with specific letter (level 401)
-  { level: 450, type: 'combo' },            // LEGENDARY: two constraints simultaneously (level 450)
+  { level: 10,  type: 'min_word_length' },  // L10:  4+ letter words (gentle start)
+  { level: 30,  type: 'max_word_length' },  // L30:  max word length adds variety
+  { level: 50,  type: 'no_repeat_letters' },// L50:  no repeating letters
+  { level: 70,  type: 'survival' },         // L70:  one wrong = fail
+  { level: 80,  type: 'double_letters' },   // L80:  words with double letters (user-requested)
+  { level: 90,  type: 'ends_with_letter' }, // L90:  must end with specific letter (user-requested)
+  { level: 95,  type: 'time_pressure' },    // L95:  reduced time
+  { level: 96,  type: 'combo' },            // L96+: two constraints simultaneously
 ];
 
 /**
@@ -328,14 +338,14 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
     }
   }
 
-  // Smooth weighting: 'none' stays common until much later
-  // Prevents constraint overload while keeping progression fresh
+  // Smooth weighting: 'none' stays common at first, then constraints ramp up
+  // Tuned for 100-level play: constraints feel meaningful but not overwhelming early
   let noneWeight = 1;
-  if (level < 50) noneWeight = 8;           // Levels 1-49: constraints are rare (1 in 9 chance)
-  else if (level < 100) noneWeight = 5;     // Levels 50-99: constraints appear more (1 in 6 chance)
-  else if (level < 150) noneWeight = 3;     // Levels 100-149: constraints common (1 in 4 chance)
-  else if (level < 200) noneWeight = 2;     // Levels 150-199: constraints very common (1 in 3 chance)
-  else noneWeight = 1;                      // Levels 200+: constraints always present
+  if (level < 20)  noneWeight = 8;  // L1-19:  rare — don't overwhelm new players (~1 in 9)
+  else if (level < 40)  noneWeight = 5;  // L20-39: occasional (~1 in 6)
+  else if (level < 60)  noneWeight = 3;  // L40-59: common (~1 in 4)
+  else if (level < 80)  noneWeight = 2;  // L60-79: very common (~1 in 3)
+  else noneWeight = 1;                   // L80+:   always present
 
   for (let i = 1; i < noneWeight; i++) pool.push('none');
 
@@ -444,73 +454,38 @@ function isPlayableForAll(
 // ============================================
 
 /**
- * Timer in seconds per category - smooth gradual progression.
- * Level 1-25: Gradual decrease from 18s → 16s (learning phase, safe)
- * Level 26-75: Gradual decrease from 16s → 13s (constraints introduced gently)
- * Level 76-150: Gradual decrease from 13s → 10s (ramping up difficulty)
- * Level 150+: Gradual decrease from 10s → 5s (expert level squeeze)
+ * Seconds allowed per category based on level.
+ * L1-29:  20s per category (generous — learning phase)
+ * L30-69: 15s per category (standard — constraints kicking in)
+ * L70+:   10s per category (tight — expert pressure)
  *
- * No sudden jumps - smooth curve throughout.
+ * Total timer = categoryCount × secondsPerCategory.
+ * This keeps the timer proportional to the actual workload.
  */
-function getBaseTimerSeconds(level: number): number {
-  if (level <= 1) return 18;
+function getSecondsPerCategory(level: number): number {
+  if (level < 30) return 20;
+  if (level < 70) return 15;
+  return 10;
+}
 
-  // Smooth interpolation throughout the entire range
-  let seconds: number;
-
-  if (level <= 25) {
-    // 18s → 16s over 25 levels
-    seconds = lerp(18, 16, (level - 1) / 24);
-  } else if (level <= 75) {
-    // 16s → 13s over 50 levels
-    seconds = lerp(16, 13, (level - 25) / 50);
-  } else if (level <= 150) {
-    // 13s → 10s over 75 levels
-    seconds = lerp(13, 10, (level - 75) / 75);
-  } else {
-    // 10s → 5s over remaining levels (level 150 to 400+)
-    const progress = Math.min((level - 150) / 250, 1);
-    const curved = Math.sqrt(progress); // slightly front-load for pacing
-    seconds = lerp(10, 5, curved);
-  }
-
-  return Math.round(seconds);
+function getBaseTimerSeconds(level: number, categoryCount: number): number {
+  return getSecondsPerCategory(level) * categoryCount;
 }
 
 /**
  * Number of categories per level.
- * Levels 1-4: Always 4 categories (starter categories)
- * Level 5+: Gradually increases as more categories unlock
+ * Always equals the number of unlocked categories at that level —
+ * every available category is used every round, so each introduction
+ * is immediately felt and the pool grows organically.
  *
- * The formula ensures:
- * - Levels 1-4: exactly 4 categories
- * - Level 5-9: 4-5 categories
- * - Level 10-14: 5-6 categories
- * - Level 15-19: 5-6 categories
- * - Level 20-24: 5-7 categories
- * - Level 25+: continues scaling up to max 8
+ * Level 1-2:    3   Level 3-5:    4   Level 6-10:   5
+ * Level 11-30:  6   Level 31-50:  7   Level 51-100: 8
+ * Level 101-200: 9  Level 201-300: 10 Level 301-400: 11
+ * Level 401-450: 12 Level 451-465: 13 Level 466-480: 14
+ * Level 481-500: 15 (ALL)
  */
-function getCategoryCount(level: number, rng: SeededRandom): number {
-  // Levels 1-4: Always exactly 4 starter categories
-  if (level <= 4) {
-    return 4;
-  }
-
-  // Calculate how many categories are unlocked at this level
-  const unlockedCategories = getAvailableCategories(level).length;
-
-  // Base minimum starts at 4, increases every 10 levels
-  const baseMin = Math.min(4 + Math.floor((level - 5) / 10), 6);
-
-  // Maximum is either all unlocked categories or 8, whichever is smaller
-  // But we don't want to always use ALL categories - leave room for variety
-  const maxCategories = Math.min(unlockedCategories, 8);
-
-  // The actual max for this level scales with level progress
-  const scaledMax = Math.min(baseMin + 2, maxCategories);
-
-  // Random selection between min and max
-  return rng.nextInt(baseMin, scaledMax);
+function getCategoryCount(level: number, _rng: SeededRandom): number {
+  return getAvailableCategories(level).length;
 }
 
 /**
@@ -704,55 +679,13 @@ function selectCategories(
   count: number,
   letter: string
 ): CategoryType[] {
-  // Levels 1-4: Always use exactly the 4 starter categories
-  if (level <= 4) {
-    const impossible = IMPOSSIBLE_COMBOS[letter] ?? [];
-    const validStarters = STARTER_CATEGORIES.filter((c) => !impossible.includes(c));
-    // If some starters are impossible with this letter, fill with what we can
-    if (validStarters.length < 4) {
-      // This shouldn't happen with easy letters, but just in case
-      return rng.shuffle(validStarters);
-    }
-    return rng.shuffle([...STARTER_CATEGORIES]);
-  }
-
   const available = getAvailableCategories(level);
   const impossible = IMPOSSIBLE_COMBOS[letter] ?? [];
   const valid = available.filter((c) => !impossible.includes(c));
 
-  // Shuffle the valid pool
-  const shuffled = rng.shuffle(valid);
-
-  // Pick one by one, enforcing mutual exclusions as we go
-  const picked: CategoryType[] = [];
-  for (const cat of shuffled) {
-    if (picked.length >= count) break;
-    // Mutual exclusion: countries and places never together
-    if (cat === 'countries' && picked.includes('places')) continue;
-    if (cat === 'places' && picked.includes('countries')) continue;
-    // Mutual exclusion: fruits_vegetables and food_dishes never together
-    if (cat === 'fruits_vegetables' && picked.includes('food_dishes')) continue;
-    if (cat === 'food_dishes' && picked.includes('fruits_vegetables')) continue;
-    picked.push(cat);
-  }
-
-  // At milestone levels, guarantee the newly introduced category is included
-  const milestone = CATEGORY_MILESTONES.find((m) => m.level === level);
-  if (milestone && valid.includes(milestone.category) && !picked.includes(milestone.category)) {
-    const milCat = milestone.category;
-    // Check mutual exclusion for milestone category
-    const conflicts =
-      (milCat === 'countries' && picked.includes('places')) ||
-      (milCat === 'places' && picked.includes('countries')) ||
-      (milCat === 'fruits_vegetables' && picked.includes('food_dishes')) ||
-      (milCat === 'food_dishes' && picked.includes('fruits_vegetables'));
-    if (!conflicts) {
-      if (picked.length >= count) picked.pop();
-      picked.push(milCat);
-    }
-  }
-
-  return rng.shuffle(picked);
+  // Shuffle and return up to `count` — count always equals available.length so all
+  // unlocked categories are used each round (some may be filtered by impossible combos).
+  return rng.shuffle(valid).slice(0, count);
 }
 
 // ============================================
@@ -845,8 +778,8 @@ function selectConstraint(
 ): LevelConstraint {
   const pool = getConstraintPool(level);
 
-  // For the very first few levels, keep it simple
-  if (level < 30) {
+  // For the very first levels, keep it simple (before first constraint unlocks)
+  if (level < 10) {
     return { type: 'none', description: 'No special constraints' };
   }
 
@@ -940,111 +873,101 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bandNumber: 1,
     name: 'Warmup',
     levelRange: [1, 25],
-    description: 'Learn the basics with 4 starter categories (Name, Place, Animal, Thing), then unlock new categories every 5 levels',
+    description: 'Start with Names, Animal, Places (3 cats) and unlock new categories every few levels up to 6 by level 11',
     timerRange: [18, 16],
     passScoreRange: [30, 45],
-    categoryCountRange: [4, 5],
+    categoryCountRange: [3, 6],
     letterDifficulties: ['easy'],
-    constraintPool: ['none', 'min_word_length'],
+    constraintPool: ['none'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.0, 1.0],
-    availableCategories: ['names', 'places', 'animal', 'thing', 'sports_games', 'brands', 'countries', 'food_dishes', 'professions'],
+    availableCategories: ['names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games'],
   },
   {
     bandNumber: 2,
     name: 'Getting Started',
     levelRange: [26, 50],
-    description: 'More categories unlock; more constraint types appear',
+    description: 'Brands unlocked at 31; constraints start at 30',
     timerRange: [14, 12],
     passScoreRange: [35, 50],
-    categoryCountRange: [5, 6],
+    categoryCountRange: [6, 7],
     letterDifficulties: ['easy', 'normal'],
     constraintPool: ['none', 'min_word_length', 'max_word_length'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.0, 1.1],
-    availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
-    ],
+    availableCategories: ['names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games', 'brands'],
   },
   {
     bandNumber: 3,
     name: 'Picking Up Speed',
     levelRange: [51, 100],
-    description: 'All 14 categories unlocked, difficulty ramps up',
+    description: 'Health Issues (8 cats), harder letters appear',
     timerRange: [12, 10],
     passScoreRange: [45, 60],
-    categoryCountRange: [5, 7],
+    categoryCountRange: [8, 8],
     letterDifficulties: ['easy', 'normal'],
     constraintPool: ['none', 'min_word_length', 'max_word_length'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.1, 1.2],
-    availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
-    ],
+    availableCategories: ['names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games', 'brands', 'health_issues'],
   },
   {
     bandNumber: 4,
     name: 'Challenger',
     levelRange: [101, 200],
-    description: 'Time pressure mode, harder letters emerge',
+    description: 'Countries unlocked (9 cats), no-repeat-letters constraint',
     timerRange: [10, 8],
     passScoreRange: [55, 72],
-    categoryCountRange: [6, 7],
+    categoryCountRange: [9, 9],
     letterDifficulties: ['normal', 'hard'],
     constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.2, 1.4],
     availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
+      'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
+      'brands', 'health_issues', 'countries',
     ],
   },
   {
     bandNumber: 5,
     name: 'Expert',
     levelRange: [201, 300],
-    description: 'Multi-letter mode appears; survival and time pressure kick in',
+    description: 'Food & Dishes (10 cats), multi-letter mode, survival kicks in',
     timerRange: [8, 6],
     passScoreRange: [68, 82],
-    categoryCountRange: [6, 8],
+    categoryCountRange: [10, 10],
     letterDifficulties: ['normal', 'hard'],
     constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure'],
     allowComboConstraints: false,
     survivalModeChance: 0.15,
     bonusMultiplierRange: [1.4, 1.6],
     availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
+      'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
+      'brands', 'health_issues', 'countries', 'food_dishes',
     ],
     multiLetterMode: true,
   },
   {
+  {
     bandNumber: 6,
     name: 'Master',
     levelRange: [301, 400],
-    description: 'Triple constraints, hard letters, tight timers',
+    description: 'Professions at 401, triple constraints, tight timers',
     timerRange: [6, 5],
     passScoreRange: [78, 90],
-    categoryCountRange: [7, 8],
+    categoryCountRange: [10, 10],
     letterDifficulties: ['hard', 'normal'],
     constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters'],
     allowComboConstraints: false,
     survivalModeChance: 0.3,
     bonusMultiplierRange: [1.6, 1.8],
     availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
+      'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
+      'brands', 'health_issues', 'countries', 'food_dishes',
     ],
     multiLetterMode: true,
   },
@@ -1052,19 +975,19 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bandNumber: 7,
     name: 'Legendary',
     levelRange: [401, 500],
-    description: 'Everything goes - the hardest possible challenge',
+    description: 'All 12 categories unlocked by 481 — maximum difficulty',
     timerRange: [5, 4],
     passScoreRange: [88, 95],
-    categoryCountRange: [7, 8],
+    categoryCountRange: [11, 12],
     letterDifficulties: ['hard'],
     constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
     survivalModeChance: 0.45,
     bonusMultiplierRange: [1.8, 2.0],
     availableCategories: [
-      'names', 'places', 'animal', 'thing', 'sports_games', 'brands',
-      'countries', 'food_dishes', 'professions', 'movies', 'songs',
-      'health_issues', 'historical_figures', 'fruits_vegetables',
+      'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
+      'brands', 'health_issues', 'countries', 'food_dishes',
+      'professions', 'historical_figures',
     ],
     multiLetterMode: true,
   },
@@ -1122,7 +1045,7 @@ export function generateLevel(levelNumber: number): LevelData {
   );
 
   // --- Timer ---
-  let timerSeconds = getBaseTimerSeconds(levelNumber);
+  let timerSeconds = getBaseTimerSeconds(levelNumber, categories.length);
 
   // GENEROUS BONUS TIME for difficult constraints
   // This ensures players have enough time when facing challenging constraints
@@ -1167,8 +1090,8 @@ export function generateLevel(levelNumber: number): LevelData {
     timerSeconds = Math.max(6, timerSeconds - 4); // Still challenging but not brutal
   }
 
-  // Clamp to reasonable bounds (more generous max)
-  timerSeconds = clamp(timerSeconds, 5, 25);
+  // Clamp: min 10s total, max = base (constraint bonuses only add, never exceed base by more than 30s)
+  timerSeconds = clamp(timerSeconds, 10, getBaseTimerSeconds(levelNumber, categories.length) + 30);
 
   // --- Scoring ---
   const passScorePercent = getPassScorePercent(levelNumber);

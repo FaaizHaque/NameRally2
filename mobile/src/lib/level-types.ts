@@ -14,12 +14,9 @@ export type LevelCategoryType =
   | 'health_issues'
   // Advanced categories (unlocked at higher levels)
   | 'countries'
-  | 'movies'
-  | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures'
-  | 'music_artists';
+  | 'historical_figures';
 
 export interface LevelConstraint {
   type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'combo';
