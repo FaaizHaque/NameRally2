@@ -453,37 +453,22 @@ function isPlayableForAll(
 // ============================================
 
 /**
- * Timer in seconds per category - smooth gradual progression.
- * Level 1-25: Gradual decrease from 18s → 16s (learning phase, safe)
- * Level 26-75: Gradual decrease from 16s → 13s (constraints introduced gently)
- * Level 76-150: Gradual decrease from 13s → 10s (ramping up difficulty)
- * Level 150+: Gradual decrease from 10s → 5s (expert level squeeze)
+ * Seconds allowed per category based on level.
+ * L1-29:  20s per category (generous — learning phase)
+ * L30-69: 15s per category (standard — constraints kicking in)
+ * L70+:   10s per category (tight — expert pressure)
  *
- * No sudden jumps - smooth curve throughout.
+ * Total timer = categoryCount × secondsPerCategory.
+ * This keeps the timer proportional to the actual workload.
  */
-function getBaseTimerSeconds(level: number): number {
-  if (level <= 1) return 18;
+function getSecondsPerCategory(level: number): number {
+  if (level < 30) return 20;
+  if (level < 70) return 15;
+  return 10;
+}
 
-  // Smooth interpolation throughout the entire range
-  let seconds: number;
-
-  if (level <= 25) {
-    // 18s → 16s over 25 levels
-    seconds = lerp(18, 16, (level - 1) / 24);
-  } else if (level <= 75) {
-    // 16s → 13s over 50 levels
-    seconds = lerp(16, 13, (level - 25) / 50);
-  } else if (level <= 150) {
-    // 13s → 10s over 75 levels
-    seconds = lerp(13, 10, (level - 75) / 75);
-  } else {
-    // 10s → 5s over remaining levels (level 150 to 400+)
-    const progress = Math.min((level - 150) / 250, 1);
-    const curved = Math.sqrt(progress); // slightly front-load for pacing
-    seconds = lerp(10, 5, curved);
-  }
-
-  return Math.round(seconds);
+function getBaseTimerSeconds(level: number, categoryCount: number): number {
+  return getSecondsPerCategory(level) * categoryCount;
 }
 
 /**
@@ -1059,7 +1044,7 @@ export function generateLevel(levelNumber: number): LevelData {
   );
 
   // --- Timer ---
-  let timerSeconds = getBaseTimerSeconds(levelNumber);
+  let timerSeconds = getBaseTimerSeconds(levelNumber, categories.length);
 
   // GENEROUS BONUS TIME for difficult constraints
   // This ensures players have enough time when facing challenging constraints
@@ -1104,8 +1089,8 @@ export function generateLevel(levelNumber: number): LevelData {
     timerSeconds = Math.max(6, timerSeconds - 4); // Still challenging but not brutal
   }
 
-  // Clamp to reasonable bounds (more generous max)
-  timerSeconds = clamp(timerSeconds, 5, 25);
+  // Clamp: min 10s total, max = base (constraint bonuses only add, never exceed base by more than 30s)
+  timerSeconds = clamp(timerSeconds, 10, getBaseTimerSeconds(levelNumber, categories.length) + 30);
 
   // --- Scoring ---
   const passScorePercent = getPassScorePercent(levelNumber);
