@@ -100,7 +100,7 @@ export const Sounds = {
 
   // Typing in answer field — throttle at the call site
   typing:        () => playSound(S.TYPING, 0.12),
-  pencilTyping:  () => playSound(S.PENCIL_TYPING, 0.14),
+  pencilTyping:  () => playSound(S.PENCIL_TYPING, 0.22),
 
   // Game events
   roundStart:     () => playSound(S.ROUND_START, 0.28),

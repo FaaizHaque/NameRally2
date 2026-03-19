@@ -102,7 +102,7 @@ export default function LobbyScreen() {
   // Start multiplayer lobby background music when lobby loads
   useEffect(() => {
     if (session) {
-      Sounds.startBackground('home'); // Arcade chiptune — more energetic as players join
+      Sounds.startBackground('lobby_mp'); // Lo-fi nostalgia + nature ambient
     }
   }, [session]);
 
