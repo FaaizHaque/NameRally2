@@ -473,6 +473,7 @@ export default function GameScreen() {
             ends_with_letter:  { title: 'New Rule: Ending Letter',    message: 'Each answer must end with a specific letter' },
             double_letters:    { title: 'New Rule: Double Letters',   message: 'Answers must contain double letters (ee, ll, ss…)' },
             contains_vowel:    { title: 'New Rule: Contains Vowel',   message: 'Answers must contain a specific vowel letter' },
+            odd_length:        { title: 'New Rule: Odd Letters',      message: 'Answers must have an odd number of letters (3, 5, 7…)' },
             no_repeat_letters: { title: 'New Rule: No Repeats',       message: 'No letter can appear more than once in your answer' },
             no_common_words:   { title: 'New Rule: No Common Words',  message: 'Avoid obvious, common answers — get creative!' },
             combo:             { title: 'New Rule: Multi-Constraint', message: 'Multiple rules apply at the same time' },

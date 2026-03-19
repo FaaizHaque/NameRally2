@@ -39,6 +39,7 @@ export interface LevelConstraint {
     | 'double_letters'
     | 'max_word_length'
     | 'contains_vowel'
+    | 'odd_length'
     | 'combo';
   value?: number;
   endLetter?: string;
@@ -321,6 +322,7 @@ const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
   { level: 30,  type: 'contains_vowel' },   // L30:  must contain a specific vowel
   { level: 40,  type: 'no_repeat_letters' },// L40:  no repeating letters
   { level: 50,  type: 'survival' },         // L50:  one wrong = fail
+  { level: 60,  type: 'odd_length' },       // L60:  word must be odd number of letters
   { level: 70,  type: 'double_letters' },   // L70:  words with double letters
   { level: 80,  type: 'ends_with_letter' }, // L80:  must end with specific letter
   { level: 90,  type: 'combo' },            // L90:  two constraints simultaneously
@@ -782,6 +784,12 @@ function createSingleConstraint(
         description: 'Words must contain double letters (ee, ll, ss...)',
       };
 
+    case 'odd_length':
+      return {
+        type: 'odd_length',
+        description: 'Words must be an odd number of letters (3, 5, 7...)',
+      };
+
     default:
       return { type: 'none', description: 'No special constraints' };
   }
@@ -927,7 +935,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [45, 60],
     categoryCountRange: [8, 8],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters', 'survival', 'double_letters', 'ends_with_letter', 'combo'],
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters', 'survival', 'odd_length', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.1, 1.2],
@@ -1097,6 +1105,9 @@ export function generateLevel(levelNumber: number): LevelData {
   }
   if (constraint.type === 'contains_vowel') {
     timerSeconds += 2; // Requires finding words with a specific vowel
+  }
+  if (constraint.type === 'odd_length') {
+    timerSeconds += 2; // Requires counting letters before answering
   }
   if (constraint.type === 'double_letters') {
     timerSeconds += 2; // Needs thinking
