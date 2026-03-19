@@ -393,6 +393,8 @@ export default function GameScreen() {
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
   const shownNovelties = useRef<Set<string>>(new Set());
   const noveltiesLoaded = useRef(false);
+  // Queued novelty — fires after the letter reveal overlay disappears
+  const pendingNovelty = useRef<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
 
   // Load persisted seen-novelties from AsyncStorage once
   useEffect(() => {
@@ -424,14 +426,16 @@ export default function GameScreen() {
     return () => { show.remove(); hide.remove(); };
   }, []);
 
-  // Show novelty popup when level starts — once ever per feature, requires tap to dismiss
+  // Queue novelty popup when level starts — fires after letter reveal animation
   // Only in single player mode — multiplayer has no level progression
   useEffect(() => {
     if (!currentLevel || gameMode !== 'single') return;
+    // Reset any pending novelty from the previous level
+    pendingNovelty.current = null;
+
     if (!noveltiesLoaded.current) {
       // Retry after a short delay to allow AsyncStorage to load
       const t = setTimeout(() => {
-        // Re-trigger by checking current level again (deps haven't changed so we force via flag)
         if (noveltiesLoaded.current) checkNovelty();
       }, 300);
       return () => clearTimeout(t);
@@ -441,19 +445,19 @@ export default function GameScreen() {
     function checkNovelty() {
       if (!currentLevel) return;
 
-      // Check each category in this level — show a popup the very first time
+      // Check each category in this level — queue a popup the very first time
       // any category is encountered, regardless of level number.
       for (const cat of currentLevel.categories) {
         const catKey = `novelty_cat_${cat}`;
         if (!shownNovelties.current.has(catKey)) {
           const catName = getCategoryName(cat as CategoryType);
           markNoveltyShown(catKey);
-          setNoveltyPopup({
+          pendingNovelty.current = {
             type: 'category',
-            title: 'New Category!',
+            title: 'New Category Unlocked!',
             message: `${catName} joins the rally for the first time!`,
             icon: <Sparkles size={36} color="#FCD34D" strokeWidth={2} />,
-          });
+          };
           return;
         }
       }
@@ -478,16 +482,26 @@ export default function GameScreen() {
           };
           const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
           markNoveltyShown(constraintKey);
-          setNoveltyPopup({
+          pendingNovelty.current = {
             type: 'constraint',
             title: info.title,
             message: info.message,
             icon: <AlertTriangle size={36} color="#a78bfa" strokeWidth={2} />,
-          });
+          };
         }
       }
     }
   }, [currentLevel?.level, currentLevel?.constraint?.type]);
+
+  // Fire queued novelty popup right after the letter reveal overlay fades out
+  useEffect(() => {
+    if (showReveal || gameMode !== 'single') return;
+    if (!pendingNovelty.current) return;
+    const popup = pendingNovelty.current;
+    pendingNovelty.current = null;
+    const t = setTimeout(() => setNoveltyPopup(popup), 350);
+    return () => clearTimeout(t);
+  }, [showReveal]);
 
   // Sound toggle
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());

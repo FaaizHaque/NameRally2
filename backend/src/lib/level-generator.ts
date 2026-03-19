@@ -252,21 +252,18 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 
 // ============================================
 // CATEGORY INTRODUCTION SCHEDULE
-// Ordered easiest → hardest so early levels feel approachable.
-// Each milestone level ALWAYS includes the new category in its round,
-// giving players a pop-up introduction on first encounter.
+// Deterministic — every level has a fixed pool size.
 //
-// Level 1-2:  3 cats  — Names, Animal, Places
-// Level 3-5:  4 cats  — + Thing
-// Level 6-10: 5 cats  — + Fruits & Vegetables
-// Level 11-30:  6 cats  — + Sports & Games
-// Level 31-50:  7 cats  — + Brands
-// Level 51-100: 8 cats  — + Health Issues
-// Level 101-200: 9 cats  — + Countries
-// Level 201-300: 10 cats — + Food & Dishes
-// Level 301-400: 11 cats — + Movies
-// Level 401-450: 11 cats — + Professions
-// Level 481-500: 12 cats — + Historical Figures (ALL)
+// L1:  3 cats — Names, Animal, Places
+// L2:  4 cats — + Things
+// L4:  5 cats — + Fruits & Veg
+// L6:  6 cats — + Countries
+// L8:  7 cats — + Professions
+// L11: 8 cats — + Sports & Games
+// L14: 9 cats — + Food & Dishes
+// L17: 10 cats — + Brands
+// L20: 11 cats — + Health Issues
+// L24: 12 cats — + Historical Figures (ALL)
 // ============================================
 
 interface CategoryMilestone {
@@ -275,18 +272,18 @@ interface CategoryMilestone {
 }
 
 const CATEGORY_MILESTONES: CategoryMilestone[] = [
-  { level: 3,   category: 'thing' },              // 4 cats
-  { level: 6,   category: 'fruits_vegetables' },  // 5 cats
-  { level: 11,  category: 'sports_games' },       // 6 cats
-  { level: 31,  category: 'brands' },             // 7 cats
-  { level: 51,  category: 'health_issues' },      // 8 cats
-  { level: 101, category: 'countries' },          // 9 cats
-  { level: 201, category: 'food_dishes' },        // 10 cats
-  { level: 401, category: 'professions' },        // 11 cats
-  { level: 481, category: 'historical_figures' }, // 12 cats (ALL)
+  { level: 2,  category: 'thing' },              // 4 cats
+  { level: 4,  category: 'fruits_vegetables' },  // 5 cats
+  { level: 6,  category: 'countries' },          // 6 cats
+  { level: 8,  category: 'professions' },        // 7 cats
+  { level: 11, category: 'sports_games' },       // 8 cats
+  { level: 14, category: 'food_dishes' },        // 9 cats
+  { level: 17, category: 'brands' },             // 10 cats
+  { level: 20, category: 'health_issues' },      // 11 cats
+  { level: 24, category: 'historical_figures' }, // 12 cats (ALL)
 ];
 
-/** Three starter categories (easiest) — always available from level 1 */
+/** Three starter categories — always available from level 1 */
 const STARTER_CATEGORIES: CategoryType[] = ['names', 'animal', 'places'];
 
 /**
@@ -303,55 +300,36 @@ function getAvailableCategories(level: number): CategoryType[] {
 }
 
 // ============================================
-// CONSTRAINT INTRODUCTION SCHEDULE
-// Smooth progression: easy constraints early, harder ones later
-// EASY: min_word_length, max_word_length
-// HARD: no_repeat_letters
-// VERY HARD: survival, time_pressure, double_letters, combo, ends_with_letter
+// CONSTRAINT SCHEDULE — fully deterministic per level range
+//
+// L1-4:   none
+// L5-9:   min_word_length (4+ letters)
+// L10-14: min_word_length (5+ letters)
+// L15-19: min_word_length (6+ letters)
+// L20-29: max_word_length (max 8 letters)
+// L30-39: contains_vowel
+// L40-49: no_repeat_letters
+// L50-59: survival
+// L60-69: odd_length
+// L70-79: double_letters
+// L80-89: ends_with_letter
+// L90-100: combo
 // ============================================
 
-interface ConstraintMilestone {
-  level: number;
-  type: LevelConstraint['type'];
-}
-
-// Constraints introduced gradually - easy first, progressively harder
-const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 5,   type: 'min_word_length' },  // L5:   4+ letter words (gentle start)
-  { level: 20,  type: 'max_word_length' },  // L20:  max 8 letter words
-  { level: 30,  type: 'contains_vowel' },   // L30:  must contain a specific vowel
-  { level: 40,  type: 'no_repeat_letters' },// L40:  no repeating letters
-  { level: 50,  type: 'survival' },         // L50:  one wrong = fail
-  { level: 60,  type: 'odd_length' },       // L60:  word must be odd number of letters
-  { level: 70,  type: 'double_letters' },   // L70:  words with double letters
-  { level: 80,  type: 'ends_with_letter' }, // L80:  must end with specific letter
-  { level: 90,  type: 'combo' },            // L90:  two constraints simultaneously
-  { level: 95,  type: 'time_pressure' },    // L95:  reduced time
-];
-
 /**
- * Build the pool of constraint types available at a given level.
- * Smooth difficulty curve: constraints start appearing occasionally, then more frequently.
+ * Returns the fixed constraint type for a given level — no randomness.
  */
-function getConstraintPool(level: number): LevelConstraint['type'][] {
-  const pool: LevelConstraint['type'][] = ['none'];
-  for (const milestone of CONSTRAINT_MILESTONES) {
-    if (level >= milestone.level) {
-      pool.push(milestone.type);
-    }
-  }
-
-  // Smooth weighting: 'none' stays common at first, then constraints ramp up
-  let noneWeight = 1;
-  if (level < 10)   noneWeight = 8;  // L1-9:   very rare — ease new players in
-  else if (level < 20)  noneWeight = 6;  // L10-19: occasional
-  else if (level < 40)  noneWeight = 4;  // L20-39: moderate
-  else if (level < 60)  noneWeight = 2;  // L40-59: common
-  else noneWeight = 1;                   // L60+:   always present
-
-  for (let i = 1; i < noneWeight; i++) pool.push('none');
-
-  return pool;
+function getConstraintTypeForLevel(level: number): LevelConstraint['type'] {
+  if (level < 5)   return 'none';
+  if (level < 20)  return 'min_word_length';
+  if (level < 30)  return 'max_word_length';
+  if (level < 40)  return 'contains_vowel';
+  if (level < 50)  return 'no_repeat_letters';
+  if (level < 60)  return 'survival';
+  if (level < 70)  return 'odd_length';
+  if (level < 80)  return 'double_letters';
+  if (level < 90)  return 'ends_with_letter';
+  return 'combo';
 }
 
 // ============================================
@@ -802,69 +780,45 @@ function selectConstraint(
   categories: CategoryType[],
   lettersPerCategory?: string[]
 ): LevelConstraint {
-  const pool = getConstraintPool(level);
+  // Deterministic — constraint type is fixed for the level range
+  let constraintType = getConstraintTypeForLevel(level);
 
-  // For the very first levels, keep it simple (before first constraint unlocks)
-  if (level < 10) {
-    return { type: 'none', description: 'No special constraints' };
-  }
-
-  // At milestone levels (every 5th), increase chance of the newest constraint
-  const isMilestone = level % 5 === 0;
-
-  let constraintType = rng.pick(pool);
-
-  // Very hard letters should avoid certain constraints
+  // If this letter makes the constraint unplayable, fall back to none
   const veryHardLetters = ['Q', 'X', 'Z'];
   const isVeryHard = veryHardLetters.includes(letter);
 
-  if (isVeryHard && ['double_letters', 'ends_with_letter'].includes(constraintType)) {
-    const alt = pool.filter(
-      (c) => c !== 'double_letters' && c !== 'ends_with_letter' && c !== 'combo'
-    );
-    constraintType = alt.length > 0 ? rng.pick(alt) : 'none';
+  if (isVeryHard && ['double_letters', 'ends_with_letter', 'no_repeat_letters'].includes(constraintType)) {
+    constraintType = 'none';
   }
 
-  // Check playability across all categories
   if (
     constraintType !== 'none' &&
     constraintType !== 'combo' &&
+    constraintType !== 'survival' &&
     !isPlayableForAll(letter, categories, constraintType, lettersPerCategory)
   ) {
-    const alt = pool.filter(
-      (c) =>
-        c !== constraintType &&
-        c !== 'combo' &&
-        (c === 'none' || isPlayableForAll(letter, categories, c, lettersPerCategory))
-    );
-    constraintType = alt.length > 0 ? rng.pick(alt) : 'none';
+    constraintType = 'none';
   }
 
-  // Handle combo constraints
-  if (constraintType === 'combo' && level >= 75) {
-    const comboPool = pool.filter(
-      (c) => c !== 'combo' && c !== 'none' && c !== 'survival'
-    );
-    // Filter to playable-only constraints
-    const playable = comboPool.filter((c) =>
+  // Handle combo — pick two fixed non-conflicting constraints from the earlier ranges
+  if (constraintType === 'combo') {
+    const comboOptions: LevelConstraint['type'][] = [
+      'min_word_length', 'max_word_length', 'contains_vowel',
+      'odd_length', 'double_letters', 'ends_with_letter',
+    ];
+    const playable = comboOptions.filter((c) =>
+      !isVeryHard ||
+      !['double_letters', 'ends_with_letter'].includes(c)
+    ).filter((c) =>
       isPlayableForAll(letter, categories, c, lettersPerCategory)
     );
+
     if (playable.length < 2) {
-      // Not enough constraints for a combo; fall back
-      return createSingleConstraint(
-        playable[0] ?? 'none',
-        level,
-        letter,
-        rng,
-        lettersPerCategory,
-        categories
-      );
+      return createSingleConstraint('min_word_length', level, letter, rng, lettersPerCategory, categories);
     }
 
-    const maxCombo = getMaxComboCount(level);
-    const count = rng.nextInt(2, Math.min(maxCombo, playable.length));
-    const selected = rng.pickMultiple(playable, count);
-
+    // Pick first two from the playable list (seeded pick for consistent results)
+    const selected = rng.pickMultiple(playable, 2);
     const comboConstraints = selected.map((t) => {
       const c = createSingleConstraint(t, level, letter, rng, lettersPerCategory, categories);
       return { type: c.type, value: c.value, endLetter: c.endLetter };
@@ -879,11 +833,7 @@ function selectConstraint(
       return full.description;
     });
 
-    return {
-      type: 'combo',
-      comboConstraints,
-      description: descriptions.join(' + '),
-    };
+    return { type: 'combo', comboConstraints, description: descriptions.join(' + ') };
   }
 
   return createSingleConstraint(constraintType, level, letter, rng, lettersPerCategory, categories);
