@@ -115,7 +115,7 @@ export default function CreateGameScreen() {
 
   const [rounds, setRounds] = useState(5);
   const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>([
-    'names', 'places', 'animal', 'thing',
+    'names', 'places', 'animal',
   ]);
 
   const createGame = useGameStore((s) => s.createGame);
