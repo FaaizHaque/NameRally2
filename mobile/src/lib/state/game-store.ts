@@ -506,6 +506,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       const pointsDiff = score - currentBestScore;
       newProgress.levelScores = { ...newProgress.levelScores, [levelNum]: score };
       newProgress.totalPoints = (newProgress.totalPoints || 0) + pointsDiff;
+
+      // Award milestone stars: every 100 total points = 5 bonus stars
+      const prevMilestoneStars = newProgress.milestoneStarsAwarded || 0;
+      const newMilestoneStars = Math.floor(newProgress.totalPoints / 100) * 5;
+      if (newMilestoneStars > prevMilestoneStars) {
+        const bonusStars = newMilestoneStars - prevMilestoneStars;
+        newProgress.totalStars = newProgress.totalStars + bonusStars;
+        newProgress.milestoneStarsAwarded = newMilestoneStars;
+        console.log('[LevelProgress] Milestone bonus! +' + bonusStars + ' stars (total points: ' + newProgress.totalPoints + ')');
+      }
     }
 
     // Update stars if better

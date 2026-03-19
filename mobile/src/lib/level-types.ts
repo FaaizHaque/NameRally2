@@ -71,6 +71,7 @@ export interface LevelProgress {
   levelStars: Record<number, number>; // Stars earned per level (1-3)
   totalStars: number; // Total stars earned across all levels
   totalPoints: number; // Sum of best scores from all completed levels
+  milestoneStarsAwarded?: number; // Total milestone bonus stars already awarded (every 100 pts = 5 stars)
 }
 
 /**
