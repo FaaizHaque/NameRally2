@@ -115,6 +115,7 @@ export default function DailyChallengeScreen() {
   const [result, setResult] = useState<DailyChallengeResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showDcIntro, setShowDcIntro] = useState(false);
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
   const toggleSound = () => {
     const next = !soundOn;
@@ -214,6 +215,9 @@ export default function DailyChallengeScreen() {
         setGameStartTime(Date.now());
         setPhase('playing');
         Sounds.startBackground('daily_challenge');
+        AsyncStorage.getItem('npat_dc_intro_shown').then((val) => {
+          if (!val) setShowDcIntro(true);
+        });
       } catch (err) {
         console.error('Error loading challenge:', err);
       }
@@ -284,7 +288,7 @@ export default function DailyChallengeScreen() {
 
     // Pencil typing sound throttled to feel natural
     const now = Date.now();
-    if (now - lastTypeSoundAt.current > 110) {
+    if (now - lastTypeSoundAt.current > 80) {
       lastTypeSoundAt.current = now;
       Sounds.pencilTyping();
     }
@@ -941,6 +945,39 @@ export default function DailyChallengeScreen() {
   // Playing state
   return (
     <View className="flex-1">
+      {/* Daily Challenge first-time intro */}
+      <Modal visible={showDcIntro} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
+          <View style={{
+            backgroundColor: '#0D2A0D', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360,
+            borderWidth: 1.5, borderColor: 'rgba(0,200,64,0.4)',
+          }}>
+            <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
+              Daily Challenge 📅
+            </Text>
+            <Text style={{ color: 'rgba(0,200,64,0.8)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
+              One attempt per day — no retries.{'\n\n'}
+              Everyone gets the same letter and categories. Fill all 6 fields and submit to lock in your score.{'\n\n'}
+              Your rank appears on the global leaderboard instantly.
+            </Text>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                AsyncStorage.setItem('npat_dc_intro_shown', '1');
+                setShowDcIntro(false);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <View style={{
+                backgroundColor: '#00C840', borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+              }}>
+                <Text style={{ color: '#071510', fontSize: 16, fontWeight: '900' }}>Let's go!</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
       {/* Exit Modal */}
       <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>

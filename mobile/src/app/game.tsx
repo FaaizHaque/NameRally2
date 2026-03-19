@@ -125,7 +125,7 @@ const CategoryRow = React.memo(({
   const handFontReg = fontsLoaded ? 'Caveat_400Regular' : undefined;
   const inputFont   = fontsLoaded ? 'PatrickHand_400Regular' : undefined;
 
-  // Typing sound throttle — max once per 110ms to feel like pencil scratching
+  // Typing sound throttle — max once per 80ms to feel like pencil scratching
   const lastTypeSoundAt = useRef<number>(0);
 
   // Pencil writing animation — follows cursor position
@@ -301,7 +301,7 @@ const CategoryRow = React.memo(({
                 if (!upper.startsWith(letter.toUpperCase())) return;
                 onChangeText(upper);
                 const now = Date.now();
-                if (now - lastTypeSoundAt.current > 110) {
+                if (now - lastTypeSoundAt.current > 80) {
                   lastTypeSoundAt.current = now;
                   Sounds.pencilTyping();
                 }
