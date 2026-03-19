@@ -274,7 +274,7 @@ function BasicsContent() {
           Start with Names, Animals, and Places. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Things', 'Fruits & Vegetables', 'Sports & Games', 'Brands', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Historical Figures'].map((cat) => (
+          {['Things', 'Fruits & Vegetables', 'Sports & Games', 'Brands', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Celebrities'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -292,7 +292,7 @@ function CategoriesContent() {
       name: 'Name',
       emoji: '👤',
       color: '#3BA99C',
-      description: 'A real person\'s first or full name — think celebrities, athletes, politicians, historical figures. No fictional characters.',
+      description: 'A real person\'s first or full name — think celebrities, athletes, politicians, celebrities. No fictional characters.',
     },
     {
       name: 'Place',
@@ -355,7 +355,7 @@ function CategoriesContent() {
       description: 'A job, career, or occupation. Doctor, pilot, chef — any line of work.',
     },
     {
-      name: 'Historical Figures',
+      name: 'Celebrities',
       emoji: '📜',
       color: '#D4A84B',
       description: 'A real historical person — explorer, ruler, scientist, or world leader.',
@@ -393,6 +393,19 @@ function CategoriesContent() {
             </View>
           </Animated.View>
         ))}
+      </Animated.View>
+
+      <Animated.View
+        entering={FadeInUp.duration(500).delay(600)}
+        className="bg-white/6 rounded-2xl p-5 mb-6 border border-white/10 flex-row gap-3"
+      >
+        <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
+        <View className="flex-1">
+          <Text className="text-white text-sm font-bold mb-1">About Our Data</Text>
+          <Text className="text-white/60 text-sm leading-5">
+            Our word lists aim to cover the most widely recognised entries for each category across all regions and cultures — from names and places to celebrities and food. While we continuously expand coverage, some valid answers may not yet be included. We're always improving!
+          </Text>
+        </View>
       </Animated.View>
     </>
   );
@@ -464,7 +477,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                New categories unlock every few levels: Things (L2), Fruits & Veg (L4), Countries (L6), Professions (L8), Sports & Games (L11), Food & Dishes (L14), Brands (L17), Health Issues (L20), Historical Figures (L24)
+                New categories unlock every few levels: Things (L2), Fruits & Veg (L4), Countries (L6), Professions (L8), Sports & Games (L11), Food & Dishes (L14), Brands (L17), Health Issues (L20), Celebrities (L24)
               </Text>
             </View>
           </View>

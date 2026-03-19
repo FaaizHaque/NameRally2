@@ -37,7 +37,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   countries:          <Globe size={16} color={CAT_COLORS.countries.icon} />,
   professions:        <Briefcase size={16} color={CAT_COLORS.professions.icon} />,
   food_dishes:        <Utensils size={16} color={CAT_COLORS.food_dishes.icon} />,
-  historical_figures: <Landmark size={16} color={CAT_COLORS.historical_figures.icon} />,
+  celebrities: <Landmark size={16} color={CAT_COLORS.celebrities.icon} />,
   fruits_vegetables:  <Apple size={16} color={CAT_COLORS.fruits_vegetables.icon} />,
 };
 

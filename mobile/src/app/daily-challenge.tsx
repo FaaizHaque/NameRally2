@@ -68,7 +68,7 @@ const CATEGORY_ICONS: Record<CategoryType, React.ReactNode> = {
   countries:          <Globe size={18} color={CAT_COLORS.countries.accent} />,
   professions:        <Briefcase size={18} color={CAT_COLORS.professions.accent} />,
   food_dishes:        <Utensils size={18} color={CAT_COLORS.food_dishes.accent} />,
-  historical_figures: <Landmark size={18} color={CAT_COLORS.historical_figures.accent} />,
+  celebrities: <Landmark size={18} color={CAT_COLORS.celebrities.accent} />,
   fruits_vegetables:  <Apple size={18} color={CAT_COLORS.fruits_vegetables.accent} />,
 };
 
@@ -97,7 +97,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   countries: 'Countries',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  historical_figures: 'Historical Figures',
+  celebrities: 'Celebrities',
   fruits_vegetables: 'Fruits & Vegetables',
 };
 

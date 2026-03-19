@@ -10,7 +10,7 @@ import thingsData from '../data/things.json';
 import sportsGamesData from '../data/sports_games.json';
 import foodDishesData from '../data/food_dishes.json';
 import healthIssuesData from '../data/health_issues.json';
-import historicalFiguresData from '../data/historical_figures.json';
+import celebritiesData from '../data/celebrities.json';
 import professionsData from '../data/professions.json';
 import animalsData from '../data/animals.json';
 import fruitsVegetablesData from '../data/fruits_vegetables.json';
@@ -47,7 +47,7 @@ const LOCAL_SETS: Partial<Record<CategoryType, Set<string>>> = {
   sports_games:       buildSet(sportsGamesData as string[]),
   food_dishes:        buildSet(foodDishesData as string[]),
   health_issues:      buildSet(healthIssuesData as string[]),
-  historical_figures: buildSet(historicalFiguresData as string[]),
+  celebrities: buildSet(celebritiesData as string[]),
   professions:        buildSet(professionsData as string[]),
   brands:             buildSet(brandsData as string[]),
 };
@@ -62,7 +62,7 @@ const LOCAL_RAW: Partial<Record<CategoryType, string[]>> = {
   sports_games:       sportsGamesData as string[],
   food_dishes:        foodDishesData as string[],
   health_issues:      healthIssuesData as string[],
-  historical_figures: historicalFiguresData as string[],
+  celebrities: celebritiesData as string[],
   professions:        professionsData as string[],
   brands:             brandsData as string[],
 };

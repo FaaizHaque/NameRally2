@@ -26,7 +26,7 @@ export type CategoryType =
   | 'countries'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures';
+  | 'celebrities';
 
 export interface LevelConstraint {
   type:
@@ -174,25 +174,25 @@ const LETTER_POOLS = {
 const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
+    'health_issues', 'brands', 'professions', 'celebrities', 'countries',
     'fruits_vegetables',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'celebrities', 'fruits_vegetables',
   ],
   Z: [
     'sports_games', 'food_dishes', 'thing', 'health_issues', 'professions',
-    'historical_figures', 'fruits_vegetables',
+    'celebrities', 'fruits_vegetables',
   ],
   Y: [
-    'health_issues', 'sports_games', 'professions', 'historical_figures', 'thing',
+    'health_issues', 'sports_games', 'professions', 'celebrities', 'thing',
     'brands', 'food_dishes', 'fruits_vegetables',
   ],
-  U: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
-  V: ['sports_games', 'health_issues', 'thing', 'historical_figures'],
-  K: ['health_issues', 'historical_figures', 'thing'],
-  J: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
+  U: ['health_issues', 'sports_games', 'thing', 'celebrities'],
+  V: ['sports_games', 'health_issues', 'thing', 'celebrities'],
+  K: ['health_issues', 'celebrities', 'thing'],
+  J: ['health_issues', 'sports_games', 'thing', 'celebrities'],
   I: ['sports_games', 'thing', 'health_issues'],
   O: ['health_issues', 'sports_games', 'thing'],
   W: ['health_issues'],
@@ -205,37 +205,37 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
 const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   J: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
-    'professions', 'countries', 'historical_figures', 'health_issues',
+    'professions', 'countries', 'celebrities', 'health_issues',
     'sports_games',
   ],
   Q: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
-    'professions', 'countries', 'historical_figures', 'health_issues',
+    'professions', 'countries', 'celebrities', 'health_issues',
     'sports_games',
   ],
   X: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
-    'professions', 'countries', 'historical_figures', 'health_issues',
+    'professions', 'countries', 'celebrities', 'health_issues',
     'sports_games',
   ],
   Z: [
     'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
-    'professions', 'countries', 'historical_figures', 'health_issues',
+    'professions', 'countries', 'celebrities', 'health_issues',
     'sports_games',
   ],
   Y: [
     'animal', 'thing', 'places', 'brands', 'food_dishes', 'professions',
-    'historical_figures', 'health_issues', 'sports_games',
+    'celebrities', 'health_issues', 'sports_games',
   ],
   U: [
-    'animal', 'thing', 'brands', 'professions', 'historical_figures',
+    'animal', 'thing', 'brands', 'professions', 'celebrities',
     'health_issues', 'sports_games',
   ],
   V: [
-    'animal', 'thing', 'brands', 'professions', 'historical_figures',
+    'animal', 'thing', 'brands', 'professions', 'celebrities',
     'health_issues', 'sports_games',
   ],
-  K: ['thing', 'professions', 'historical_figures', 'health_issues', 'sports_games'],
+  K: ['thing', 'professions', 'celebrities', 'health_issues', 'sports_games'],
   I: ['thing', 'professions', 'sports_games'],
   O: ['thing', 'health_issues', 'sports_games', 'professions'],
 };
@@ -263,7 +263,7 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 // L14: 9 cats — + Food & Dishes
 // L17: 10 cats — + Brands
 // L20: 11 cats — + Health Issues
-// L24: 12 cats — + Historical Figures (ALL)
+// L24: 12 cats — + Celebrities (ALL)
 // ============================================
 
 interface CategoryMilestone {
@@ -280,7 +280,7 @@ const CATEGORY_MILESTONES: CategoryMilestone[] = [
   { level: 14, category: 'food_dishes' },        // 9 cats
   { level: 17, category: 'brands' },             // 10 cats
   { level: 20, category: 'health_issues' },      // 11 cats
-  { level: 24, category: 'historical_figures' }, // 12 cats (ALL)
+  { level: 24, category: 'celebrities' }, // 12 cats (ALL)
 ];
 
 /** Three starter categories — always available from level 1 */
@@ -963,7 +963,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     availableCategories: [
       'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
       'brands', 'health_issues', 'countries', 'food_dishes',
-      'professions', 'historical_figures',
+      'professions', 'celebrities',
     ],
     multiLetterMode: true,
   },

@@ -640,7 +640,7 @@ export const WORD_DATABASE: Record<string, Record<string, string[]>> = {
     Y: ['Yakitori', 'Yogurt'],
     Z: ['Ziti', 'Zucchini Bread'],
   },
-  historical_figures: {
+  celebrities: {
     A: ['Abraham Lincoln', 'Alexander the Great', 'Aristotle', 'Albert Einstein', 'Anne Frank', 'Augustus', 'Archimedes', 'Attila'],
     B: ['Benjamin Franklin', 'Buddha', 'Beethoven', 'Bismarck', 'Boudica'],
     C: ['Cleopatra', 'Columbus', 'Caesar', 'Confucius', 'Churchill', 'Catherine the Great', 'Charlemagne', 'Che Guevara'],
@@ -861,7 +861,7 @@ export const findCloseMatch = (
     countries: new Set<string>(),
     professions: new Set<string>(),
     food_dishes: new Set<string>(),
-    historical_figures: new Set<string>(),
+    celebrities: new Set<string>(),
   };
 
   const extendedSet = extendedSets[category];
@@ -1100,7 +1100,7 @@ export const getCategoryName = (category: CategoryType): string => {
     countries: 'Countries',
     professions: 'Professions',
     food_dishes: 'Food & Dishes',
-    historical_figures: 'Historical Figures',
+    celebrities: 'Celebrities',
     fruits_vegetables: 'Fruits & Vegetables',
   };
   return names[category];
@@ -1350,7 +1350,7 @@ const CATEGORY_NAME_EXCLUSIONS: Record<CategoryType, string[]> = {
   countries: ['country', 'countries', 'nation', 'nations', 'state', 'states', 'land'],
   professions: ['profession', 'professions', 'job', 'jobs', 'career', 'careers', 'occupation', 'occupations', 'work'],
   food_dishes: ['food', 'foods', 'dish', 'dishes', 'meal', 'meals', 'cuisine', 'recipe'],
-  historical_figures: ['historical figure', 'historical person', 'figure', 'figures', 'leader', 'ruler', 'person'],
+  celebrities: ['historical figure', 'historical person', 'figure', 'figures', 'leader', 'ruler', 'person'],
   fruits_vegetables: ['fruit', 'fruits', 'vegetable', 'vegetables', 'produce'],
 };
 
@@ -1389,7 +1389,7 @@ const CATEGORY_REQUIRED_INDICATORS: Record<CategoryType, string[]> = {
   countries: ['country', 'nation', 'sovereign', 'republic', 'kingdom', 'state', 'government', 'capital', 'population', 'bordered', 'continent', 'independence', 'territory', 'official language'],
   professions: ['occupation', 'profession', 'career', 'job', 'work', 'employment', 'specialist', 'professional', 'trained', 'certified', 'licensed', 'practice', 'umpire', 'referee', 'official', 'operator', 'technician', 'engineer', 'worker', 'employee'],
   food_dishes: ['dish', 'cuisine', 'recipe', 'ingredient', 'cooked', 'prepared', 'served', 'traditional', 'originated', 'culinary', 'meal', 'food', 'dessert', 'sweet', 'frozen', 'eaten', 'snack', 'breakfast', 'lunch', 'dinner', 'appetizer', 'edible', 'consume', 'delicacy', 'pastry', 'confection', 'dairy', 'cream', 'flavor'],
-  historical_figures: ['born', 'died', 'century', 'historical', 'reign', 'ruled', 'emperor', 'king', 'queen', 'leader', 'revolutionary', 'war', 'famous for', 'known for', 'secretary-general', 'secretary general', 'diplomat', 'statesman', 'politician', 'prime minister', 'president', 'general', 'admiral', 'commander', 'philosopher', 'scientist', 'inventor', 'explorer', 'reformer', 'activist', 'united nations', 'nobel', 'burmese', 'myanmar'],
+  celebrities: ['born', 'died', 'century', 'historical', 'reign', 'ruled', 'emperor', 'king', 'queen', 'leader', 'revolutionary', 'war', 'famous for', 'known for', 'secretary-general', 'secretary general', 'diplomat', 'statesman', 'politician', 'prime minister', 'president', 'general', 'admiral', 'commander', 'philosopher', 'scientist', 'inventor', 'explorer', 'reformer', 'activist', 'united nations', 'nobel', 'burmese', 'myanmar'],
   // fruits_vegetables should not overlap with food_dishes validation
   fruits_vegetables: ['is a fruit', 'is a vegetable', 'is a type of fruit', 'is a type of vegetable', 'is a cultivar', 'is a variety of', 'edible', 'plant', 'tropical', 'berry', 'citrus', 'grown'],
 };
@@ -1406,7 +1406,7 @@ const CATEGORY_REJECTION_INDICATORS: Record<CategoryType, string[]> = {
   countries: ['was born', 'is an actor', 'is a singer', 'is a species', 'is a given name', 'is a film', 'is a song'],
   professions: ['is a city', 'is a country', 'is a species', 'is a given name'],
   food_dishes: ['was born', 'is an actor', 'is a city', 'is a country', 'is a species', 'is a given name', 'is a film'],
-  historical_figures: ['is a city', 'is a country', 'is a species', 'is a film', 'is a song', 'is a dish', 'is a food'],
+  celebrities: ['is a city', 'is a country', 'is a species', 'is a film', 'is a song', 'is a dish', 'is a food'],
   // fruits_vegetables should not be accepted for food_dishes validation (they are raw produce, not prepared dishes)
   fruits_vegetables: ['was born', 'is an actor', 'is a singer', 'is a city', 'is a country', 'is a band', 'is a company', 'is a dish', 'is a meal'],
 };
@@ -1493,7 +1493,7 @@ export const validateWithFallback = async (
   const acceptsPluralCategories: CategoryType[] = [
     'animal', 'thing', 'health_issues',
     'sports_games', 'brands', 'countries',
-    'professions', 'food_dishes', 'historical_figures'
+    'professions', 'food_dishes', 'celebrities'
   ];
 
   if (localSet) {
