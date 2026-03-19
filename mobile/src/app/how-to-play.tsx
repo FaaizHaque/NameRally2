@@ -394,6 +394,19 @@ function CategoriesContent() {
           </Animated.View>
         ))}
       </Animated.View>
+
+      <Animated.View
+        entering={FadeInUp.duration(500).delay(600)}
+        className="bg-white/6 rounded-2xl p-5 mb-6 border border-white/10 flex-row gap-3"
+      >
+        <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
+        <View className="flex-1">
+          <Text className="text-white text-sm font-bold mb-1">About Our Data</Text>
+          <Text className="text-white/60 text-sm leading-5">
+            Our word lists aim to cover the most widely recognised entries for each category across all regions and cultures — from names and places to historical figures and food. While we continuously expand coverage, some valid answers may not yet be included. We're always improving!
+          </Text>
+        </View>
+      </Animated.View>
     </>
   );
 }
