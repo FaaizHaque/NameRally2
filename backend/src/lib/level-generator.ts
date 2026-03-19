@@ -301,55 +301,40 @@ function getAvailableCategories(level: number): CategoryType[] {
 }
 
 // ============================================
-// CONSTRAINT INTRODUCTION SCHEDULE
-// Smooth progression: easy constraints early, harder ones later
-// EASY: min_word_length, max_word_length
-// HARD: no_repeat_letters
-// VERY HARD: survival, time_pressure, double_letters, combo, ends_with_letter
+// CONSTRAINT SCHEDULE (deterministic, fixed per level range)
+// L1-9:   none
+// L10-19: 4+ letters        (easy warm-up)
+// L20-29: 5+ letters        (noticeable)
+// L30-39: 6+ letters        (solid filter)
+// L40-49: max word length   (moderate — limits long answers)
+// L50-69: double letters    (harder)
+// L70-79: 7+ letters        (brutal)
+// L80-89: ends with letter  (fair)
+// L90-95: double letters    (late game)
+// L96+:   combo             (end-game boss)
 // ============================================
 
-interface ConstraintMilestone {
-  level: number;
-  type: LevelConstraint['type'];
+/**
+ * Returns the fixed constraint type for a given level.
+ * Every round at a level range always has this constraint — no randomness.
+ */
+function getConstraintTypeForLevel(level: number): LevelConstraint['type'] {
+  if (level < 10)  return 'none';
+  if (level < 40)  return 'min_word_length'; // L10-19: 4+, L20-29: 5+, L30-39: 6+
+  if (level < 50)  return 'max_word_length'; // L40-49: moderate
+  if (level < 70)  return 'double_letters';  // L50-69: double letters
+  if (level < 80)  return 'min_word_length'; // L70-79: 7+ letters
+  if (level < 90)  return 'ends_with_letter';// L80-89: ends with specific letter
+  if (level < 96)  return 'double_letters';  // L90-95: double letters (late game)
+  return 'combo';                            // L96-100: two constraints (boss)
 }
 
-// Constraints introduced gradually - easy first, progressively harder
-// Designed for 100-level play; higher-level types kept for 500-level future use
-const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 10,  type: 'min_word_length' },  // L10:  4+ letter words (gentle start)
-  { level: 30,  type: 'max_word_length' },  // L30:  max word length adds variety
-  { level: 50,  type: 'no_repeat_letters' },// L50:  no repeating letters
-  { level: 70,  type: 'survival' },         // L70:  one wrong = fail
-  { level: 80,  type: 'double_letters' },   // L80:  words with double letters (user-requested)
-  { level: 90,  type: 'ends_with_letter' }, // L90:  must end with specific letter (user-requested)
-  { level: 95,  type: 'time_pressure' },    // L95:  reduced time
-  { level: 96,  type: 'combo' },            // L96+: two constraints simultaneously
-];
-
-/**
- * Build the pool of constraint types available at a given level.
- * Smooth difficulty curve: constraints start appearing occasionally, then more frequently.
- */
-function getConstraintPool(level: number): LevelConstraint['type'][] {
-  const pool: LevelConstraint['type'][] = ['none'];
-  for (const milestone of CONSTRAINT_MILESTONES) {
-    if (level >= milestone.level) {
-      pool.push(milestone.type);
-    }
-  }
-
-  // Smooth weighting: 'none' stays common at first, then constraints ramp up
-  // Tuned for 100-level play: constraints feel meaningful but not overwhelming early
-  let noneWeight = 1;
-  if (level < 20)  noneWeight = 8;  // L1-19:  rare — don't overwhelm new players (~1 in 9)
-  else if (level < 40)  noneWeight = 5;  // L20-39: occasional (~1 in 6)
-  else if (level < 60)  noneWeight = 3;  // L40-59: common (~1 in 4)
-  else if (level < 80)  noneWeight = 2;  // L60-79: very common (~1 in 3)
-  else noneWeight = 1;                   // L80+:   always present
-
-  for (let i = 1; i < noneWeight; i++) pool.push('none');
-
-  return pool;
+/** Returns the min word length target for the current level bracket. */
+function getMinLengthForLevel(level: number): number {
+  if (level < 20) return 4;
+  if (level < 30) return 5;
+  if (level < 70) return 6;
+  return 7;
 }
 
 // ============================================
@@ -711,9 +696,9 @@ function createSingleConstraint(
       if (lettersPerCategory) {
         hasHard = lettersPerCategory.some((l) => hardLetters.includes(l));
       }
-      const minLength = hasHard
-        ? Math.min(4 + Math.floor(level / 200), 5)
-        : Math.min(4 + Math.floor(level / 100), 7);
+      // Use level-bracket target; reduce by 1 for hard letters (floor at 4)
+      const target = getMinLengthForLevel(level);
+      const minLength = hasHard ? Math.max(4, target - 1) : target;
       return {
         type: 'min_word_length',
         value: minLength,
@@ -776,67 +761,32 @@ function selectConstraint(
   categories: CategoryType[],
   lettersPerCategory?: string[]
 ): LevelConstraint {
-  const pool = getConstraintPool(level);
+  let type = getConstraintTypeForLevel(level);
 
-  // For the very first levels, keep it simple (before first constraint unlocks)
-  if (level < 10) {
-    return { type: 'none', description: 'No special constraints' };
-  }
-
-  // At milestone levels (every 5th), increase chance of the newest constraint
-  const isMilestone = level % 5 === 0;
-
-  let constraintType = rng.pick(pool);
-
-  // Very hard letters should avoid certain constraints
+  // Very hard letters skip double_letters and ends_with_letter
   const veryHardLetters = ['Q', 'X', 'Z'];
-  const isVeryHard = veryHardLetters.includes(letter);
-
-  if (isVeryHard && ['double_letters', 'ends_with_letter'].includes(constraintType)) {
-    const alt = pool.filter(
-      (c) => c !== 'double_letters' && c !== 'ends_with_letter' && c !== 'combo'
-    );
-    constraintType = alt.length > 0 ? rng.pick(alt) : 'none';
+  if (veryHardLetters.includes(letter) && (type === 'double_letters' || type === 'ends_with_letter')) {
+    type = 'none';
   }
 
-  // Check playability across all categories
-  if (
-    constraintType !== 'none' &&
-    constraintType !== 'combo' &&
-    !isPlayableForAll(letter, categories, constraintType, lettersPerCategory)
-  ) {
-    const alt = pool.filter(
-      (c) =>
-        c !== constraintType &&
-        c !== 'combo' &&
-        (c === 'none' || isPlayableForAll(letter, categories, c, lettersPerCategory))
-    );
-    constraintType = alt.length > 0 ? rng.pick(alt) : 'none';
+  // If the constraint isn't playable across categories, fall back to none
+  if (type !== 'none' && type !== 'combo' && !isPlayableForAll(letter, categories, type, lettersPerCategory)) {
+    type = 'none';
   }
 
-  // Handle combo constraints
-  if (constraintType === 'combo' && level >= 75) {
-    const comboPool = pool.filter(
-      (c) => c !== 'combo' && c !== 'none' && c !== 'survival'
-    );
-    // Filter to playable-only constraints
-    const playable = comboPool.filter((c) =>
+  // Handle combo (L96+): pick two compatible constraints from previous brackets
+  if (type === 'combo') {
+    const candidates: LevelConstraint['type'][] = [
+      'min_word_length', 'max_word_length', 'double_letters', 'ends_with_letter',
+    ];
+    const playable = candidates.filter((c) =>
       isPlayableForAll(letter, categories, c, lettersPerCategory)
     );
     if (playable.length < 2) {
-      // Not enough constraints for a combo; fall back
-      return createSingleConstraint(
-        playable[0] ?? 'none',
-        level,
-        letter,
-        rng,
-        lettersPerCategory,
-        categories
-      );
+      return createSingleConstraint(playable[0] ?? 'none', level, letter, rng, lettersPerCategory, categories);
     }
 
-    const maxCombo = getMaxComboCount(level);
-    const count = rng.nextInt(2, Math.min(maxCombo, playable.length));
+    const count = Math.min(2, playable.length);
     const selected = rng.pickMultiple(playable, count);
 
     const comboConstraints = selected.map((t) => {
@@ -852,14 +802,10 @@ function selectConstraint(
       return full.description;
     });
 
-    return {
-      type: 'combo',
-      comboConstraints,
-      description: descriptions.join(' + '),
-    };
+    return { type: 'combo', comboConstraints, description: descriptions.join(' + ') };
   }
 
-  return createSingleConstraint(constraintType, level, letter, rng, lettersPerCategory, categories);
+  return createSingleConstraint(type, level, letter, rng, lettersPerCategory, categories);
 }
 
 // ============================================
@@ -951,7 +897,6 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     ],
     multiLetterMode: true,
   },
-  {
   {
     bandNumber: 6,
     name: 'Master',
