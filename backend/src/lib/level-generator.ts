@@ -314,15 +314,16 @@ interface ConstraintMilestone {
 }
 
 // Constraints introduced gradually - easy first, progressively harder
+// Designed for 100-level play; higher-level types kept for 500-level future use
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 20,  type: 'min_word_length' },  // EASY: 4+ letter words (level 20)
-  { level: 35,  type: 'max_word_length' },  // EASY: max length limit (level 35)
-  { level: 160, type: 'no_repeat_letters' },// HARD: no repeating letters (level 160)
-  { level: 220, type: 'survival' },         // VERY HARD: one wrong = fail (level 220)
-  { level: 290, type: 'time_pressure' },    // VERY HARD: reduced time (level 290)
-  { level: 350, type: 'double_letters' },   // VERY HARD: words with double letters (level 350)
-  { level: 401, type: 'ends_with_letter' }, // LEGENDARY: ends with specific letter (level 401)
-  { level: 450, type: 'combo' },            // LEGENDARY: two constraints simultaneously (level 450)
+  { level: 10,  type: 'min_word_length' },  // L10:  4+ letter words (gentle start)
+  { level: 30,  type: 'max_word_length' },  // L30:  max word length adds variety
+  { level: 50,  type: 'no_repeat_letters' },// L50:  no repeating letters
+  { level: 70,  type: 'survival' },         // L70:  one wrong = fail
+  { level: 80,  type: 'double_letters' },   // L80:  words with double letters (user-requested)
+  { level: 90,  type: 'ends_with_letter' }, // L90:  must end with specific letter (user-requested)
+  { level: 95,  type: 'time_pressure' },    // L95:  reduced time
+  { level: 96,  type: 'combo' },            // L96+: two constraints simultaneously
 ];
 
 /**
@@ -337,14 +338,14 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
     }
   }
 
-  // Smooth weighting: 'none' stays common until much later
-  // Prevents constraint overload while keeping progression fresh
+  // Smooth weighting: 'none' stays common at first, then constraints ramp up
+  // Tuned for 100-level play: constraints feel meaningful but not overwhelming early
   let noneWeight = 1;
-  if (level < 50) noneWeight = 8;           // Levels 1-49: constraints are rare (1 in 9 chance)
-  else if (level < 100) noneWeight = 5;     // Levels 50-99: constraints appear more (1 in 6 chance)
-  else if (level < 150) noneWeight = 3;     // Levels 100-149: constraints common (1 in 4 chance)
-  else if (level < 200) noneWeight = 2;     // Levels 150-199: constraints very common (1 in 3 chance)
-  else noneWeight = 1;                      // Levels 200+: constraints always present
+  if (level < 20)  noneWeight = 8;  // L1-19:  rare — don't overwhelm new players (~1 in 9)
+  else if (level < 40)  noneWeight = 5;  // L20-39: occasional (~1 in 6)
+  else if (level < 60)  noneWeight = 3;  // L40-59: common (~1 in 4)
+  else if (level < 80)  noneWeight = 2;  // L60-79: very common (~1 in 3)
+  else noneWeight = 1;                   // L80+:   always present
 
   for (let i = 1; i < noneWeight; i++) pool.push('none');
 
@@ -777,8 +778,8 @@ function selectConstraint(
 ): LevelConstraint {
   const pool = getConstraintPool(level);
 
-  // For the very first few levels, keep it simple
-  if (level < 30) {
+  // For the very first levels, keep it simple (before first constraint unlocks)
+  if (level < 10) {
     return { type: 'none', description: 'No special constraints' };
   }
 
