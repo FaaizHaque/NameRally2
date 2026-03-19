@@ -1641,7 +1641,7 @@ export const validateWithFallback = async (
  * Constraint validation interface
  */
 export interface LevelConstraintCheck {
-  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'combo';
+  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'contains_vowel' | 'combo';
   value?: number;
   endLetter?: string;
   comboConstraints?: Array<{ type: string; value?: number; endLetter?: string }>;
@@ -1736,6 +1736,17 @@ export const validateConstraint = (
         };
       }
       break;
+
+    case 'contains_vowel': {
+      const requiredVowel = constraint.endLetter?.toLowerCase();
+      if (requiredVowel && !lettersOnly.toLowerCase().includes(requiredVowel)) {
+        return {
+          passes: false,
+          reason: `Must contain the vowel "${requiredVowel.toUpperCase()}"`
+        };
+      }
+      break;
+    }
 
     case 'no_common_words':
       // This is harder to validate client-side, so we'll be lenient

@@ -19,7 +19,7 @@ export type LevelCategoryType =
   | 'historical_figures';
 
 export interface LevelConstraint {
-  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'combo';
+  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'contains_vowel' | 'combo';
   value?: number;
   endLetter?: string;
   comboConstraints?: Array<{

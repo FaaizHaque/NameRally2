@@ -38,6 +38,7 @@ export interface LevelConstraint {
     | 'ends_with_letter'
     | 'double_letters'
     | 'max_word_length'
+    | 'contains_vowel'
     | 'combo';
   value?: number;
   endLetter?: string;
@@ -314,16 +315,16 @@ interface ConstraintMilestone {
 }
 
 // Constraints introduced gradually - easy first, progressively harder
-// Designed for 100-level play; higher-level types kept for 500-level future use
 const CONSTRAINT_MILESTONES: ConstraintMilestone[] = [
-  { level: 10,  type: 'min_word_length' },  // L10:  4+ letter words (gentle start)
-  { level: 30,  type: 'max_word_length' },  // L30:  max word length adds variety
-  { level: 50,  type: 'no_repeat_letters' },// L50:  no repeating letters
-  { level: 70,  type: 'survival' },         // L70:  one wrong = fail
-  { level: 80,  type: 'double_letters' },   // L80:  words with double letters (user-requested)
-  { level: 90,  type: 'ends_with_letter' }, // L90:  must end with specific letter (user-requested)
+  { level: 5,   type: 'min_word_length' },  // L5:   4+ letter words (gentle start)
+  { level: 20,  type: 'max_word_length' },  // L20:  max 8 letter words
+  { level: 30,  type: 'contains_vowel' },   // L30:  must contain a specific vowel
+  { level: 40,  type: 'no_repeat_letters' },// L40:  no repeating letters
+  { level: 50,  type: 'survival' },         // L50:  one wrong = fail
+  { level: 70,  type: 'double_letters' },   // L70:  words with double letters
+  { level: 80,  type: 'ends_with_letter' }, // L80:  must end with specific letter
+  { level: 90,  type: 'combo' },            // L90:  two constraints simultaneously
   { level: 95,  type: 'time_pressure' },    // L95:  reduced time
-  { level: 96,  type: 'combo' },            // L96+: two constraints simultaneously
 ];
 
 /**
@@ -339,13 +340,12 @@ function getConstraintPool(level: number): LevelConstraint['type'][] {
   }
 
   // Smooth weighting: 'none' stays common at first, then constraints ramp up
-  // Tuned for 100-level play: constraints feel meaningful but not overwhelming early
   let noneWeight = 1;
-  if (level < 20)  noneWeight = 8;  // L1-19:  rare — don't overwhelm new players (~1 in 9)
-  else if (level < 40)  noneWeight = 5;  // L20-39: occasional (~1 in 6)
-  else if (level < 60)  noneWeight = 3;  // L40-59: common (~1 in 4)
-  else if (level < 80)  noneWeight = 2;  // L60-79: very common (~1 in 3)
-  else noneWeight = 1;                   // L80+:   always present
+  if (level < 10)   noneWeight = 8;  // L1-9:   very rare — ease new players in
+  else if (level < 20)  noneWeight = 6;  // L10-19: occasional
+  else if (level < 40)  noneWeight = 4;  // L20-39: moderate
+  else if (level < 60)  noneWeight = 2;  // L40-59: common
+  else noneWeight = 1;                   // L60+:   always present
 
   for (let i = 1; i < noneWeight; i++) pool.push('none');
 
@@ -711,9 +711,16 @@ function createSingleConstraint(
       if (lettersPerCategory) {
         hasHard = lettersPerCategory.some((l) => hardLetters.includes(l));
       }
-      const minLength = hasHard
-        ? Math.min(4 + Math.floor(level / 200), 5)
-        : Math.min(4 + Math.floor(level / 100), 7);
+      let minLength: number;
+      if (hasHard) {
+        // Easier targets for hard letters
+        minLength = level < 10 ? 4 : 5;
+      } else {
+        // L5-9: 4+, L10-14: 5+, L15+: 6+
+        if (level < 10) minLength = 4;
+        else if (level < 15) minLength = 5;
+        else minLength = 6;
+      }
       return {
         type: 'min_word_length',
         value: minLength,
@@ -722,11 +729,22 @@ function createSingleConstraint(
     }
 
     case 'max_word_length': {
-      const maxLength = Math.max(6, 10 - Math.floor(level / 150));
+      // L20-29: max 8, tighter at higher levels
+      const maxLength = level < 30 ? 8 : Math.max(6, 8 - Math.floor((level - 30) / 100));
       return {
         type: 'max_word_length',
         value: maxLength,
         description: `Words must be ${maxLength} letters or less`,
+      };
+    }
+
+    case 'contains_vowel': {
+      const vowels = ['A', 'E', 'I', 'O', 'U'];
+      const vowel = rng.pick(vowels);
+      return {
+        type: 'contains_vowel',
+        endLetter: vowel,
+        description: `Words must contain the vowel "${vowel}"`,
       };
     }
 
@@ -848,6 +866,7 @@ function selectConstraint(
       if (c.type === 'min_word_length') return `${c.value}+ letters`;
       if (c.type === 'max_word_length') return `${c.value} letters or less`;
       if (c.type === 'ends_with_letter') return `ends with "${c.endLetter}"`;
+      if (c.type === 'contains_vowel') return `contains vowel "${c.endLetter}"`;
       const full = createSingleConstraint(c.type, level, letter, rng, lettersPerCategory, categories);
       return full.description;
     });
@@ -878,7 +897,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [30, 45],
     categoryCountRange: [3, 6],
     letterDifficulties: ['easy'],
-    constraintPool: ['none'],
+    constraintPool: ['none', 'min_word_length'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.0, 1.0],
@@ -893,7 +912,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [35, 50],
     categoryCountRange: [6, 7],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length'],
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters'],
     allowComboConstraints: false,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.0, 1.1],
@@ -908,8 +927,8 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [45, 60],
     categoryCountRange: [8, 8],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length'],
-    allowComboConstraints: false,
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters', 'survival', 'double_letters', 'ends_with_letter', 'combo'],
+    allowComboConstraints: true,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.1, 1.2],
     availableCategories: ['names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games', 'brands', 'health_issues'],
@@ -951,7 +970,6 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     ],
     multiLetterMode: true,
   },
-  {
   {
     bandNumber: 6,
     name: 'Master',
@@ -1076,6 +1094,9 @@ export function generateLevel(levelNumber: number): LevelData {
   }
   if (constraint.type === 'no_repeat_letters') {
     timerSeconds += 3; // Very challenging constraint
+  }
+  if (constraint.type === 'contains_vowel') {
+    timerSeconds += 2; // Requires finding words with a specific vowel
   }
   if (constraint.type === 'double_letters') {
     timerSeconds += 2; // Needs thinking
