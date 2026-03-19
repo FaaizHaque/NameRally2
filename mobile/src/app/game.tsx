@@ -303,11 +303,7 @@ const CategoryRow = React.memo(({
                 const now = Date.now();
                 if (now - lastTypeSoundAt.current > 110) {
                   lastTypeSoundAt.current = now;
-                  if (isMultiplayer) {
-                    Sounds.pencilTyping();
-                  } else {
-                    Sounds.typing();
-                  }
+                  Sounds.pencilTyping();
                 }
               }}
               onFocus={() => setIsFocused(true)}
@@ -737,7 +733,11 @@ export default function GameScreen() {
   const prevStatusRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (session?.status === 'playing' && prevStatusRef.current !== 'playing') {
-      Sounds.roundStart();
+      if (gameMode === 'multiplayer') {
+        Sounds.roundStartLight();
+      } else {
+        Sounds.roundStart();
+      }
       Sounds.startBackground(gameMode === 'multiplayer' ? 'game_mp' : 'game');
     }
     prevStatusRef.current = session?.status;

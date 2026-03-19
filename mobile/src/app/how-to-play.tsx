@@ -271,10 +271,10 @@ function BasicsContent() {
           <Text className="text-white text-xl font-bold">Categories</Text>
         </View>
         <Text className="text-white/70 text-base leading-6 mb-3">
-          Start with basics like Names, Places, Animals, Things. As you progress, unlock:
+          Start with Names, Animals, and Places. As you progress, unlock:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Sports & Games', 'Fruits & Vegetables', 'Brands', 'Movies', 'Songs', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Historical Figures'].map((cat) => (
+          {['Things', 'Fruits & Vegetables', 'Sports & Games', 'Brands', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Historical Figures'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -292,7 +292,7 @@ function CategoriesContent() {
       name: 'Name',
       emoji: '👤',
       color: '#3BA99C',
-      description: 'A person\'s first or full name — real people, fictional characters, heroes, villains, legends. Anyone counts!',
+      description: 'A real person\'s first or full name — think celebrities, athletes, politicians, historical figures. No fictional characters.',
     },
     {
       name: 'Place',
@@ -335,18 +335,6 @@ function CategoriesContent() {
       emoji: '™️',
       color: '#6EC4B8',
       description: 'A company, brand, or trademark. Think logos you\'d recognize on a billboard.',
-    },
-    {
-      name: 'Movies',
-      emoji: '🎬',
-      color: '#9B6ED8',
-      description: 'A film title — blockbuster, indie, animated, or classic. Any era counts.',
-    },
-    {
-      name: 'Songs',
-      emoji: '🎵',
-      color: '#FF6B6B',
-      description: 'A song title from any genre or era. The name of the track, not the artist.',
     },
     {
       name: 'Countries',
@@ -476,7 +464,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                New categories unlock as you progress: Countries, Movies, Songs, Health Issues, Professions, Historical Figures, Fruits & Vegetables, and more
+                New categories unlock as you progress: Things, Fruits & Vegetables, Sports & Games, Brands, Countries, Health Issues, Professions, Historical Figures, and more
               </Text>
             </View>
           </View>

@@ -260,11 +260,17 @@ export default function DailyChallengeScreen() {
     opacity: confettiOpacity.value,
   }));
 
+  const lastTypeSoundAt = useRef<number>(0);
+
   const handleAnswerChange = (category: CategoryType, text: string) => {
     if (!challenge) return;
 
+    const upper = text.toUpperCase();
+    // Prevent removing or overwriting the starting letter
+    if (!upper.startsWith(challenge.letter.toUpperCase())) return;
+
     // Start timing when user starts typing (beyond just the letter)
-    if (text.length > challenge.letter.length && !categoryStartTimes[category]) {
+    if (upper.length > challenge.letter.length && !categoryStartTimes[category]) {
       setCategoryStartTimes(prev => ({
         ...prev,
         [category]: Date.now(),
@@ -273,8 +279,15 @@ export default function DailyChallengeScreen() {
 
     setAnswers(prev => ({
       ...prev,
-      [category]: text.toUpperCase(),
+      [category]: upper,
     }));
+
+    // Pencil typing sound throttled to feel natural
+    const now = Date.now();
+    if (now - lastTypeSoundAt.current > 110) {
+      lastTypeSoundAt.current = now;
+      Sounds.pencilTyping();
+    }
   };
 
   const handleAnswerComplete = (category: CategoryType) => {
@@ -538,7 +551,7 @@ export default function DailyChallengeScreen() {
   const handleExit = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
-    router.replace('/game-mode');
+    router.back();
   };
 
   const formatTime = (seconds: number) => {
@@ -1043,46 +1056,54 @@ export default function DailyChallengeScreen() {
                       key={category}
                       entering={FadeInUp.duration(400).delay(150 + index * 50)}
                       style={{
-                        borderRadius: 16, padding: 14,
+                        borderRadius: 14,
                         backgroundColor: 'rgba(255,255,255,0.04)',
                         borderWidth: 1.5,
-                        borderColor: hasAnswer && startsWithLetter ? '#4ADE8050' : 'rgba(74,222,128,0.15)',
+                        borderColor: hasAnswer && startsWithLetter ? `${colors.accent}60` : 'rgba(74,222,128,0.15)',
+                        flexDirection: 'row',
+                        overflow: 'hidden',
                       }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                        <View style={{
-                          width: 32, height: 32, borderRadius: 8,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: `${colors.accent}20`,
-                        }}>
-                          {CATEGORY_ICONS[category]}
-                        </View>
-                        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 14 }}>{CATEGORY_NAMES[category] ?? category.replace(/_/g, ' ')}</Text>
-                        {hasAnswer && startsWithLetter && (
-                          <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
-                            <Check size={12} color="#4ADE80" strokeWidth={3} />
+                      {/* Left colored tab — mirrors single-player category rows */}
+                      <View style={{ width: 5, backgroundColor: hasAnswer && startsWithLetter ? colors.accent : `${colors.accent}55` }} />
+
+                      <View style={{ flex: 1, padding: 12 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <View style={{
+                            width: 28, height: 28, borderRadius: 7,
+                            alignItems: 'center', justifyContent: 'center',
+                            backgroundColor: `${colors.accent}20`,
+                          }}>
+                            {CATEGORY_ICONS[category]}
                           </View>
+                          <Text style={{ color: hasAnswer && startsWithLetter ? colors.accent : `${colors.accent}99`, fontWeight: '800', fontSize: 13, letterSpacing: 0.3 }}>{CATEGORY_NAMES[category] ?? category.replace(/_/g, ' ')}</Text>
+                          {hasAnswer && startsWithLetter && (
+                            <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
+                              <Check size={12} color="#4ADE80" strokeWidth={3} />
+                            </View>
+                          )}
+                        </View>
+                        <TextInput
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+                            color: hasAnswer && startsWithLetter ? '#E8FFE8' : 'rgba(232,255,232,0.75)',
+                            fontSize: 22, fontWeight: '800',
+                            borderWidth: 1,
+                            borderColor: hasAnswer && startsWithLetter ? `${colors.accent}50` : 'rgba(255,255,255,0.06)',
+                          }}
+                          placeholder={`${challenge.letter}...`}
+                          placeholderTextColor="rgba(255,255,255,0.18)"
+                          value={answer}
+                          onChangeText={(text) => handleAnswerChange(category, text)}
+                          onBlur={() => handleAnswerComplete(category)}
+                          autoCapitalize="characters"
+                          autoCorrect={false}
+                        />
+                        {hasAnswer && !startsWithLetter && (
+                          <Text style={{ color: '#fb923c', fontSize: 11, marginTop: 5 }}>Must start with "{challenge.letter}"</Text>
                         )}
                       </View>
-                      <TextInput
-                        style={{
-                          backgroundColor: 'rgba(255,255,255,0.06)',
-                          borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
-                          color: '#E8FFE8', fontSize: 18, fontWeight: '700',
-                          borderWidth: 1,
-                          borderColor: hasAnswer && startsWithLetter ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)',
-                        }}
-                        placeholder={`${challenge.letter}...`}
-                        placeholderTextColor="rgba(255,255,255,0.2)"
-                        value={answer}
-                        onChangeText={(text) => handleAnswerChange(category, text)}
-                        onBlur={() => handleAnswerComplete(category)}
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                      />
-                      {hasAnswer && !startsWithLetter && (
-                        <Text style={{ color: '#fb923c', fontSize: 11, marginTop: 6 }}>Must start with "{challenge.letter}"</Text>
-                      )}
                     </Animated.View>
                   );
                 })}

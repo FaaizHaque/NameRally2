@@ -78,7 +78,7 @@ const S = {
 const BG_VOLUME: Record<BackgroundType, number> = {
   home:            0.32,
   game:            0.40,
-  lobby_mp:        0.28,  // very chill, subdued
+  lobby_mp:        0.18,  // very chill, subdued
   game_mp:         0.38,  // chill but present
   daily_challenge: 0.36,
 };
@@ -103,7 +103,8 @@ export const Sounds = {
   pencilTyping:  () => playSound(S.PENCIL_TYPING, 0.22),
 
   // Game events
-  roundStart:     () => playSound(S.ROUND_START, 0.28),
+  roundStart:      () => playSound(S.ROUND_START, 0.28),
+  roundStartLight: () => playSound(S.LETTER_LOCK, 0.22), // softer cue for multiplayer
   answerComplete: () => playSound(S.ANSWER_DONE, 0.22),
   timerWarning:   () => playSound(S.TIMER_TICK, 0.18),
   timerTick:      () => playSound(S.TIMER_TICK, 0.15),

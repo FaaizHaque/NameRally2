@@ -99,12 +99,15 @@ export default function LobbyScreen() {
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [session?.id]);
 
-  // Start multiplayer lobby background music when lobby loads
+  // Start multiplayer lobby background music when lobby loads, stop on unmount
   useEffect(() => {
     if (session) {
-      Sounds.startBackground('lobby_mp'); // Lo-fi nostalgia + nature ambient
+      Sounds.startBackground('lobby_mp');
     }
-  }, [session]);
+    return () => {
+      Sounds.stopBackground();
+    };
+  }, [!!session]);
 
   // Navigate to game when status changes to 'playing' or 'picking_letter'
   useEffect(() => {
