@@ -17,8 +17,6 @@ type CategoryType =
   | 'brands'
   | 'health_issues'
   | 'countries'
-  | 'movies'
-  | 'songs'
   | 'professions'
   | 'food_dishes'
   | 'historical_figures';
@@ -35,7 +33,7 @@ interface DailyChallenge {
 const ALL_CATEGORIES: CategoryType[] = [
   'names', 'places', 'animal', 'thing', 'sports_games',
   'brands', 'health_issues', 'countries',
-  'movies', 'songs', 'professions', 'food_dishes', 'historical_figures'
+  'professions', 'food_dishes', 'historical_figures'
 ];
 
 // Letter pools by difficulty (mirrors single-player level-generator pools)
@@ -54,13 +52,12 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
     'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
-    'movies', 'songs',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'songs', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'fruits_vegetables',
   ],
-  Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'songs', 'historical_figures'],
+  Z: ['sports_games', 'food_dishes', 'thing', 'health_issues', 'professions', 'historical_figures'],
   Y: ['health_issues', 'sports_games', 'professions', 'historical_figures', 'thing', 'brands', 'food_dishes'],
   U: ['health_issues', 'sports_games', 'thing', 'historical_figures'],
   V: ['sports_games', 'health_issues', 'thing', 'historical_figures'],

@@ -359,7 +359,7 @@ const getAllVariants = (answer: string): string[] => {
 };
 
 // Comprehensive word databases for each category
-export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
+export const WORD_DATABASE: Record<string, Record<string, string[]>> = {
   names: {
     A: ['Adam', 'Aaron', 'Abigail', 'Abraham', 'Adrian', 'Aiden', 'Alex', 'Alexander', 'Alexandra', 'Alexis', 'Alice', 'Alicia', 'Allison', 'Amanda', 'Amber', 'Amy', 'Andrea', 'Andrew', 'Angela', 'Anna', 'Anne', 'Anthony', 'Antonio', 'April', 'Aria', 'Ariana', 'Ashley', 'Audrey', 'Austin', 'Ava'],
     B: ['Bailey', 'Barbara', 'Barry', 'Beatrice', 'Bella', 'Benjamin', 'Bernard', 'Beth', 'Betty', 'Beverly', 'Bill', 'Billy', 'Blake', 'Bob', 'Bobby', 'Bonnie', 'Brad', 'Bradley', 'Brandon', 'Brenda', 'Brian', 'Brianna', 'Brittany', 'Brooke', 'Bruce', 'Bryan', 'Bryce'],
@@ -583,62 +583,6 @@ export const WORD_DATABASE: Record<CategoryType, Record<string, string[]>> = {
     W: ['Wales'],
     Y: ['Yemen'],
     Z: ['Zambia', 'Zimbabwe'],
-  },
-  movies: {
-    A: ['Avatar', 'Avengers', 'Alien', 'Aladdin', 'Amadeus', 'Airplane', 'Armageddon', 'Annie', 'Amélie', 'Apollo 13'],
-    B: ['Batman', 'Brave', 'Bambi', 'Beetlejuice', 'Braveheart', 'Back to the Future', 'Black Panther', 'Blade Runner', 'Birds', 'Beauty and the Beast'],
-    C: ['Casablanca', 'Cinderella', 'Cars', 'Coco', 'Chinatown', 'Cast Away', 'Cleopatra', 'Clueless', 'Contact', 'Chicago'],
-    D: ['Dumbo', 'Dune', 'Die Hard', 'Django', 'Despicable Me', 'Deadpool', 'Dances with Wolves', 'Drive', 'Dirty Dancing', 'District 9'],
-    E: ['E.T.', 'Encanto', 'Elf', 'Exodus', 'Eight Mile', 'Emperor', 'Equilibrium', 'Everest', 'Edge of Tomorrow'],
-    F: ['Frozen', 'Forrest Gump', 'Finding Nemo', 'Fargo', 'Fight Club', 'Fantasia', 'Fury', 'Free Guy', 'Frankenstein', 'Freaky Friday'],
-    G: ['Gladiator', 'Ghost', 'Grease', 'Gravity', 'Godzilla', 'Goodfellas', 'Get Out', 'Gone Girl', 'Ghostbusters', 'Green Mile'],
-    H: ['Harry Potter', 'Home Alone', 'Hercules', 'Heat', 'Hook', 'Her', 'Hugo', 'Hulk', 'Hacksaw Ridge', 'Happy Feet'],
-    I: ['Inception', 'Interstellar', 'Iron Man', 'It', 'Ice Age', 'Indiana Jones', 'Incredibles', 'I Am Legend', 'Inside Out'],
-    J: ['Jaws', 'Jurassic Park', 'Joker', 'Jungle Book', 'Jerry Maguire', 'John Wick', 'Jackie', 'Jumanji', 'Justice League'],
-    K: ['King Kong', 'Karate Kid', 'Kill Bill', 'Knives Out', 'Kung Fu Panda', 'Kramer vs Kramer'],
-    L: ['Lion King', 'Logan', 'Life of Pi', 'La La Land', 'Lord of the Rings', 'Léon', 'Legally Blonde', 'Lilo and Stitch', 'Lucy', 'Luca'],
-    M: ['Matrix', 'Moana', 'Mulan', 'Minions', 'Moonlight', 'Mad Max', 'Memento', 'Mission Impossible', 'Men in Black', 'Monsters Inc'],
-    N: ['Nemo', 'Nightmare Before Christmas', 'Night at the Museum', 'No Country for Old Men', 'Notting Hill', 'Napoleon Dynamite'],
-    O: ['Ocean\'s Eleven', 'Oppenheimer', 'Old Boy', 'Once', 'Oliver', 'Onward'],
-    P: ['Parasite', 'Pirates of the Caribbean', 'Psycho', 'Pulp Fiction', 'Peter Pan', 'Pocahontas', 'Paddington', 'Pinocchio', 'Predator', 'Planet of the Apes'],
-    Q: ['Quantum of Solace'],
-    R: ['Rocky', 'Ratatouille', 'Raiders of the Lost Ark', 'Rambo', 'Requiem for a Dream', 'Rain Man', 'Rogue One', 'Rush Hour', 'Rio'],
-    S: ['Star Wars', 'Shrek', 'Spider-Man', 'Scarface', 'Skyfall', 'Schindler\'s List', 'Silence of the Lambs', 'Saving Private Ryan', 'Soul', 'Sing'],
-    T: ['Titanic', 'Toy Story', 'Terminator', 'Top Gun', 'Thor', 'Transformers', 'Tangled', 'The Godfather', 'The Shining', 'Tarzan'],
-    U: ['Up', 'Unforgiven', 'Us', 'Upgrade', 'Uncle Buck', 'Underworld'],
-    V: ['Vertigo', 'V for Vendetta', 'Venom', 'Vice'],
-    W: ['Wonder Woman', 'Wall-E', 'Wreck-It Ralph', 'Wizard of Oz', 'Wolverine', 'Whiplash', 'Wedding Crashers', 'Wolf of Wall Street'],
-    X: ['X-Men'],
-    Y: ['Yes Man'],
-    Z: ['Zootopia', 'Zodiac', 'Zombieland', 'Zero Dark Thirty'],
-  },
-  songs: {
-    A: ['All of Me', 'American Pie', 'Ain\'t No Sunshine', 'Africa', 'Angel', 'Apologize', 'As It Was', 'Attention', 'All Star', 'Another One Bites the Dust', 'All Along the Watchtower', 'All You Need Is Love', 'All I Want for Christmas Is You', 'Always on My Mind', 'At Last', 'Against the Wind', 'Autumn Leaves', 'Adventure of a Lifetime', 'American Girl', 'American Idiot', 'American Woman', 'Angel of the Morning', 'A Thousand Miles', 'A Hard Day\'s Night', 'A Natural Woman', 'A Whole New World', 'A Day in the Life', 'A Horse with No Name', 'A Sky Full of Stars'],
-    B: ['Bohemian Rhapsody', 'Bad Guy', 'Blinding Lights', 'Boulevard of Broken Dreams', 'Born This Way', 'Beat It', 'Black', 'Bad Romance', 'Back in Black', 'Back in the USSR', 'Back to Black', 'Bad', 'Bad Blood', 'Baker Street', 'Beautiful', 'Beautiful Day', 'Believe', 'Bittersweet Symphony', 'Blue Suede Shoes', 'Born in the USA', 'Born to Run', 'Bridge Over Troubled Water', 'Bring Me to Life', 'Brown Eyed Girl', 'Burn', 'Blue', 'Behind Blue Eyes', 'Be My Baby', 'Banana Boat Song'],
-    C: ['Crazy', 'Circles', 'Creep', 'California Dreamin', 'Closer', 'Can\'t Help Falling in Love', 'Complicated', 'Counting Stars', 'Clocks', 'Chandelier', 'Careless Whisper', 'Call Me', 'Call Me Maybe', 'Can\'t Get You Out of My Head', 'Can\'t Stop the Feeling', 'Candle in the Wind', 'Come Together', 'Crazy in Love', 'Crazy Little Thing Called Love', 'California Girls', 'California Love', 'Cats in the Cradle', 'Chasing Cars', 'Come as You Are', 'Champagne Supernova', 'Comfortably Numb', 'Cheap Thrills', 'Cherry Pie', 'Cruel Summer'],
-    D: ['Dancing Queen', 'Despacito', 'Don\'t Stop Believin', 'Dreams', 'Drivers License', 'Dynamite', 'Dance Monkey', 'Demons', 'Drops of Jupiter', 'Dancing in the Dark', 'Daughters', 'Day Tripper', 'Diamonds', 'Don\'t Fear the Reaper', 'Don\'t Look Back in Anger', 'Don\'t Speak', 'Don\'t Start Now', 'Don\'t Stop Me Now', 'Down Under', 'Drive', 'Dark Horse', 'Dear Mama', 'December Will Be Magic Again'],
-    E: ['Easy', 'Every Breath You Take', 'Empire State of Mind', 'Enter Sandman', 'Electric Feel', 'Everybody Wants to Rule the World', 'Eye of the Tiger', 'Eternal Flame', 'Everybody Hurts', 'Enjoy the Silence', 'Everything I Do I Do It for You', 'Edge of Glory'],
-    F: ['Firework', 'Fix You', 'Fly Me to the Moon', 'Fortunate Son', 'Free Fallin', 'Feeling Good', 'Faith', 'Flowers', 'Feel Good Inc', 'Fade to Black', 'Fight for Your Right', 'Fight Song', 'Flashdance', 'Footloose', 'Forever Young', 'Free Bird', 'Friends in Low Places', 'Fields of Gold', 'Fire', 'Fire and Rain'],
-    G: ['Gangsta\'s Paradise', 'Girls Just Want to Have Fun', 'God\'s Plan', 'Gold Digger', 'Good Vibrations', 'Goosebumps', 'Glad You Came', 'Get Back', 'Get Lucky', 'Gimme Shelter', 'Glory Days', 'Good Riddance', 'Go Your Own Way', 'Gravity', 'Goodbye Yellow Brick Road', 'Good Times', 'God Only Knows', 'Grenade', 'Groove Is in the Heart', 'Hallelujah'],
-    H: ['Happy', 'Hello', 'Hotel California', 'Hallelujah', 'Hey Jude', 'Hips Don\'t Lie', 'Hotline Bling', 'Here Comes the Sun', 'Humble', 'Heart of Glass', 'Halo', 'Havana', 'Heaven', 'Help', 'Hey Joe', 'Hey Ya', 'High Hopes', 'Highway to Hell', 'Hit Me Baby One More Time', 'How Deep Is Your Love', 'How to Save a Life', 'Hurt', 'Heroes', 'Heartbreak Hotel', 'Heart of Gold'],
-    I: ['Imagine', 'I Will Always Love You', 'In the End', 'I Gotta Feeling', 'Iris', 'I Will Survive', 'It\'s My Life', 'I Can See Clearly Now', 'I Can\'t Get No Satisfaction', 'I Feel Good', 'I Heard It Through the Grapevine', 'I Just Called to Say I Love You', 'I Kissed a Girl', 'I Love Rock \'n\' Roll', 'I Put a Spell on You', 'I Still Haven\'t Found What I\'m Looking For', 'I Wanna Dance with Somebody', 'I Want to Break Free', 'I Want to Hold Your Hand', 'I Want You Back', 'I Wish', 'Ice Ice Baby', 'If I Ain\'t Got You', 'In Da Club', 'In My Life', 'In the Air Tonight', 'It\'s Now or Never', 'Ignition'],
-    J: ['Just Dance', 'Just the Way You Are', 'Just You and Me', 'Jealous', 'Jump', 'Jailhouse Rock', 'Johnny B. Goode', 'Jeremy', 'Joy to the World', 'Just Give Me a Reason', 'Julia', 'Jolene', 'Jumpin\' Jack Flash'],
-    K: ['Karma Chameleon', 'Killing Me Softly', 'Kiss', 'Kids', 'Knocking on Heaven\'s Door', 'Kryptonite', 'Kashmir', 'Kickstart My Heart'],
-    L: ['Levitating', 'Livin\' on a Prayer', 'Love Story', 'Lean on Me', 'Let It Be', 'Locked Out of Heaven', 'Lose Yourself', 'Lucky', 'Lemon', 'Like a Prayer', 'Like a Rolling Stone', 'Like a Virgin', 'Living for the City', 'La Bamba', 'Landslide', 'Last Christmas', 'Le Freak', 'Let It Go', 'Life Is a Highway', 'Light My Fire', 'Little Wing', 'Love Me Do', 'Love Me Tender', 'Love Story', 'Love Will Tear Us Apart', 'Leave the Door Open'],
-    M: ['Mr. Brightside', 'My Heart Will Go On', 'Music', 'Monster', 'Money', 'Memories', 'Mad World', 'Man in the Mirror', 'Material Girl', 'Message in a Bottle', 'More Than a Feeling', 'More Than Words', 'My Girl', 'My Way', 'Manic Monday', 'Maps', 'Mercy', 'Midnight Train to Georgia', 'Move Like Jagger', 'My Generation', 'My Hero', 'My Immortal', 'My Love'],
-    N: ['No Woman No Cry', 'Never Gonna Give You Up', 'Night Fever', 'New Rules', 'Nothing Compares', 'Nothing Else Matters', 'November Rain', 'No Scrubs', 'Need You Now', 'Night Moves', 'Nights in White Satin', 'Numb', 'Nice for What'],
-    O: ['Old Town Road', 'One', 'Ordinary People', 'Oops I Did It Again', 'On Broadway', 'Once in a Lifetime', 'One Dance', 'One More Time', 'Only You', 'One Love', 'Overjoyed', 'Owner of a Lonely Heart'],
-    P: ['Purple Rain', 'Perfect', 'Piano Man', 'Paradise', 'Poker Face', 'Photograph', 'Party Rock Anthem', 'Pumped Up Kicks', 'Paint It Black', 'Papa Don\'t Preach', 'People Are Strange', 'Pompeii', 'Pretty Woman', 'Pride in the Name of Love', 'Proud Mary', 'Purple Haze', 'Patience', 'Payphone', 'Poison', 'Power of Love'],
-    Q: ['Quit Playing Games', 'Queen of Hearts'],
-    R: ['Royals', 'Respect', 'Rolling in the Deep', 'Rocket Man', 'Riptide', 'Radioactive', 'Roar', 'Ring of Fire', 'Radio Ga Ga', 'Raise Your Glass', 'Rapper\'s Delight', 'Redemption Song', 'Rehab', 'Right Round', 'Rock and Roll All Nite', 'Rock Around the Clock', 'Roxanne', 'Run', 'Running Up That Hill', 'Real Love', 'Runaway'],
-    S: ['Shape of You', 'Smells Like Teen Spirit', 'Stairway to Heaven', 'Superstition', 'Sweet Child O Mine', 'Shallow', 'Stay', 'Someone Like You', 'Sorry', 'Smooth', 'Seven Nation Army', 'Say My Name', 'September', 'Shake It Off', 'She Loves You', 'She Will Be Loved', 'Signed Sealed Delivered', 'Space Oddity', 'Stayin Alive', 'Stand by Me', 'Stay with Me', 'Stressed Out', 'Stronger', 'Sultans of Swing', 'Summer of 69', 'Sunflower', 'Sweet Caroline', 'Sweet Home Alabama', 'Sound of Silence', 'Sailing', 'Since U Been Gone', 'Sunday Bloody Sunday', 'Super Bass'],
-    T: ['Thriller', 'Take On Me', 'Toxic', 'The Scientist', 'Tik Tok', 'Timber', 'Thunder', 'Time After Time', 'True Colors', 'Torn', 'Take Me Home Country Roads', 'Take Me to Church', 'Telephone', 'The Chain', 'The House of the Rising Sun', 'The Joker', 'The Show Must Go On', 'The Winner Takes It All', 'Thinking Out Loud', 'Total Eclipse of the Heart', 'Tiny Dancer', 'True Blue', 'Truly Madly Deeply', 'Twist and Shout', 'Teenage Dream', 'Thank You', 'The Boys Are Back in Town', 'The Power of Love', 'The Reason', 'Ticket to Ride'],
-    U: ['Umbrella', 'Under Pressure', 'Uptown Funk', 'Unchained Melody', 'Use Somebody', 'U Can\'t Touch This', 'Under the Bridge', 'Uptown Girl'],
-    V: ['Viva la Vida', 'Valerie', 'Video Games', 'Vogue', 'Venus', 'Video Killed the Radio Star'],
-    W: ['Wonderwall', 'We Will Rock You', 'Wake Me Up', 'Wrecking Ball', 'What\'s Going On', 'Watermelon Sugar', 'Wild Thing', 'Wish You Were Here', 'Wake Me Up Before You Go Go', 'Walking on Sunshine', 'Wannabe', 'We Are the Champions', 'We Are the World', 'Welcome to the Jungle', 'What a Wonderful World', 'What\'s Love Got to Do with It', 'When Doves Cry', 'White Wedding', 'With or Without You', 'Without Me', 'Woman', 'Wrecking Ball', 'Working Class Hero'],
-    X: ['XO'],
-    Y: ['YMCA', 'Yesterday', 'You Belong with Me', 'Yellow', 'You\'re Beautiful', 'Yellow Submarine', 'You Give Love a Bad Name', 'You Shook Me All Night Long', 'You Are the Sunshine of My Life', 'Your Song', 'You Will Be Found', 'Young Turks', 'You Oughta Know'],
-    Z: ['Zombie', 'Zoot Suit Riot', 'Ziggy Stardust'],
   },
   professions: {
     A: ['Accountant', 'Actor', 'Architect', 'Artist', 'Astronaut', 'Attorney', 'Auditor', 'Author'],
@@ -943,8 +887,6 @@ export const findCloseMatch = (
     fruits_vegetables: FRUITS_VEGETABLES_SET,
     // Advanced categories - use online validation only (no local sets)
     countries: new Set<string>(),
-    movies: new Set<string>(),
-    songs: new Set<string>(),
     professions: new Set<string>(),
     food_dishes: new Set<string>(),
     historical_figures: new Set<string>(),
@@ -1175,7 +1117,7 @@ export const validateAnswer = (
 
 // Get category display name
 export const getCategoryName = (category: CategoryType): string => {
-  const names: Record<CategoryType, string> = {
+  const names: Record<string, string> = {
     names: 'Names',
     places: 'Places',
     animal: 'Animal',
@@ -1524,7 +1466,7 @@ export const validateWithFallback = async (
   const letterLower = letter.toLowerCase();
 
   // For movies/songs, strip leading articles ("The", "A", "An") for letter-matching purposes
-  const articleCategories: CategoryType[] = ['movies', 'songs'];
+  const articleCategories: string[] = ['movies', 'songs'];
   const shouldIgnoreArticles = articleCategories.includes(category);
   const strippedAnswer = shouldIgnoreArticles
     ? trimmed.replace(/^(the|a|an)\s+/i, '')
@@ -1597,7 +1539,7 @@ export const validateWithFallback = async (
   // Categories that accept plural forms (not names/places which are proper nouns)
   const acceptsPluralCategories: CategoryType[] = [
     'animal', 'thing', 'health_issues',
-    'sports_games', 'brands', 'countries', 'movies', 'songs',
+    'sports_games', 'brands', 'countries',
     'professions', 'food_dishes', 'historical_figures'
   ];
 

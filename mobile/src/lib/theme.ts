@@ -98,18 +98,6 @@ export const SKETCH_CATEGORY_COLORS: Record<string, {
     ink: '#183070',
     inputLine: '#4070B8',
   },
-  movies: {
-    strip: '#E0CCFF',
-    stripBorder: '#9060D8',
-    ink: '#402880',
-    inputLine: '#7858C8',
-  },
-  songs: {
-    strip: '#FFD0E8',
-    stripBorder: '#D858A0',
-    ink: '#882060',
-    inputLine: '#C04888',
-  },
   professions: {
     strip: '#F5E0A0',
     stripBorder: '#C8A030',

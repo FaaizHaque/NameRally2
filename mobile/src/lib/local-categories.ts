@@ -11,10 +11,7 @@ import sportsGamesData from '../data/sports_games.json';
 import foodDishesData from '../data/food_dishes.json';
 import healthIssuesData from '../data/health_issues.json';
 import historicalFiguresData from '../data/historical_figures.json';
-import moviesData from '../data/movies.json';
 import professionsData from '../data/professions.json';
-import songsData from '../data/songs.json';
-import musicArtistsData from '../data/music_artists.json';
 import animalsData from '../data/animals.json';
 import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
@@ -51,10 +48,7 @@ const LOCAL_SETS: Partial<Record<CategoryType, Set<string>>> = {
   food_dishes:        buildSet(foodDishesData as string[]),
   health_issues:      buildSet(healthIssuesData as string[]),
   historical_figures: buildSet(historicalFiguresData as string[]),
-  movies:             buildSet(moviesData as string[]),
   professions:        buildSet(professionsData as string[]),
-  songs:              buildSet(songsData as string[]),
-  music_artists:      buildSet(musicArtistsData as string[]),
   brands:             buildSet(brandsData as string[]),
 };
 
@@ -69,10 +63,7 @@ const LOCAL_RAW: Partial<Record<CategoryType, string[]>> = {
   food_dishes:        foodDishesData as string[],
   health_issues:      healthIssuesData as string[],
   historical_figures: historicalFiguresData as string[],
-  movies:             moviesData as string[],
   professions:        professionsData as string[],
-  songs:              songsData as string[],
-  music_artists:      musicArtistsData as string[],
   brands:             brandsData as string[],
 };
 
@@ -216,7 +207,7 @@ export async function validateWordLocally(
   const set = LOCAL_SETS[category];
   if (!set) return { found: false, source: 'not_found' };
 
-  const ignoreArticles = category === 'movies' || category === 'songs';
+  const ignoreArticles = false;
   const found = existsInLocalSet(set, word, ignoreArticles);
   return { found, source: found ? 'local' : 'not_found' };
 }
@@ -263,7 +254,7 @@ export async function validateWordFuzzy(
   const raw = LOCAL_RAW[category];
   if (!set || !raw) return { found: false };
 
-  const ignoreArticles = category === 'movies' || category === 'songs';
+  const ignoreArticles = false;
   if (existsInLocalSet(set, word, ignoreArticles)) {
     // Find the original-cased entry to return as matchedWord
     const norm = normalizeForComparison(word);

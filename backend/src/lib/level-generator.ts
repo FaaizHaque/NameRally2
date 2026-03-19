@@ -24,12 +24,9 @@ export type CategoryType =
   | 'brands'
   | 'health_issues'
   | 'countries'
-  | 'movies'
-  | 'songs'
   | 'professions'
   | 'food_dishes'
-  | 'historical_figures'
-  | 'music_artists';
+  | 'historical_figures';
 
 export interface LevelConstraint {
   type:
@@ -176,15 +173,15 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
   X: [
     'animal', 'names', 'places', 'sports_games', 'food_dishes', 'thing',
     'health_issues', 'brands', 'professions', 'historical_figures', 'countries',
-    'movies', 'songs', 'fruits_vegetables', 'music_artists',
+    'fruits_vegetables',
   ],
   Q: [
     'animal', 'names', 'sports_games', 'food_dishes', 'thing',
-    'health_issues', 'brands', 'professions', 'historical_figures', 'songs', 'fruits_vegetables',
+    'health_issues', 'brands', 'professions', 'historical_figures', 'fruits_vegetables',
   ],
   Z: [
     'sports_games', 'food_dishes', 'thing', 'health_issues', 'professions',
-    'songs', 'historical_figures', 'fruits_vegetables',
+    'historical_figures', 'fruits_vegetables',
   ],
   Y: [
     'health_issues', 'sports_games', 'professions', 'historical_figures', 'thing',
@@ -205,23 +202,23 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
 
 const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   J: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Q: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   X: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Z: [
-    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes', 'movies',
-    'songs', 'professions', 'countries', 'historical_figures', 'health_issues',
+    'animal', 'thing', 'places', 'names', 'brands', 'food_dishes',
+    'professions', 'countries', 'historical_figures', 'health_issues',
     'sports_games',
   ],
   Y: [
@@ -266,10 +263,8 @@ const WARMUP_LETTER_SEQUENCE: string[] = [
 // Level 101-200: 9 cats  — + Countries
 // Level 201-300: 10 cats — + Food & Dishes
 // Level 301-400: 11 cats — + Movies
-// Level 401-450: 12 cats — + Professions
-// Level 451-465: 13 cats — + Songs
-// Level 466-480: 14 cats — + Music Artists
-// Level 481-500: 15 cats — + Historical Figures (ALL)
+// Level 401-450: 11 cats — + Professions
+// Level 481-500: 12 cats — + Historical Figures (ALL)
 // ============================================
 
 interface CategoryMilestone {
@@ -285,11 +280,8 @@ const CATEGORY_MILESTONES: CategoryMilestone[] = [
   { level: 51,  category: 'health_issues' },      // 8 cats
   { level: 101, category: 'countries' },          // 9 cats
   { level: 201, category: 'food_dishes' },        // 10 cats
-  { level: 301, category: 'movies' },             // 11 cats
-  { level: 401, category: 'professions' },        // 12 cats
-  { level: 451, category: 'songs' },              // 13 cats
-  { level: 466, category: 'music_artists' },      // 14 cats
-  { level: 481, category: 'historical_figures' }, // 15 cats (ALL)
+  { level: 401, category: 'professions' },        // 11 cats
+  { level: 481, category: 'historical_figures' }, // 12 cats (ALL)
 ];
 
 /** Three starter categories (easiest) — always available from level 1 */
@@ -974,13 +966,14 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     multiLetterMode: true,
   },
   {
+  {
     bandNumber: 6,
     name: 'Master',
     levelRange: [301, 400],
-    description: 'Movies (11 cats), triple constraints, tight timers',
+    description: 'Professions at 401, triple constraints, tight timers',
     timerRange: [6, 5],
     passScoreRange: [78, 90],
-    categoryCountRange: [11, 11],
+    categoryCountRange: [10, 10],
     letterDifficulties: ['hard', 'normal'],
     constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters'],
     allowComboConstraints: false,
@@ -988,7 +981,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bonusMultiplierRange: [1.6, 1.8],
     availableCategories: [
       'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
-      'brands', 'health_issues', 'countries', 'food_dishes', 'movies',
+      'brands', 'health_issues', 'countries', 'food_dishes',
     ],
     multiLetterMode: true,
   },
@@ -996,10 +989,10 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bandNumber: 7,
     name: 'Legendary',
     levelRange: [401, 500],
-    description: 'All 15 categories unlocked by 481 — maximum difficulty',
+    description: 'All 12 categories unlocked by 481 — maximum difficulty',
     timerRange: [5, 4],
     passScoreRange: [88, 95],
-    categoryCountRange: [12, 15],
+    categoryCountRange: [11, 12],
     letterDifficulties: ['hard'],
     constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
@@ -1007,8 +1000,8 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     bonusMultiplierRange: [1.8, 2.0],
     availableCategories: [
       'names', 'animal', 'places', 'thing', 'fruits_vegetables', 'sports_games',
-      'brands', 'health_issues', 'countries', 'food_dishes', 'movies',
-      'professions', 'songs', 'music_artists', 'historical_figures',
+      'brands', 'health_issues', 'countries', 'food_dishes',
+      'professions', 'historical_figures',
     ],
     multiLetterMode: true,
   },

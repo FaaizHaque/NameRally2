@@ -90,12 +90,9 @@ const CATEGORY_ICONS: Record<CategoryType, (color: string) => React.ReactNode> =
   brands:             (c: string) => <ShoppingBag size={20} color={c} strokeWidth={2.5} />,
   health_issues:      (c: string) => <HeartPulse size={20} color={c} strokeWidth={2.5} />,
   countries:          (c: string) => <Globe size={20} color={c} strokeWidth={2.5} />,
-  movies:             (c: string) => <Film size={20} color={c} strokeWidth={2.5} />,
-  songs:              (c: string) => <Music size={20} color={c} strokeWidth={2.5} />,
   professions:        (c: string) => <Briefcase size={20} color={c} strokeWidth={2.5} />,
   food_dishes:        (c: string) => <Utensils size={20} color={c} strokeWidth={2.5} />,
   historical_figures:      (c: string) => <Landmark size={20} color={c} strokeWidth={2.5} />,
-  music_artists:      (c: string) => <Music size={20} color={c} strokeWidth={2.5} />,
   fruits_vegetables:  (c: string) => <Apple size={20} color={c} strokeWidth={2.5} />,
 };
 
@@ -955,13 +952,10 @@ export default function GameScreen() {
       brands:             { bg: CAT_COLORS.brands.darkBg,             border: CAT_COLORS.brands.darkBorder,             accent: CAT_COLORS.brands.darkAccent },
       health_issues:      { bg: CAT_COLORS.health_issues.darkBg,      border: CAT_COLORS.health_issues.darkBorder,      accent: CAT_COLORS.health_issues.darkAccent },
       countries:          { bg: CAT_COLORS.countries.darkBg,          border: CAT_COLORS.countries.darkBorder,          accent: CAT_COLORS.countries.darkAccent },
-      movies:             { bg: CAT_COLORS.movies.darkBg,             border: CAT_COLORS.movies.darkBorder,             accent: CAT_COLORS.movies.darkAccent },
-      songs:              { bg: CAT_COLORS.songs.darkBg,              border: CAT_COLORS.songs.darkBorder,              accent: CAT_COLORS.songs.darkAccent },
       professions:        { bg: CAT_COLORS.professions.darkBg,        border: CAT_COLORS.professions.darkBorder,        accent: CAT_COLORS.professions.darkAccent },
       food_dishes:        { bg: CAT_COLORS.food_dishes.darkBg,        border: CAT_COLORS.food_dishes.darkBorder,        accent: CAT_COLORS.food_dishes.darkAccent },
       historical_figures: { bg: CAT_COLORS.historical_figures.darkBg, border: CAT_COLORS.historical_figures.darkBorder, accent: CAT_COLORS.historical_figures.darkAccent },
       fruits_vegetables:  { bg: CAT_COLORS.fruits_vegetables.darkBg,  border: CAT_COLORS.fruits_vegetables.darkBorder,  accent: CAT_COLORS.fruits_vegetables.darkAccent },
-      music_artists:      { bg: CAT_COLORS.music_artists.darkBg,      border: CAT_COLORS.music_artists.darkBorder,      accent: CAT_COLORS.music_artists.darkAccent },
     };
     const urgentTimer = timeRemaining <= 10;
     return (
