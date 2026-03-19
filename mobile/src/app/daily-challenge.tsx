@@ -307,7 +307,7 @@ export default function DailyChallengeScreen() {
   }) ?? false;
 
   const handleSubmit = async () => {
-    if (!challenge || !currentUser || isSubmitting) return;
+    if (!challenge || isSubmitting) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Sounds.roundEnd();
@@ -350,30 +350,34 @@ export default function DailyChallengeScreen() {
       const validatedAnswers = await Promise.all(validationPromises);
       const totalScore = validatedAnswers.reduce((sum, a) => sum + a.score, 0);
 
-      // Generate share code
+      const username = currentUser?.username ?? 'Guest';
+
+      // Generate share code (only if user is logged in)
       let shareCode = '';
-      try {
-        const shareCodeResponse = await fetch(`${BACKEND_URL}/api/daily-challenge/generate-share-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            challengeId: challenge.id,
-            username: currentUser.username,
-          }),
-        });
-        if (shareCodeResponse.ok) {
-          const data = await shareCodeResponse.json();
-          shareCode = data.shareCode;
+      if (currentUser) {
+        try {
+          const shareCodeResponse = await fetch(`${BACKEND_URL}/api/daily-challenge/generate-share-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              challengeId: challenge.id,
+              username,
+            }),
+          });
+          if (shareCodeResponse.ok) {
+            const data = await shareCodeResponse.json();
+            shareCode = data.shareCode;
+          }
+        } catch (e) {
+          console.log('Failed to generate share code:', e);
         }
-      } catch (e) {
-        console.log('Failed to generate share code:', e);
       }
 
       const newResult: DailyChallengeResult = {
         id: `result-${Date.now()}`,
         challengeId: challenge.id,
         date: challenge.date,
-        username: currentUser.username,
+        username,
         answers: validatedAnswers,
         totalScore,
         totalTimeMs,
@@ -385,22 +389,24 @@ export default function DailyChallengeScreen() {
       await AsyncStorage.setItem(`daily_challenge_result_${challenge.date}`, JSON.stringify(newResult));
       await AsyncStorage.setItem(`daily_challenge_data_${challenge.date}`, JSON.stringify(challenge));
 
-      // Submit to global Supabase leaderboard (non-blocking, best effort)
-      const correctCount = validatedAnswers.filter(a => a.isValid).length;
-      supabase
-        .from('daily_challenge_scores')
-        .upsert(
-          {
-            challenge_date: challenge.date,
-            username: currentUser.username,
-            total_score: totalScore,
-            total_time_ms: totalTimeMs,
-            correct_count: correctCount,
-            completed_at: Date.now(),
-          },
-          { onConflict: 'challenge_date,username' }
-        )
-        .then(() => { /* ignore errors — leaderboard is best-effort */ });
+      // Submit to global Supabase leaderboard (non-blocking, best effort, only if logged in)
+      if (currentUser) {
+        const correctCount = validatedAnswers.filter(a => a.isValid).length;
+        supabase
+          .from('daily_challenge_scores')
+          .upsert(
+            {
+              challenge_date: challenge.date,
+              username,
+              total_score: totalScore,
+              total_time_ms: totalTimeMs,
+              correct_count: correctCount,
+              completed_at: Date.now(),
+            },
+            { onConflict: 'challenge_date,username' }
+          )
+          .then(() => { /* ignore errors — leaderboard is best-effort */ });
+      }
 
       setResult(newResult);
       setPhase('results');
