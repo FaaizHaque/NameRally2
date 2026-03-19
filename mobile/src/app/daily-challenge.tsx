@@ -260,11 +260,17 @@ export default function DailyChallengeScreen() {
     opacity: confettiOpacity.value,
   }));
 
+  const lastTypeSoundAt = useRef<number>(0);
+
   const handleAnswerChange = (category: CategoryType, text: string) => {
     if (!challenge) return;
 
+    const upper = text.toUpperCase();
+    // Prevent removing or overwriting the starting letter
+    if (!upper.startsWith(challenge.letter.toUpperCase())) return;
+
     // Start timing when user starts typing (beyond just the letter)
-    if (text.length > challenge.letter.length && !categoryStartTimes[category]) {
+    if (upper.length > challenge.letter.length && !categoryStartTimes[category]) {
       setCategoryStartTimes(prev => ({
         ...prev,
         [category]: Date.now(),
@@ -273,8 +279,15 @@ export default function DailyChallengeScreen() {
 
     setAnswers(prev => ({
       ...prev,
-      [category]: text.toUpperCase(),
+      [category]: upper,
     }));
+
+    // Pencil typing sound throttled to feel natural
+    const now = Date.now();
+    if (now - lastTypeSoundAt.current > 110) {
+      lastTypeSoundAt.current = now;
+      Sounds.pencilTyping();
+    }
   };
 
   const handleAnswerComplete = (category: CategoryType) => {
@@ -294,7 +307,7 @@ export default function DailyChallengeScreen() {
   }) ?? false;
 
   const handleSubmit = async () => {
-    if (!challenge || !currentUser || isSubmitting) return;
+    if (!challenge || isSubmitting) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Sounds.roundEnd();
@@ -337,30 +350,34 @@ export default function DailyChallengeScreen() {
       const validatedAnswers = await Promise.all(validationPromises);
       const totalScore = validatedAnswers.reduce((sum, a) => sum + a.score, 0);
 
-      // Generate share code
+      const username = currentUser?.username ?? 'Guest';
+
+      // Generate share code (only if user is logged in)
       let shareCode = '';
-      try {
-        const shareCodeResponse = await fetch(`${BACKEND_URL}/api/daily-challenge/generate-share-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            challengeId: challenge.id,
-            username: currentUser.username,
-          }),
-        });
-        if (shareCodeResponse.ok) {
-          const data = await shareCodeResponse.json();
-          shareCode = data.shareCode;
+      if (currentUser) {
+        try {
+          const shareCodeResponse = await fetch(`${BACKEND_URL}/api/daily-challenge/generate-share-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              challengeId: challenge.id,
+              username,
+            }),
+          });
+          if (shareCodeResponse.ok) {
+            const data = await shareCodeResponse.json();
+            shareCode = data.shareCode;
+          }
+        } catch (e) {
+          console.log('Failed to generate share code:', e);
         }
-      } catch (e) {
-        console.log('Failed to generate share code:', e);
       }
 
       const newResult: DailyChallengeResult = {
         id: `result-${Date.now()}`,
         challengeId: challenge.id,
         date: challenge.date,
-        username: currentUser.username,
+        username,
         answers: validatedAnswers,
         totalScore,
         totalTimeMs,
@@ -372,22 +389,24 @@ export default function DailyChallengeScreen() {
       await AsyncStorage.setItem(`daily_challenge_result_${challenge.date}`, JSON.stringify(newResult));
       await AsyncStorage.setItem(`daily_challenge_data_${challenge.date}`, JSON.stringify(challenge));
 
-      // Submit to global Supabase leaderboard (non-blocking, best effort)
-      const correctCount = validatedAnswers.filter(a => a.isValid).length;
-      supabase
-        .from('daily_challenge_scores')
-        .upsert(
-          {
-            challenge_date: challenge.date,
-            username: currentUser.username,
-            total_score: totalScore,
-            total_time_ms: totalTimeMs,
-            correct_count: correctCount,
-            completed_at: Date.now(),
-          },
-          { onConflict: 'challenge_date,username' }
-        )
-        .then(() => { /* ignore errors — leaderboard is best-effort */ });
+      // Submit to global Supabase leaderboard (non-blocking, best effort, only if logged in)
+      if (currentUser) {
+        const correctCount = validatedAnswers.filter(a => a.isValid).length;
+        supabase
+          .from('daily_challenge_scores')
+          .upsert(
+            {
+              challenge_date: challenge.date,
+              username,
+              total_score: totalScore,
+              total_time_ms: totalTimeMs,
+              correct_count: correctCount,
+              completed_at: Date.now(),
+            },
+            { onConflict: 'challenge_date,username' }
+          )
+          .then(() => { /* ignore errors — leaderboard is best-effort */ });
+      }
 
       setResult(newResult);
       setPhase('results');
@@ -538,7 +557,7 @@ export default function DailyChallengeScreen() {
   const handleExit = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
-    router.replace('/game-mode');
+    router.back();
   };
 
   const formatTime = (seconds: number) => {
@@ -1043,46 +1062,54 @@ export default function DailyChallengeScreen() {
                       key={category}
                       entering={FadeInUp.duration(400).delay(150 + index * 50)}
                       style={{
-                        borderRadius: 16, padding: 14,
+                        borderRadius: 14,
                         backgroundColor: 'rgba(255,255,255,0.04)',
                         borderWidth: 1.5,
-                        borderColor: hasAnswer && startsWithLetter ? '#4ADE8050' : 'rgba(74,222,128,0.15)',
+                        borderColor: hasAnswer && startsWithLetter ? `${colors.accent}60` : 'rgba(74,222,128,0.15)',
+                        flexDirection: 'row',
+                        overflow: 'hidden',
                       }}
                     >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                        <View style={{
-                          width: 32, height: 32, borderRadius: 8,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: `${colors.accent}20`,
-                        }}>
-                          {CATEGORY_ICONS[category]}
-                        </View>
-                        <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 14 }}>{CATEGORY_NAMES[category] ?? category.replace(/_/g, ' ')}</Text>
-                        {hasAnswer && startsWithLetter && (
-                          <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
-                            <Check size={12} color="#4ADE80" strokeWidth={3} />
+                      {/* Left colored tab — mirrors single-player category rows */}
+                      <View style={{ width: 5, backgroundColor: hasAnswer && startsWithLetter ? colors.accent : `${colors.accent}55` }} />
+
+                      <View style={{ flex: 1, padding: 12 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <View style={{
+                            width: 28, height: 28, borderRadius: 7,
+                            alignItems: 'center', justifyContent: 'center',
+                            backgroundColor: `${colors.accent}20`,
+                          }}>
+                            {CATEGORY_ICONS[category]}
                           </View>
+                          <Text style={{ color: hasAnswer && startsWithLetter ? colors.accent : `${colors.accent}99`, fontWeight: '800', fontSize: 13, letterSpacing: 0.3 }}>{CATEGORY_NAMES[category] ?? category.replace(/_/g, ' ')}</Text>
+                          {hasAnswer && startsWithLetter && (
+                            <View style={{ marginLeft: 'auto', backgroundColor: 'rgba(74,222,128,0.15)', borderRadius: 8, padding: 4 }}>
+                              <Check size={12} color="#4ADE80" strokeWidth={3} />
+                            </View>
+                          )}
+                        </View>
+                        <TextInput
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10,
+                            color: hasAnswer && startsWithLetter ? '#E8FFE8' : 'rgba(232,255,232,0.75)',
+                            fontSize: 22, fontWeight: '800',
+                            borderWidth: 1,
+                            borderColor: hasAnswer && startsWithLetter ? `${colors.accent}50` : 'rgba(255,255,255,0.06)',
+                          }}
+                          placeholder={`${challenge.letter}...`}
+                          placeholderTextColor="rgba(255,255,255,0.18)"
+                          value={answer}
+                          onChangeText={(text) => handleAnswerChange(category, text)}
+                          onBlur={() => handleAnswerComplete(category)}
+                          autoCapitalize="characters"
+                          autoCorrect={false}
+                        />
+                        {hasAnswer && !startsWithLetter && (
+                          <Text style={{ color: '#fb923c', fontSize: 11, marginTop: 5 }}>Must start with "{challenge.letter}"</Text>
                         )}
                       </View>
-                      <TextInput
-                        style={{
-                          backgroundColor: 'rgba(255,255,255,0.06)',
-                          borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
-                          color: '#E8FFE8', fontSize: 18, fontWeight: '700',
-                          borderWidth: 1,
-                          borderColor: hasAnswer && startsWithLetter ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)',
-                        }}
-                        placeholder={`${challenge.letter}...`}
-                        placeholderTextColor="rgba(255,255,255,0.2)"
-                        value={answer}
-                        onChangeText={(text) => handleAnswerChange(category, text)}
-                        onBlur={() => handleAnswerComplete(category)}
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                      />
-                      {hasAnswer && !startsWithLetter && (
-                        <Text style={{ color: '#fb923c', fontSize: 11, marginTop: 6 }}>Must start with "{challenge.letter}"</Text>
-                      )}
                     </Animated.View>
                   );
                 })}

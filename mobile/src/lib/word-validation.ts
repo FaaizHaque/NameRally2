@@ -668,34 +668,6 @@ export const WORD_DATABASE: Record<string, Record<string, string[]>> = {
     Y: ['Yuri Gagarin'],
     Z: ['Zeus', 'Zedong'],
   },
-  music_artists: {
-    A: ['ABBA', 'AC/DC', 'Adele', 'Aerosmith', 'Alicia Keys', 'Ariana Grande', 'Arctic Monkeys', 'Avicii', 'Avril Lavigne'],
-    B: ['Beyonce', 'Beatles', 'Billie Eilish', 'Bob Dylan', 'Bob Marley', 'Bon Jovi', 'Bruno Mars', 'Black Sabbath', 'Blur'],
-    C: ['Coldplay', 'Calvin Harris', 'Cardi B', 'Childish Gambino', 'Chris Brown', 'Corinne Bailey Rae'],
-    D: ['Drake', 'David Bowie', 'Dua Lipa', 'Demi Lovato', 'Deftones'],
-    E: ['Ed Sheeran', 'Eminem', 'Eagles', 'Elton John', 'Elvis Presley', 'Enya'],
-    F: ['Frank Ocean', 'Frank Sinatra', 'Foo Fighters', 'Fleetwood Mac'],
-    G: ['Green Day', 'Guns N Roses', 'Glass Animals'],
-    H: ['Harry Styles', 'Halsey', 'Hozier'],
-    I: ['Ice Cube', 'Imagine Dragons'],
-    J: ['Jay-Z', 'Justin Bieber', 'Justin Timberlake', 'Jonas Brothers'],
-    K: ['Kanye West', 'Katy Perry', 'Kendrick Lamar', 'Kings of Leon'],
-    L: ['Lady Gaga', 'Led Zeppelin', 'Lil Wayne', 'Linkin Park'],
-    M: ['Madonna', 'Maroon 5', 'Metallica', 'Michael Jackson', 'Miley Cyrus'],
-    N: ['Nirvana', 'Nicki Minaj', 'Nine Inch Nails'],
-    O: ['One Direction', 'Oasis', 'Olivia Rodrigo'],
-    P: ['Pink Floyd', 'Post Malone', 'Prince'],
-    Q: ['Queen'],
-    R: ['Radiohead', 'Rihanna', 'Red Hot Chili Peppers'],
-    S: ['Shakira', 'Selena Gomez', 'Snoop Dogg', 'System of a Down'],
-    T: ['Taylor Swift', 'The Weeknd', 'Twenty One Pilots'],
-    U: ['U2'],
-    V: ['Van Halen'],
-    W: ['Whitney Houston', 'The Who'],
-    X: ['XXXTENTACION'],
-    Y: ['Ye', 'Yungblud'],
-    Z: ['ZZ Top', 'Zayn'],
-  },
   fruits_vegetables: {
     A: ['Apple', 'Apricot', 'Artichoke', 'Asparagus', 'Avocado', 'Acorn squash', 'Açaí'],
     B: ['Banana', 'Blueberry', 'Blackberry', 'Broccoli', 'Brussels sprout', 'Beet', 'Bok choy', 'Butternut squash', 'Breadfruit'],
@@ -1126,12 +1098,9 @@ export const getCategoryName = (category: CategoryType): string => {
     brands: 'Brands',
     health_issues: 'Health Issues',
     countries: 'Countries',
-    movies: 'Movies',
-    songs: 'Songs',
     professions: 'Professions',
     food_dishes: 'Food & Dishes',
     historical_figures: 'Historical Figures',
-    music_artists: 'Music Artists/Bands',
     fruits_vegetables: 'Fruits & Vegetables',
   };
   return names[category];
@@ -1379,12 +1348,9 @@ const CATEGORY_NAME_EXCLUSIONS: Record<CategoryType, string[]> = {
   brands: ['brand', 'brands', 'company', 'companies', 'corporation', 'corporations', 'business', 'businesses'],
   health_issues: ['health', 'health issue', 'health issues', 'disease', 'diseases', 'illness', 'illnesses', 'sickness', 'condition', 'conditions', 'medical', 'symptom', 'symptoms'],
   countries: ['country', 'countries', 'nation', 'nations', 'state', 'states', 'land'],
-  movies: ['movie', 'movies', 'film', 'films', 'cinema', 'motion picture'],
-  songs: ['song', 'songs', 'music', 'track', 'tracks', 'tune', 'tunes'],
   professions: ['profession', 'professions', 'job', 'jobs', 'career', 'careers', 'occupation', 'occupations', 'work'],
   food_dishes: ['food', 'foods', 'dish', 'dishes', 'meal', 'meals', 'cuisine', 'recipe'],
   historical_figures: ['historical figure', 'historical person', 'figure', 'figures', 'leader', 'ruler', 'person'],
-  music_artists: ['music artist', 'music artists', 'band', 'bands', 'singer', 'musician', 'artist', 'group'],
   fruits_vegetables: ['fruit', 'fruits', 'vegetable', 'vegetables', 'produce'],
 };
 
@@ -1421,12 +1387,9 @@ const CATEGORY_REQUIRED_INDICATORS: Record<CategoryType, string[]> = {
   brands: ['company', 'brand', 'corporation', 'business', 'founded', 'headquarter', 'manufacturer', 'trademark', 'subsidiary', 'conglomerate', 'enterprise', 'multinational', 'retail', 'products', 'airline', 'airline company', 'flag carrier', 'aviation', 'airways', 'air transport', 'hong kong', 'carrier', 'flights', 'destinations', 'hub', 'oneworld', 'star alliance', 'skyteam'],
   health_issues: ['disease', 'medical', 'condition', 'syndrome', 'disorder', 'symptom', 'treatment', 'diagnosis', 'infection', 'illness', 'chronic', 'acute', 'therapy', 'clinical', 'pathology', 'causes', 'inflammation', 'virus', 'bacteria', 'genetic', 'congenital', 'psychiatric', 'phobia', 'characterized'],
   countries: ['country', 'nation', 'sovereign', 'republic', 'kingdom', 'state', 'government', 'capital', 'population', 'bordered', 'continent', 'independence', 'territory', 'official language'],
-  movies: ['film', 'movie', 'directed', 'starring', 'released', 'box office', 'screenplay', 'cinema', 'academy award', 'production', 'sequel', 'premiere', 'cast'],
-  songs: ['song', 'single', 'album', 'released', 'chart', 'billboard', 'music video', 'lyrics', 'performed by', 'written by', 'recorded', 'hit', 'track'],
   professions: ['occupation', 'profession', 'career', 'job', 'work', 'employment', 'specialist', 'professional', 'trained', 'certified', 'licensed', 'practice', 'umpire', 'referee', 'official', 'operator', 'technician', 'engineer', 'worker', 'employee'],
   food_dishes: ['dish', 'cuisine', 'recipe', 'ingredient', 'cooked', 'prepared', 'served', 'traditional', 'originated', 'culinary', 'meal', 'food', 'dessert', 'sweet', 'frozen', 'eaten', 'snack', 'breakfast', 'lunch', 'dinner', 'appetizer', 'edible', 'consume', 'delicacy', 'pastry', 'confection', 'dairy', 'cream', 'flavor'],
   historical_figures: ['born', 'died', 'century', 'historical', 'reign', 'ruled', 'emperor', 'king', 'queen', 'leader', 'revolutionary', 'war', 'famous for', 'known for', 'secretary-general', 'secretary general', 'diplomat', 'statesman', 'politician', 'prime minister', 'president', 'general', 'admiral', 'commander', 'philosopher', 'scientist', 'inventor', 'explorer', 'reformer', 'activist', 'united nations', 'nobel', 'burmese', 'myanmar'],
-  music_artists: ['band', 'singer', 'musician', 'group', 'artist', 'album', 'song', 'music', 'vocalist', 'rapper', 'duo', 'trio', 'formed', 'genre', 'record', 'debut', 'tour', 'concert', 'frontman', 'lead singer'],
   // fruits_vegetables should not overlap with food_dishes validation
   fruits_vegetables: ['is a fruit', 'is a vegetable', 'is a type of fruit', 'is a type of vegetable', 'is a cultivar', 'is a variety of', 'edible', 'plant', 'tropical', 'berry', 'citrus', 'grown'],
 };
@@ -1441,12 +1404,9 @@ const CATEGORY_REJECTION_INDICATORS: Record<CategoryType, string[]> = {
   brands: ['was born', 'is a city', 'is a country', 'is an actor', 'is a singer', 'is a species', 'is a given name'],
   health_issues: ['was born', 'is an actor', 'is a singer', 'is a city', 'is a country', 'is a band', 'is a company', 'is a species', 'is a given name'],
   countries: ['was born', 'is an actor', 'is a singer', 'is a species', 'is a given name', 'is a film', 'is a song'],
-  movies: ['was born', 'is a city', 'is a country', 'is a species', 'is a given name', 'is a song', 'is a band'],
-  songs: ['was born', 'is a city', 'is a country', 'is a species', 'is a given name', 'is a film', 'is a movie'],
-  professions: ['is a city', 'is a country', 'is a species', 'is a film', 'is a song', 'is a given name'],
+  professions: ['is a city', 'is a country', 'is a species', 'is a given name'],
   food_dishes: ['was born', 'is an actor', 'is a city', 'is a country', 'is a species', 'is a given name', 'is a film'],
   historical_figures: ['is a city', 'is a country', 'is a species', 'is a film', 'is a song', 'is a dish', 'is a food'],
-  music_artists: ['is a city', 'is a country', 'is a species', 'is a film', 'is a movie', 'is a food', 'is a dish'],
   // fruits_vegetables should not be accepted for food_dishes validation (they are raw produce, not prepared dishes)
   fruits_vegetables: ['was born', 'is an actor', 'is a singer', 'is a city', 'is a country', 'is a band', 'is a company', 'is a dish', 'is a meal'],
 };
@@ -1465,14 +1425,7 @@ export const validateWithFallback = async (
   const trimmed = answer.trim().toLowerCase();
   const letterLower = letter.toLowerCase();
 
-  // For movies/songs, strip leading articles ("The", "A", "An") for letter-matching purposes
-  const articleCategories: string[] = ['movies', 'songs'];
-  const shouldIgnoreArticles = articleCategories.includes(category);
-  const strippedAnswer = shouldIgnoreArticles
-    ? trimmed.replace(/^(the|a|an)\s+/i, '')
-    : trimmed;
-  // The answer passes the letter check if EITHER the full answer or the article-stripped version starts with the letter
-  const startsWithLetter = trimmed.startsWith(letterLower) || (shouldIgnoreArticles && strippedAnswer.startsWith(letterLower));
+  const startsWithLetter = trimmed.startsWith(letterLower);
 
   if (!trimmed || trimmed.length < 2 || !startsWithLetter) {
     return { isValid: false, source: 'none' };
@@ -1606,28 +1559,6 @@ export const validateWithFallback = async (
           wordLower.replace(/[\s-]+/g, '') === noSpaceAnswer) {
         console.log(`[Validation] "${answer}" - accepted from WORD_DATABASE (match: ${word})`);
         return { isValid: true, source: 'local' };
-      }
-    }
-  }
-
-  // For movies/songs: also check WORD_DATABASE entries after stripping articles
-  // e.g., user types "Godfather" for letter "G" → match "The Godfather" under "T" key
-  if (shouldIgnoreArticles) {
-    const articlePattern = /^(the|a|an)\s+/i;
-    for (const [_letterKey, validWords] of Object.entries(categoryData)) {
-      for (const word of validWords) {
-        const wordLower = word.toLowerCase();
-        const wordWithoutArticle = wordLower.replace(articlePattern, '');
-        // Only check entries that actually had an article stripped
-        if (wordWithoutArticle !== wordLower) {
-          if (wordWithoutArticle === normalizedAnswer ||
-              wordWithoutArticle === spacedAnswer ||
-              wordWithoutArticle === hyphenatedAnswer ||
-              wordWithoutArticle.replace(/[\s-]+/g, '') === noSpaceAnswer) {
-            console.log(`[Validation] "${answer}" - accepted from WORD_DATABASE (article-stripped match: ${word})`);
-            return { isValid: true, source: 'local' };
-          }
-        }
       }
     }
   }
