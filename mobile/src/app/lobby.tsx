@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, ScrollView, Share, Alert } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Pressable, ScrollView, Share, Alert, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
@@ -83,6 +84,7 @@ export default function LobbyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showMpIntro, setShowMpIntro] = useState(false);
 
   const session = useGameStore((s) => s.session);
   const currentUser = useGameStore((s) => s.currentUser);
@@ -103,6 +105,9 @@ export default function LobbyScreen() {
   useEffect(() => {
     if (session) {
       Sounds.startBackground('lobby_mp');
+      AsyncStorage.getItem('npat_mp_intro_shown').then((val) => {
+        if (!val) setShowMpIntro(true);
+      });
     }
     return () => {
       Sounds.stopBackground();
@@ -441,6 +446,42 @@ export default function LobbyScreen() {
 
         </View>
       </NotebookBackground>
+
+      {/* Multiplayer first-time intro */}
+      <Modal visible={showMpIntro} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+          <View style={{
+            backgroundColor: P.paper, borderRadius: 20, padding: 24,
+            borderWidth: 2.5, borderColor: P.amber,
+            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.3, shadowRadius: 24,
+            elevation: 20, width: '100%',
+          }}>
+            <Text style={{ color: P.ink, fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
+              Multiplayer 🎲
+            </Text>
+            <Text style={{ color: P.inkMed, fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
+              Same letter, same categories — everyone plays at once.{'\n\n'}
+              Unique answers = 10 pts · Shared answers split points{'\n'}
+              First to finish all categories hits STOP. Others get 5 seconds.{'\n\n'}
+              If you drop out, use the game code to rejoin.
+            </Text>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                AsyncStorage.setItem('npat_mp_intro_shown', '1');
+                setShowMpIntro(false);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <View style={{
+                backgroundColor: P.ink, borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+              }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Got it!</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

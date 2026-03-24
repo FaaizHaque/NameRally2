@@ -1,4 +1,7 @@
 import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const SOUND_PREF_KEY = 'npat_sound_enabled';
 
 let soundEnabled = true;
 let audioModeSet = false;
@@ -26,10 +29,21 @@ async function ensureAudioMode() {
 
 export function setSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
+  AsyncStorage.setItem(SOUND_PREF_KEY, enabled ? '1' : '0').catch(() => {});
 }
 
 export function isSoundEnabled() {
   return soundEnabled;
+}
+
+// Call once early in app startup to restore persisted preference
+export async function initSounds() {
+  try {
+    const val = await AsyncStorage.getItem(SOUND_PREF_KEY);
+    if (val !== null) soundEnabled = val === '1';
+  } catch {
+    // non-critical
+  }
 }
 
 async function playSound(source: number, volume: number = 0.3) {
@@ -74,13 +88,13 @@ const S = {
   BG_DAILY_CHALLENGE: require('../assets/sounds/bg_daily_challenge.mp3'), // daily challenge — fun, slight pressure
 };
 
-// Volume per background type
+// Volume per background type — kept consistent so switching screens doesn't jar
 const BG_VOLUME: Record<BackgroundType, number> = {
   home:            0.32,
-  game:            0.40,
-  lobby_mp:        0.18,  // very chill, subdued
-  game_mp:         0.38,  // chill but present
-  daily_challenge: 0.36,
+  game:            0.34,
+  lobby_mp:        0.32,
+  game_mp:         0.34,
+  daily_challenge: 0.34,
 };
 
 const BG_SOURCE: Record<BackgroundType, number> = {

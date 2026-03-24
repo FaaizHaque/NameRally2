@@ -212,7 +212,7 @@ interface GameState {
 
 // Generate random game code
 const generateGameCode = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -729,11 +729,27 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
 
       if (sessionData.status !== 'lobby') {
-        set({ isLoading: false, error: 'Game already in progress' });
-        return false;
+        // Not in lobby — allow rejoin if player was already in this game
+        const { data: existingPlayer } = await supabase
+          .from('players')
+          .select('*')
+          .eq('session_id', sessionData.id)
+          .eq('user_id', currentUser.id)
+          .single();
+
+        if (!existingPlayer || sessionData.status === 'final_results') {
+          set({ isLoading: false, error: 'Game already in progress' });
+          return false;
+        }
+
+        // Rejoin: re-attach to the live session
+        await get().refreshSessionById(sessionData.id);
+        get().subscribeToSession(sessionData.id);
+        set({ isLoading: false, localAnswers: {} as Record<CategoryType, string> });
+        return true;
       }
 
-      // Check if already in game
+      // Check if already in game (lobby join)
       const { data: existingPlayer } = await supabase
         .from('players')
         .select('*')

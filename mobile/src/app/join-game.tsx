@@ -36,7 +36,12 @@ export default function JoinGameScreen() {
     setIsJoining(false);
     if (success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/lobby');
+      const latestSession = useGameStore.getState().session;
+      if (latestSession && latestSession.status !== 'lobby') {
+        router.replace('/game');
+      } else {
+        router.replace('/lobby');
+      }
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }

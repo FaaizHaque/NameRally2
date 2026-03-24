@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +22,7 @@ export default function GameModeScreen() {
   const startLevelGame = useGameStore((s) => s.startLevelGame);
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
+  const [showSpIntro, setShowSpIntro] = useState(false);
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -32,6 +34,9 @@ export default function GameModeScreen() {
       -1, true
     );
     loadLevelProgress().finally(() => setLevelLoaded(true));
+    AsyncStorage.getItem('npat_sp_intro_shown').then((val) => {
+      if (!val) setShowSpIntro(true);
+    });
   }, [loadLevelProgress]);
 
   const handleSinglePlayer = useCallback(async () => {
@@ -407,6 +412,42 @@ export default function GameModeScreen() {
 
         </View>
       </LinearGradient>
+
+      {/* Single Player first-time intro */}
+      <Modal visible={showSpIntro} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+          <View style={{
+            backgroundColor: '#1f2d50', borderRadius: 20, padding: 24,
+            borderWidth: 2, borderColor: 'rgba(120,170,255,0.4)',
+            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.4, shadowRadius: 24,
+            elevation: 20, width: '100%',
+          }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
+              Solo Play 🎮
+            </Text>
+            <Text style={{ color: 'rgba(160,200,255,0.85)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
+              A letter is revealed each round — type words for every category before time runs out.{'\n\n'}
+              Valid answer = 10 pts · 10+ letters = +2 bonus{'\n'}
+              Score enough to unlock the next level!
+            </Text>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                AsyncStorage.setItem('npat_sp_intro_shown', '1');
+                setShowSpIntro(false);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <View style={{
+                backgroundColor: '#4090e8', borderRadius: 14, paddingVertical: 14,
+                alignItems: 'center',
+              }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Got it — let's play!</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

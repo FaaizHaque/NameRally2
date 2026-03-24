@@ -24,7 +24,7 @@ import { useFonts, PlayfairDisplay_400Regular_Italic } from '@expo-google-fonts/
 import { useGameStore } from '@/lib/state/game-store';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
-import { Sounds } from '@/lib/sounds';
+import { Sounds, initSounds } from '@/lib/sounds';
 
 const mainLogoSource = require('@/assets/logo-main-dark.png');
 
@@ -38,8 +38,10 @@ const TILES = [
   { letter: 'T', bg: '#D0EAFF', border: '#60A8E0', ink: '#205880' },
 ];
 
-// Track if splash was already shown this app session
+// Track if splash was already shown this app session (module-level = survives navigation, resets on full restart)
 let splashAlreadyShown = false;
+const SPLASH_KEY = 'npat_last_splash';
+const SPLASH_INTERVAL_DAYS = 3;
 
 // ─── SPLASH SCREEN ────────────────────────────────────────────────────────────
 // Sequence: logo fades in slowly → holds → tagline gently appears below-right → holds → all fades out
@@ -159,9 +161,23 @@ export default function HomeScreen() {
   useEffect(() => {
     // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
     ExpoSplashScreen.hideAsync();
+    initSounds().then(() => {
+      Sounds.startBackground('home');
+    });
     loadUser();
     loadLevelProgress();
-    Sounds.startBackground('home');
+    // Check if splash was shown recently; if so, skip it
+    if (!splashAlreadyShown) {
+      AsyncStorage.getItem(SPLASH_KEY).then((lastStr) => {
+        if (lastStr) {
+          const daysSince = (Date.now() - parseInt(lastStr, 10)) / 86400000;
+          if (daysSince < SPLASH_INTERVAL_DAYS) {
+            splashAlreadyShown = true;
+            setSplashDone(true);
+          }
+        }
+      });
+    }
     floatAnim.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2200 }),
@@ -534,7 +550,11 @@ export default function HomeScreen() {
       </NotebookBackground>
 
       {!splashDone && (
-        <SplashScreen fontsLoaded={fontsLoaded} onDone={() => { splashAlreadyShown = true; setSplashDone(true); }} />
+        <SplashScreen fontsLoaded={fontsLoaded} onDone={() => {
+          splashAlreadyShown = true;
+          setSplashDone(true);
+          AsyncStorage.setItem(SPLASH_KEY, Date.now().toString()).catch(() => {});
+        }} />
       )}
 
       {/* ── How to Play prompt for new users ── */}
