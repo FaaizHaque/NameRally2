@@ -46,6 +46,7 @@ import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName, getHintAsync, LevelConstraintCheck } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds } from '@/lib/sounds';
+import { useRewardedAd } from '@/lib/useRewardedAd';
 import { CAT_COLORS } from '@/lib/category-colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Sparkles } from 'lucide-react-native';
@@ -388,6 +389,9 @@ export default function GameScreen() {
   // Immediately disables inputs when timer hits 0, before handleRoundEnd is called
   const [roundInputDisabled, setRoundInputDisabled] = useState(false);
   const roundEndScheduled = useRef(false);
+  const adPauseOffset = useRef(0);
+  const adPauseStart  = useRef<number | null>(null);
+  const { showAd } = useRewardedAd();
 
   // Novelty popup state — persisted to AsyncStorage so each feature is announced exactly once
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
@@ -766,24 +770,40 @@ export default function GameScreen() {
 
   const stampStyle = useAnimatedStyle(() => ({ transform: [{ scale: stampBounce.value }, { rotate: '-1deg' }] }));
 
-  const handleUseHint = async (category: CategoryType, i: number) => {
+  const handleUseHint = (category: CategoryType, i: number) => {
     if (!session || usedHints.has(category) || loadingHints.has(category)) return;
     const existing = localAnswers[category]?.trim();
     if (existing && existing.length > session.currentLetter.length) return;
-    if (levelProgress.totalStars < HINT_COST) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
-    setLoadingHints(p => new Set(p).add(category));
-    try {
-      const letter = getLetterForCategory(i);
-      const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null);
-      if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
-        if (!spendStars(HINT_COST)) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Sounds.hint();
-        updateLocalAnswer(category, hint.toUpperCase());
-        setUsedHints(p => new Set(p).add(category));
-      } else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    } catch { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); }
-    finally { setLoadingHints(p => { const n = new Set(p); n.delete(category); return n; }); }
+
+    // Pause the timer while the ad plays
+    adPauseStart.current = Date.now();
+
+    const grantHint = async () => {
+      setLoadingHints(p => new Set(p).add(category));
+      try {
+        const letter = getLetterForCategory(i);
+        const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null);
+        if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          Sounds.hint();
+          updateLocalAnswer(category, hint.toUpperCase());
+          setUsedHints(p => new Set(p).add(category));
+        } else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      } catch { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); }
+      finally { setLoadingHints(p => { const n = new Set(p); n.delete(category); return n; }); }
+    };
+
+    const resumeTimer = () => {
+      if (adPauseStart.current !== null) {
+        adPauseOffset.current += Date.now() - adPauseStart.current;
+        adPauseStart.current = null;
+      }
+    };
+
+    showAd(
+      () => { grantHint(); },
+      () => { resumeTimer(); },
+    );
   };
 
   useEffect(() => {
@@ -827,6 +847,8 @@ export default function GameScreen() {
   useEffect(() => {
     hasEndedRound.current = false;
     roundEndScheduled.current = false;
+    adPauseOffset.current = 0;
+    adPauseStart.current = null;
     setRoundInputDisabled(false);
   }, [session?.currentRound]);
 
@@ -839,7 +861,8 @@ export default function GameScreen() {
   useEffect(() => {
     if (!session || session.status !== 'playing' || !session.roundStartTime) return;
     const tick = () => {
-      const remaining = Math.max(0, session.settings.roundDuration - Math.floor((Date.now() - session.roundStartTime!) / 1000));
+      const pausedSoFar = adPauseOffset.current + (adPauseStart.current ? Date.now() - adPauseStart.current : 0);
+      const remaining = Math.max(0, session.settings.roundDuration - Math.floor((Date.now() - session.roundStartTime! - pausedSoFar) / 1000));
       setTimeRemaining(remaining);
       // Haptics + timer warning sound in last 10 seconds
       if (remaining <= 10 && remaining < prevTimeRef.current && remaining > 0) {
@@ -1056,7 +1079,7 @@ export default function GameScreen() {
             <Text style={{ color: '#FCD34D', fontSize: 15, fontWeight: '800' }}>{levelProgress.totalStars}</Text>
             <Text style={{ color: 'rgba(253,211,77,0.4)', fontSize: 14 }}>|</Text>
             <Lightbulb size={15} color="rgba(253,211,77,0.65)" strokeWidth={1.5} />
-            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint = {HINT_COST}★</Text>
+            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint = watch ad</Text>
           </View>
 
           {/* Constraint banner */}
@@ -1106,7 +1129,7 @@ export default function GameScreen() {
                 const startsOk = answer.trim().toLowerCase().startsWith(letter.toLowerCase());
                 const isComplete = hasAnswer && startsOk;
                 const isLoad = loadingHints.has(cat);
-                const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad && levelProgress.totalStars >= HINT_COST;
+                const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad;
                 const mc = modernCategoryColors[cat] || { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' };
 
                 return (
@@ -1574,7 +1597,7 @@ export default function GameScreen() {
                 <Text style={[s.starsTxt, { fontWeight: '700' }]}>{levelProgress.totalStars}</Text>
                 <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>|</Text>
                 <Lightbulb size={11} color={P.inkFaint} strokeWidth={1.5} />
-                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>hint = {HINT_COST}★</Text>
+                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>hint = watch ad</Text>
               </Animated.View>
             )}
             {session.settings.selectedCategories.map((cat, i) => {
@@ -1584,7 +1607,7 @@ export default function GameScreen() {
                 : session.currentLetter;
               const hasAns  = answer.trim().length > letter.length;
               const isLoad  = loadingHints.has(cat);
-              const canHint = gameMode === 'single' && !hasAns && !usedHints.has(cat) && !isLoad && levelProgress.totalStars >= HINT_COST;
+              const canHint = gameMode === 'single' && !hasAns && !usedHints.has(cat) && !isLoad;
               return (
                 <CategoryRow
                   key={cat}
