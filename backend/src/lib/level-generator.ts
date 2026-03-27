@@ -240,82 +240,208 @@ const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   O: ['thing', 'health_issues', 'sports_games', 'professions'],
 };
 
-// ============================================
-// PRE-DEFINED WARMUP LETTER SEQUENCE (levels 1-40)
-// Two-letter combo levels (10, 14, 19, 23, 29, 33, 38) are handled by LEVEL_OVERRIDES.
-// ============================================
-
-const WARMUP_LETTER_SEQUENCE: string[] = [
-  // L1-10 (L10 overridden to CH)
-  'S', 'M', 'B', 'T', 'C', 'P', 'R', 'D', 'L', 'F',
-  // L11-20 (L14 overridden to SH, L19 overridden to BA)
-  'H', 'G', 'N', 'W', 'A', 'E', 'T', 'S', 'C', 'M',
-  // L21-30 (L23 overridden to CO, L29 overridden to MA)
-  'P', 'B', 'R', 'L', 'D', 'F', 'H', 'G', 'N', 'W',
-  // L31-40 (L33 overridden to SO, L38 overridden to LA)
-  'A', 'E', 'T', 'S', 'C', 'P', 'R', 'D', 'L', 'F',
-];
+// (warmup sequence removed — seeded RNG handles all non-override letters)
 
 // Two-letter combo levels and their letters
 const TWO_LETTER_LEVELS: Record<number, string> = {
   10: 'CH',
-  14: 'SH',
+  15: 'SH',
   19: 'BA',
   23: 'CO',
   29: 'MA',
   33: 'SO',
   38: 'LA',
+  44: 'TA',
+  76: 'HA',
+  86: 'WA',
+  95: 'PR',
 };
 
-// "Easy" categories — used for levels with reduced category count
-const EASY_CATEGORIES: CategoryType[] = ['names', 'animal', 'places', 'thing', 'brands', 'fruits_vegetables'];
+// ============================================
+// LEVEL OVERRIDES — explicit config for levels 1-100
+// ============================================
 
-// Level-specific overrides for levels 1-40
-interface EarlyLevelOverride {
+interface LevelOverride {
+  // Letter
+  forceLetter?: string;             // exact forced single or two-letter value
+  forceLetterOptions?: string[];    // pick one at random (seeded) — e.g. ['LA','LO']
+  // Categories
+  categoryCount?: number;           // how many to pick from available pool
+  specificCategories?: CategoryType[]; // exact set, bypasses impossible-combo filter
+  useEasyCategories?: boolean;      // pick from easy-category priority list
+  easyCount?: number;               // how many easy cats to pick
+  useFullPool?: boolean;            // use ALL currently unlocked categories
+  // Constraint
   constraintType?: LevelConstraint['type'];
   constraintValue?: number;
   constraintEndLetter?: string;
-  categoryCount?: number;
-  useEasyCategories?: boolean;
+  constraintEndLetterOptions?: string[]; // pick one at random (seeded) — e.g. ['E','R']
+  // Timer
+  timerSecondsPerCategory?: number; // overrides base calc; total = value × catCount
+  // Multi-letter mode
+  isMultiLetterMode?: boolean;
+  multiLetterAssignments?: Partial<Record<CategoryType, string>>; // fixed per-cat
+  multiLetterOptions?: string[];    // pool shuffled & assigned one-per-cat
 }
 
-const LEVEL_OVERRIDES: Record<number, EarlyLevelOverride> = {
-  6:  { constraintType: 'min_word_length', constraintValue: 4 },
-  8:  { constraintType: 'min_word_length', constraintValue: 4 },
-  // L10 = CH combo (handled via TWO_LETTER_LEVELS, no constraint override)
-  11: { constraintType: 'min_word_length', constraintValue: 4 },
-  13: { constraintType: 'min_word_length', constraintValue: 4 },
-  // L14 = SH combo
-  16: { constraintType: 'min_word_length', constraintValue: 4, categoryCount: 6 },
-  17: { categoryCount: 6 },
-  18: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 6 },
-  // L19 = BA combo
-  19: { categoryCount: 6 },
-  20: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 6 },
-  21: { categoryCount: 6 },
-  22: { constraintType: 'min_word_length', constraintValue: 4, categoryCount: 6 },
-  // L23 = CO combo
-  23: { categoryCount: 6 },
-  24: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 6 },
-  25: { constraintType: 'double_letters', categoryCount: 6 },
-  26: { constraintType: 'min_word_length', constraintValue: 4, categoryCount: 7 },
+const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
+  // ── L1-4: 4 standard cats, no constraint ───────────────────────────────────
+  1: { categoryCount: 4 },
+  2: { categoryCount: 4 },
+  3: { categoryCount: 4 },
+  4: { categoryCount: 4 },
+  // ── L5-10: +Countries (5 cats), CH combo at 10 ─────────────────────────────
+  5:  { categoryCount: 5 },
+  6:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  7:  { categoryCount: 5 },
+  8:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  9:  { categoryCount: 5 },
+  // L10 → TWO_LETTER_LEVELS = 'CH'
+  // ── L11-15: 5 cats, SH combo at 15 ────────────────────────────────────────
+  11: { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  12: { categoryCount: 5 },
+  13: { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  14: { forceLetter: 'Z', categoryCount: 5 },
+  // L15 → TWO_LETTER_LEVELS = 'SH'
+  // ── L16-20: +Fruits&Veg (6 cats), BA combo at 19 ──────────────────────────
+  16: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
+  17: { forceLetter: 'Q', categoryCount: 6 },
+  18: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
+  // L19 → TWO_LETTER_LEVELS = 'BA'
+  20: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
+  // ── L21-25: +Famous People/Celebrities (7 cats), CO combo at 23 ───────────
+  21: { categoryCount: 7 },
+  22: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 4 },
+  // L23 → TWO_LETTER_LEVELS = 'CO'
+  24: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
+  25: { categoryCount: 7, constraintType: 'double_letters' },
+  // ── L26-30: +Professions (7 of 8 cats), MA combo at 29 ────────────────────
+  26: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 4 },
   27: { categoryCount: 7 },
-  28: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 7 },
-  // L29 = MA combo
-  29: { categoryCount: 7 },
-  30: { constraintType: 'ends_with_letter', constraintEndLetter: 'E', categoryCount: 7 },
+  28: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
+  29: { categoryCount: 7 }, // TWO_LETTER_LEVELS = 'MA'
+  30: { categoryCount: 7, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
+  // ── L31-35: +Food&Dishes (8 of 9 cats), SO combo at 33 ────────────────────
   31: { categoryCount: 8 },
-  32: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 8 },
-  // L33 = SO combo
-  33: { categoryCount: 8 },
-  34: { constraintType: 'min_word_length', constraintValue: 5, categoryCount: 8 },
-  35: { constraintType: 'ends_with_letter', constraintEndLetter: 'L', categoryCount: 8 },
+  32: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5 },
+  33: { categoryCount: 8 }, // TWO_LETTER_LEVELS = 'SO'
+  34: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5 },
+  35: { categoryCount: 8, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['L', 'T'] },
+  // ── L36-40: 8 of 9 cats (except 37 = 5 easy, 40 = 6 easy), LA at 38 ──────
   36: { categoryCount: 8 },
-  37: { constraintType: 'min_word_length', constraintValue: 6, categoryCount: 5, useEasyCategories: true },
-  // L38 = LA combo
-  38: { categoryCount: 8 },
+  37: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
+  38: { categoryCount: 8 }, // TWO_LETTER_LEVELS = 'LA'
   39: { categoryCount: 8 },
-  40: { constraintType: 'ends_with_letter', constraintEndLetter: 'N', categoryCount: 6, useEasyCategories: true },
+  40: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['N', 'Y'] },
+  // ── L41-45: +Brands (9 of 10 cats), TA at 44, easy sets at 42 & 45 ────────
+  41: { categoryCount: 9 },
+  42: { useEasyCategories: true, easyCount: 6, constraintType: 'double_letters' },
+  43: { categoryCount: 9 },
+  44: { categoryCount: 9 }, // TWO_LETTER_LEVELS = 'TA'
+  45: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['D', 'R'] },
+  // ── L46-50: 9 of 10 cats, time pressure at 50 ─────────────────────────────
+  46: { categoryCount: 9 },
+  47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5 },
+  48: { forceLetterOptions: ['LA', 'LO'], categoryCount: 6 },
+  49: { categoryCount: 9 },
+  50: { categoryCount: 9, timerSecondsPerCategory: 5 },
+  // ── L51-55: 9 of 10 cats ──────────────────────────────────────────────────
+  51: { categoryCount: 9 },
+  52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
+  53: { forceLetterOptions: ['FA', 'FI', 'FO'], categoryCount: 9 },
+  54: { categoryCount: 9 },
+  55: { useEasyCategories: true, easyCount: 7, constraintType: 'double_letters' },
+  // ── L56-60: 8 of 10 cats ──────────────────────────────────────────────────
+  56: { categoryCount: 8 },
+  57: { categoryCount: 8 },
+  58: { categoryCount: 8 },
+  59: { categoryCount: 8, timerSecondsPerCategory: 5 },
+  60: { forceLetterOptions: ['PA', 'PE', 'PO'], categoryCount: 8 },
+  // ── L61-65: +Sports&Games (10 of 11 cats), multi-letter at 64 ─────────────
+  61: { categoryCount: 10 },
+  62: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
+  63: { forceLetterOptions: ['RA', 'RE', 'RO'], categoryCount: 10 },
+  64: {
+    isMultiLetterMode: true,
+    specificCategories: ['names', 'thing', 'animal', 'places', 'brands', 'food_dishes'],
+    multiLetterAssignments: { names: 'AM', thing: 'BR', animal: 'CR', places: 'DE', brands: 'TO', food_dishes: 'KA' },
+  },
+  65: { useFullPool: true },
+  // ── L66-70: min 6 from 11, fixed letters at 66 & 67, all 11 at 70 ─────────
+  66: {
+    forceLetter: 'Y',
+    specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands'],
+  },
+  67: {
+    forceLetter: 'A',
+    specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
+    constraintType: 'min_word_length', constraintValue: 7,
+  },
+  68: { categoryCount: 6, timerSecondsPerCategory: 5 },
+  69: { categoryCount: 6 },
+  70: { useFullPool: true },
+  // ── L71-80: +Health Issues (min 7 of 12), HA combo at 76, all 12 at 78-80 ─
+  71: { categoryCount: 7 },
+  72: {
+    forceLetter: 'J',
+    specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
+  },
+  73: { categoryCount: 7 },
+  74: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 4, timerSecondsPerCategory: 6 },
+  75: { categoryCount: 7 },
+  // L76 → TWO_LETTER_LEVELS = 'HA' + specificCategories below
+  76: {
+    specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
+  },
+  77: { categoryCount: 7, timerSecondsPerCategory: 5 },
+  78: { useFullPool: true },
+  79: { useFullPool: true },
+  80: { useFullPool: true },
+  // ── L81-90: min 8 of 12, WA combo at 86, all 12 at 89-90 ─────────────────
+  81: { categoryCount: 8 },
+  82: {
+    forceLetter: 'K',
+    specificCategories: ['names', 'places', 'thing', 'animal', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
+  },
+  83: { categoryCount: 8 },
+  84: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5, timerSecondsPerCategory: 8 },
+  85: { categoryCount: 8 },
+  // L86 → TWO_LETTER_LEVELS = 'WA' + specificCategories below
+  86: {
+    specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
+  },
+  87: { categoryCount: 8 },
+  88: { categoryCount: 8, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'L'] },
+  89: { useFullPool: true },
+  90: { useFullPool: true },
+  // ── L91-100: min 10 of 12, PR combo at 95, multi-letter at 99-100 ─────────
+  91: { categoryCount: 10 },
+  92: { categoryCount: 10, constraintType: 'double_letters' },
+  93: { categoryCount: 10, timerSecondsPerCategory: 5 },
+  94: { categoryCount: 10 },
+  // L95 → TWO_LETTER_LEVELS = 'PR' + specificCategories + timerSecondsPerCategory
+  95: {
+    specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'professions', 'fruits_vegetables'],
+    timerSecondsPerCategory: 6,
+  },
+  96: {
+    forceLetter: 'F',
+    specificCategories: ['names', 'places', 'thing', 'brands', 'celebrities', 'food_dishes', 'health_issues'],
+    constraintType: 'ends_with_letter', constraintEndLetter: 'E',
+  },
+  97: { categoryCount: 10 },
+  98: { useFullPool: true },
+  99: {
+    useFullPool: true,
+    isMultiLetterMode: true,
+    multiLetterOptions: ['BR', 'E', 'G', 'I', 'J', 'NA', 'O', 'RO', 'U', 'V', 'Y', 'Z'],
+  },
+  100: {
+    useFullPool: true,
+    isMultiLetterMode: true,
+    constraintType: 'min_word_length', constraintValue: 5,
+    timerSecondsPerCategory: 5,
+  },
 };
 
 // ============================================
@@ -340,19 +466,18 @@ interface CategoryMilestone {
 }
 
 const CATEGORY_MILESTONES: CategoryMilestone[] = [
-  { level: 2,  category: 'thing' },              // 4 cats
-  { level: 5,  category: 'brands' },             // 5 cats
-  { level: 11, category: 'fruits_vegetables' },  // 6 cats
-  { level: 16, category: 'professions' },        // 7 cats
-  { level: 21, category: 'celebrities' },        // 8 cats
-  { level: 26, category: 'food_dishes' },        // 9 cats
-  { level: 31, category: 'countries' },          // 10 cats
-  { level: 41, category: 'sports_games' },       // 11 cats
-  { level: 51, category: 'health_issues' },      // 12 cats (ALL)
+  { level: 5,  category: 'countries' },          // 5 cats
+  { level: 16, category: 'fruits_vegetables' },  // 6 cats
+  { level: 21, category: 'celebrities' },        // 7 cats
+  { level: 26, category: 'professions' },        // 8 cats
+  { level: 31, category: 'food_dishes' },        // 9 cats
+  { level: 41, category: 'brands' },             // 10 cats
+  { level: 61, category: 'sports_games' },       // 11 cats
+  { level: 71, category: 'health_issues' },      // 12 cats (ALL)
 ];
 
-/** Three starter categories — always available from level 1 */
-const STARTER_CATEGORIES: CategoryType[] = ['names', 'animal', 'places'];
+/** Four starter categories — always available from level 1 */
+const STARTER_CATEGORIES: CategoryType[] = ['names', 'places', 'animal', 'thing'];
 
 /**
  * Return the full set of unlocked categories for a given level number.
@@ -365,6 +490,16 @@ function getAvailableCategories(level: number): CategoryType[] {
     }
   }
   return cats;
+}
+
+/** "Easy" category priority — content-familiar, most players know these well */
+const EASY_CATEGORY_PRIORITY: CategoryType[] = [
+  'names', 'places', 'animal', 'thing', 'fruits_vegetables', 'countries', 'brands',
+];
+
+function getEasyCategoriesForLevel(level: number): CategoryType[] {
+  const available = getAvailableCategories(level);
+  return EASY_CATEGORY_PRIORITY.filter((c) => available.includes(c));
 }
 
 // ============================================
@@ -594,7 +729,8 @@ function getMaxComboCount(level: number): number {
 // ============================================
 
 function getLetterDifficultyPool(level: number): Array<'easy' | 'normal' | 'hard'> {
-  if (level <= 25) return ['easy'];
+  // Levels 1-100: easy letters only (no impossible-combo restrictions) unless explicitly forced
+  if (level <= 100) return ['easy'];
   if (level <= 75) return ['easy', 'easy', 'normal'];
   if (level <= 150) return ['easy', 'normal', 'normal'];
   if (level <= 250) return ['normal', 'normal', 'hard'];
@@ -614,12 +750,6 @@ function selectLetter(
   rng: SeededRandom,
   availableCategories: CategoryType[]
 ): { letter: string; type: LevelData['letterType'] } {
-  // Warmup: deterministic sequence
-  if (level >= 1 && level <= 25) {
-    const letter = WARMUP_LETTER_SEQUENCE[level - 1] ?? 'S';
-    return { letter, type: 'easy' };
-  }
-
   const diffPool = getLetterDifficultyPool(level);
   const difficulty = rng.pick(diffPool);
 
@@ -811,7 +941,7 @@ function createSingleConstraint(
       // Shuffle so selection is still random
       for (let i = candidateLetters.length - 1; i > 0; i--) {
         const j = Math.floor(rng.next() * (i + 1));
-        [candidateLetters[i], candidateLetters[j]] = [candidateLetters[j], candidateLetters[i]];
+        const tmp = candidateLetters[i]!; candidateLetters[i] = candidateLetters[j]!; candidateLetters[j] = tmp;
       }
       const viableCats = categories ?? [];
       const endLetter =
@@ -1065,150 +1195,134 @@ export function generateLevel(levelNumber: number): LevelData {
   const rng = new SeededRandom(levelNumber * 12345);
   const band = getBandForLevel(levelNumber);
   const availableCategories = getAvailableCategories(levelNumber);
-
-  // --- Early level overrides (levels 1-40) ---
-  const earlyOverride = LEVEL_OVERRIDES[levelNumber];
+  const override = LEVEL_OVERRIDES[levelNumber];
   const twoLetterCombo = TWO_LETTER_LEVELS[levelNumber];
 
-  // --- Letter ---
-  const isMultiLetterMode = levelNumber >= 200 && rng.next() < Math.min((levelNumber - 200) / 300, 0.6);
-
+  // ─── LETTER ───────────────────────────────────────────────────────────────
   let letter: string;
   let letterType: LevelData['letterType'];
 
   if (twoLetterCombo) {
-    // Two-letter combo level — use the combo as the letter
     letter = twoLetterCombo;
     letterType = 'two_letter';
-  } else if (levelNumber <= 40) {
-    // Warmup sequence for early levels (1-40)
-    letter = WARMUP_LETTER_SEQUENCE[levelNumber - 1] ?? 'S';
-    letterType = 'easy';
+  } else if (override?.forceLetter) {
+    letter = override.forceLetter;
+    letterType = override.forceLetter.length > 1 ? 'two_letter' : 'hard';
+  } else if (override?.forceLetterOptions) {
+    letter = rng.pick(override.forceLetterOptions);
+    letterType = letter.length > 1 ? 'two_letter' : 'normal';
   } else {
     const sel = selectLetter(levelNumber, rng, availableCategories);
     letter = sel.letter;
     letterType = sel.type;
   }
 
-  // --- Categories ---
-  let categoryCount: number;
+  // ─── MULTI-LETTER MODE ────────────────────────────────────────────────────
+  const isMultiLetterMode = override?.isMultiLetterMode ??
+    (levelNumber >= 200 && rng.next() < Math.min((levelNumber - 200) / 300, 0.6));
+
+  // ─── CATEGORIES ───────────────────────────────────────────────────────────
   let categories: CategoryType[];
 
-  if (levelNumber <= 40) {
-    // For early levels, use override count or default to all available
-    const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
-    const validAvailable = availableCategories.filter((c) => !impossible.includes(c));
-
-    if (earlyOverride?.useEasyCategories) {
-      // Pick from easy categories only
-      const easyCats = EASY_CATEGORIES.filter((c) => validAvailable.includes(c));
-      categoryCount = Math.min(earlyOverride.categoryCount ?? easyCats.length, easyCats.length);
-      categories = rng.shuffle(easyCats).slice(0, categoryCount);
+  if (override?.specificCategories) {
+    // Exact set — bypass impossible-combo filtering (user designed this deliberately)
+    categories = override.specificCategories;
+  } else if (override?.useFullPool) {
+    // In multi-letter mode each cat gets its own letter so no impossible-combo filtering needed
+    if (isMultiLetterMode) {
+      categories = rng.shuffle(availableCategories);
     } else {
-      categoryCount = Math.min(earlyOverride?.categoryCount ?? validAvailable.length, validAvailable.length);
-      categories = rng.shuffle(validAvailable).slice(0, categoryCount);
+      const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
+      categories = rng.shuffle(availableCategories.filter((c) => !impossible.includes(c)));
     }
+  } else if (override?.useEasyCategories) {
+    const easyPool = getEasyCategoriesForLevel(levelNumber);
+    const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
+    const validEasy = easyPool.filter((c) => !impossible.includes(c));
+    const count = Math.min(override.easyCount ?? override.categoryCount ?? validEasy.length, validEasy.length);
+    categories = rng.shuffle(validEasy).slice(0, count);
+  } else if (override?.categoryCount !== undefined) {
+    const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
+    const valid = availableCategories.filter((c) => !impossible.includes(c));
+    categories = rng.shuffle(valid).slice(0, Math.min(override.categoryCount, valid.length));
   } else {
-    categoryCount = getCategoryCount(levelNumber, rng);
-    categories = selectCategories(levelNumber, rng, categoryCount, letter);
+    // L101+ default: all available (filtered by impossible combos)
+    categories = selectCategories(levelNumber, rng, getCategoryCount(levelNumber, rng), letter);
   }
 
-  // --- Multi-letter mode ---
+  // ─── MULTI-LETTER ASSIGNMENT ──────────────────────────────────────────────
   let lettersPerCategory: string[] | undefined;
   let primaryLetter = letter;
 
   if (isMultiLetterMode && categories.length > 0) {
-    lettersPerCategory = selectMultipleLetters(levelNumber, rng, categories);
+    if (override?.multiLetterAssignments) {
+      lettersPerCategory = categories.map((cat) => override.multiLetterAssignments![cat] ?? letter);
+    } else if (override?.multiLetterOptions) {
+      const shuffled = rng.shuffle([...override.multiLetterOptions]);
+      lettersPerCategory = categories.map((_, i) => shuffled[i % shuffled.length]!);
+    } else {
+      lettersPerCategory = selectMultipleLetters(levelNumber, rng, categories);
+    }
     primaryLetter = lettersPerCategory[0] ?? letter;
   }
 
-  // --- Constraint ---
+  // ─── CONSTRAINT ───────────────────────────────────────────────────────────
   let constraint: LevelConstraint;
 
-  if (twoLetterCombo) {
-    // Two-letter combo levels have no extra constraint — the combo is challenging enough
-    constraint = { type: 'none', description: 'No special constraints' };
-  } else if (levelNumber <= 40 && earlyOverride?.constraintType) {
-    // Apply level-specific override constraint
-    const cType = earlyOverride.constraintType;
+  if (override?.constraintType) {
+    const cType = override.constraintType;
     if (cType === 'min_word_length') {
-      const val = earlyOverride.constraintValue ?? 4;
+      const val = override.constraintValue ?? 4;
       constraint = { type: 'min_word_length', value: val, description: `Words must be ${val}+ letters` };
     } else if (cType === 'ends_with_letter') {
-      const el = earlyOverride.constraintEndLetter ?? 'E';
+      const el = override.constraintEndLetterOptions
+        ? rng.pick(override.constraintEndLetterOptions)
+        : (override.constraintEndLetter ?? 'E');
       constraint = { type: 'ends_with_letter', endLetter: el, description: `Words must end with "${el}"` };
     } else if (cType === 'double_letters') {
       constraint = { type: 'double_letters', description: 'Words must contain double letters (ee, ll, ss...)' };
     } else {
       constraint = { type: 'none', description: 'No special constraints' };
     }
-  } else if (levelNumber <= 40) {
-    // Other early levels have no constraint
+  } else if (levelNumber <= 100) {
+    // Levels 1-100 without explicit override get no constraint
+    // (combo/hard-letter levels are already challenging enough)
     constraint = { type: 'none', description: 'No special constraints' };
   } else {
-    constraint = selectConstraint(
-      levelNumber,
-      rng,
-      primaryLetter,
-      categories,
-      lettersPerCategory
-    );
+    constraint = selectConstraint(levelNumber, rng, primaryLetter, categories, lettersPerCategory);
   }
 
-  // --- Timer ---
-  let timerSeconds = getBaseTimerSeconds(levelNumber, categories.length);
+  // ─── TIMER ────────────────────────────────────────────────────────────────
+  let timerSeconds: number;
 
-  // GENEROUS BONUS TIME for difficult constraints
-  // This ensures players have enough time when facing challenging constraints
-  const hasMinWordLength =
-    constraint.type === 'min_word_length' ||
-    (constraint.type === 'combo' &&
-      constraint.comboConstraints?.some((c) => c.type === 'min_word_length'));
-  const minWordValue =
-    constraint.type === 'min_word_length'
-      ? constraint.value ?? 4
-      : constraint.comboConstraints?.find((c) => c.type === 'min_word_length')?.value ?? 0;
+  if (override?.timerSecondsPerCategory) {
+    // Explicit time-pressure override: no bonus time added
+    timerSeconds = override.timerSecondsPerCategory * categories.length;
+  } else {
+    timerSeconds = getBaseTimerSeconds(levelNumber, categories.length);
 
-  // Bonus time based on constraint type
-  if (constraint.type !== 'none' && constraint.type !== 'time_pressure') {
-    // Any constraint gets +3 seconds base bonus
-    timerSeconds += 3;
-  }
+    // Bonus time for difficult constraints
+    const hasMinWordLength =
+      constraint.type === 'min_word_length' ||
+      (constraint.type === 'combo' && constraint.comboConstraints?.some((c) => c.type === 'min_word_length'));
+    const minWordValue =
+      constraint.type === 'min_word_length'
+        ? constraint.value ?? 4
+        : constraint.comboConstraints?.find((c) => c.type === 'min_word_length')?.value ?? 0;
 
-  // Additional bonuses for specific difficult constraints
-  if (hasMinWordLength && minWordValue >= 5) {
-    timerSeconds += 3; // Extra time for 5+ letter words
+    if (constraint.type !== 'none' && constraint.type !== 'time_pressure') timerSeconds += 3;
+    if (hasMinWordLength && minWordValue >= 5) timerSeconds += 3;
+    if (hasMinWordLength && minWordValue >= 6) timerSeconds += 2;
+    if (constraint.type === 'ends_with_letter') timerSeconds += 2;
+    if (constraint.type === 'no_repeat_letters') timerSeconds += 3;
+    if (constraint.type === 'contains_vowel') timerSeconds += 2;
+    if (constraint.type === 'odd_length') timerSeconds += 2;
+    if (constraint.type === 'double_letters') timerSeconds += 2;
+    if (constraint.type === 'combo') timerSeconds += 4;
+    if (constraint.type === 'survival') timerSeconds += 2;
+    if (constraint.type === 'time_pressure') timerSeconds = Math.max(6, timerSeconds - 4);
+    timerSeconds = clamp(timerSeconds, 10, getBaseTimerSeconds(levelNumber, categories.length) + 30);
   }
-  if (hasMinWordLength && minWordValue >= 6) {
-    timerSeconds += 2; // Even more for 6+ letter words
-  }
-  if (constraint.type === 'ends_with_letter') {
-    timerSeconds += 2; // Ending with specific letter is tricky
-  }
-  if (constraint.type === 'no_repeat_letters') {
-    timerSeconds += 3; // Very challenging constraint
-  }
-  if (constraint.type === 'contains_vowel') {
-    timerSeconds += 2; // Requires finding words with a specific vowel
-  }
-  if (constraint.type === 'odd_length') {
-    timerSeconds += 2; // Requires counting letters before answering
-  }
-  if (constraint.type === 'double_letters') {
-    timerSeconds += 2; // Needs thinking
-  }
-  if (constraint.type === 'combo') {
-    timerSeconds += 4; // Multiple constraints need much more time
-  }
-  if (constraint.type === 'survival') {
-    timerSeconds += 2; // High stakes, give breathing room
-  }
-  if (constraint.type === 'time_pressure') {
-    timerSeconds = Math.max(6, timerSeconds - 4); // Still challenging but not brutal
-  }
-
-  // Clamp: min 10s total, max = base (constraint bonuses only add, never exceed base by more than 30s)
-  timerSeconds = clamp(timerSeconds, 10, getBaseTimerSeconds(levelNumber, categories.length) + 30);
 
   // --- Scoring ---
   const passScorePercent = getPassScorePercent(levelNumber);
