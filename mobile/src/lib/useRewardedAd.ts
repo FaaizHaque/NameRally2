@@ -10,8 +10,8 @@ import {
 // TODO: Replace these test IDs with your real AdMob rewarded ad unit IDs
 // after creating them at https://admob.google.com
 const AD_UNIT_ID = Platform.select({
-  ios:     'ca-app-pub-3940256099942544/1712485313',   // TODO: swap with real iOS rewarded unit ID
-  android: 'ca-app-pub-3940256099942544/5224354917',   // TODO: swap with real Android rewarded unit ID
+  ios:     'ca-app-pub-1431240801280221/3292546851',
+  android: 'ca-app-pub-3940256099942544/5224354917',   // TODO: swap with real Android rewarded unit ID when created
   default: 'ca-app-pub-3940256099942544/5224354917',
 })!;
 
