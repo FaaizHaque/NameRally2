@@ -385,6 +385,7 @@ export default function GameScreen() {
   const [showLeaderboard,  setShowLeaderboard]  = useState(false);
   const [usedHints,    setUsedHints]    = useState<Set<CategoryType>>(new Set());
   const [loadingHints, setLoadingHints] = useState<Set<CategoryType>>(new Set());
+  const [pendingHint,  setPendingHint]  = useState<{ category: CategoryType; index: number } | null>(null);
   const [keyboardVisible,  setKeyboardVisible]  = useState(false);
   // Immediately disables inputs when timer hits 0, before handleRoundEnd is called
   const [roundInputDisabled, setRoundInputDisabled] = useState(false);
@@ -774,36 +775,50 @@ export default function GameScreen() {
     if (!session || usedHints.has(category) || loadingHints.has(category)) return;
     const existing = localAnswers[category]?.trim();
     if (existing && existing.length > session.currentLetter.length) return;
+    setPendingHint({ category, index: i });
+  };
 
-    // Pause the timer while the ad plays
+  const executeHint = async (category: CategoryType, i: number) => {
+    setLoadingHints(p => new Set(p).add(category));
+    try {
+      const letter = getLetterForCategory(i);
+      const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null);
+      if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Sounds.hint();
+        updateLocalAnswer(category, hint.toUpperCase());
+        setUsedHints(p => new Set(p).add(category));
+      } else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); }
+    finally { setLoadingHints(p => { const n = new Set(p); n.delete(category); return n; }); }
+  };
+
+  const handleHintViaAd = () => {
+    if (!pendingHint) return;
+    const { category, index } = pendingHint;
+    setPendingHint(null);
     adPauseStart.current = Date.now();
-
-    const grantHint = async () => {
-      setLoadingHints(p => new Set(p).add(category));
-      try {
-        const letter = getLetterForCategory(i);
-        const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null);
-        if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          Sounds.hint();
-          updateLocalAnswer(category, hint.toUpperCase());
-          setUsedHints(p => new Set(p).add(category));
-        } else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      } catch { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); }
-      finally { setLoadingHints(p => { const n = new Set(p); n.delete(category); return n; }); }
-    };
-
-    const resumeTimer = () => {
-      if (adPauseStart.current !== null) {
-        adPauseOffset.current += Date.now() - adPauseStart.current;
-        adPauseStart.current = null;
-      }
-    };
-
     showAd(
-      () => { grantHint(); },
-      () => { resumeTimer(); },
+      () => { executeHint(category, index); },
+      () => {
+        if (adPauseStart.current !== null) {
+          adPauseOffset.current += Date.now() - adPauseStart.current;
+          adPauseStart.current = null;
+        }
+      },
     );
+  };
+
+  const handleHintViaStars = () => {
+    if (!pendingHint) return;
+    const { category, index } = pendingHint;
+    setPendingHint(null);
+    if (levelProgress.totalStars < HINT_COST) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+    if (!spendStars(HINT_COST)) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
+    executeHint(category, index);
   };
 
   useEffect(() => {
@@ -1079,7 +1094,7 @@ export default function GameScreen() {
             <Text style={{ color: '#FCD34D', fontSize: 15, fontWeight: '800' }}>{levelProgress.totalStars}</Text>
             <Text style={{ color: 'rgba(253,211,77,0.4)', fontSize: 14 }}>|</Text>
             <Lightbulb size={15} color="rgba(253,211,77,0.65)" strokeWidth={1.5} />
-            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint = watch ad</Text>
+            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint</Text>
           </View>
 
           {/* Constraint banner */}
@@ -1597,7 +1612,7 @@ export default function GameScreen() {
                 <Text style={[s.starsTxt, { fontWeight: '700' }]}>{levelProgress.totalStars}</Text>
                 <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>|</Text>
                 <Lightbulb size={11} color={P.inkFaint} strokeWidth={1.5} />
-                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>hint = watch ad</Text>
+                <Text style={[s.starsTxt, { color: P.inkFaint, fontSize: 11 }]}>hint</Text>
               </Animated.View>
             )}
             {session.settings.selectedCategories.map((cat, i) => {
@@ -1715,6 +1730,31 @@ export default function GameScreen() {
                 <Text style={[s.mBtnGhostTxt, { fontWeight: '700' }]}>End Game for Everyone</Text>
               </Pressable>
             )}
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* ════ HINT CHOICE MODAL ════ */}
+      <Modal visible={!!pendingHint} transparent animationType="fade" onRequestClose={() => setPendingHint(null)}>
+        <View style={s.backdrop}>
+          <Animated.View entering={ZoomIn.duration(260).springify()} style={s.modalCard}>
+            <View style={[s.modalIconWrap, { backgroundColor: '#1e2d50', borderColor: '#FCD34D' }]}>
+              <Lightbulb size={22} color="#FCD34D" strokeWidth={2} />
+            </View>
+            <Text style={[s.modalTitle, { fontWeight: '800' }]}>Get a Hint</Text>
+            <Text style={[s.modalBody, { fontWeight: '500' }]}>Choose how you'd like to unlock this hint.</Text>
+            <View style={s.modalRow}>
+              <Pressable onPress={() => setPendingHint(null)} style={[s.mBtn, s.mBtnSec]}>
+                <Text style={[s.mBtnSecTxt, { fontWeight: '700' }]}>Cancel</Text>
+              </Pressable>
+              <Pressable onPress={handleHintViaStars} style={[s.mBtn, { backgroundColor: '#1e2d50', borderWidth: 2, borderColor: '#FCD34D', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]}>
+                <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+                <Text style={{ color: '#FCD34D', fontWeight: '800', fontSize: 14 }}> {HINT_COST}★</Text>
+              </Pressable>
+            </View>
+            <Pressable onPress={handleHintViaAd} style={{ marginTop: 6, backgroundColor: '#10b981', borderRadius: 10, paddingVertical: 13, alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Watch Ad — Free</Text>
+            </Pressable>
           </Animated.View>
         </View>
       </Modal>
