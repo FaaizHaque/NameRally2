@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "DARK_MODE=class expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/patch-google-ads-codegen.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/caveat": "^0.4.2",
