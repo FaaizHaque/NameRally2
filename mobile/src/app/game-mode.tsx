@@ -34,15 +34,9 @@ export default function GameModeScreen() {
       -1, true
     );
     loadLevelProgress().finally(() => setLevelLoaded(true));
-    AsyncStorage.getItem('npat_sp_intro_shown').then((val) => {
-      if (!val) setShowSpIntro(true);
-    });
   }, [loadLevelProgress]);
 
-  const handleSinglePlayer = useCallback(async () => {
-    if (isStartingGame || !levelLoaded) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Sounds.tap();
+  const startGame = useCallback(async () => {
     setGameMode('single');
     setIsStartingGame(true);
     try {
@@ -58,7 +52,19 @@ export default function GameModeScreen() {
     } finally {
       setIsStartingGame(false);
     }
-  }, [isStartingGame, levelLoaded, levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
+  }, [levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
+
+  const handleSinglePlayer = useCallback(async () => {
+    if (isStartingGame || !levelLoaded) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
+    const shown = await AsyncStorage.getItem('npat_sp_intro_shown');
+    if (!shown) {
+      setShowSpIntro(true);
+      return; // startGame called from modal dismiss
+    }
+    startGame();
+  }, [isStartingGame, levelLoaded, startGame]);
 
   const handleMultiplayer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -435,6 +441,7 @@ export default function GameModeScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 AsyncStorage.setItem('npat_sp_intro_shown', '1');
                 setShowSpIntro(false);
+                startGame();
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >

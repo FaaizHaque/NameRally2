@@ -395,11 +395,17 @@ export default function GameScreen() {
   const { showAd } = useRewardedAd();
 
   // Novelty popup state — persisted to AsyncStorage so each feature is announced exactly once
-  const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
+  const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
   const shownNovelties = useRef<Set<string>>(new Set());
   const noveltiesLoaded = useRef(false);
   // Queued novelty — fires after the letter reveal overlay disappears
-  const pendingNovelty = useRef<{ type: string; title: string; message: string; icon: React.ReactNode } | null>(null);
+  const pendingNovelty = useRef<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
+  // Pulse ring animation for novelty popup icon
+  const noveltyPulse = useSharedValue(1);
+  const noveltyPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: noveltyPulse.value }],
+    opacity: (2 - noveltyPulse.value),
+  }));
 
   // Load persisted seen-novelties from AsyncStorage once
   useEffect(() => {
@@ -461,7 +467,7 @@ export default function GameScreen() {
             type: 'category',
             title: 'New Category Unlocked!',
             message: `${catName} joins the rally for the first time!`,
-            icon: <Sparkles size={36} color="#FCD34D" strokeWidth={2} />,
+            category: cat as CategoryType,
           };
           return;
         }
@@ -491,7 +497,7 @@ export default function GameScreen() {
             type: 'constraint',
             title: info.title,
             message: info.message,
-            icon: <AlertTriangle size={36} color="#a78bfa" strokeWidth={2} />,
+            constraintType: cType,
           };
         }
       }
@@ -507,6 +513,19 @@ export default function GameScreen() {
     const t = setTimeout(() => setNoveltyPopup(popup), 350);
     return () => clearTimeout(t);
   }, [showReveal]);
+
+  // Pulse ring animation — runs while novelty popup is visible
+  useEffect(() => {
+    if (noveltyPopup) {
+      noveltyPulse.value = 1;
+      noveltyPulse.value = withRepeat(
+        withSequence(withTiming(1.55, { duration: 900, easing: Easing.out(Easing.ease) }), withTiming(1, { duration: 600 })),
+        -1, false,
+      );
+    } else {
+      noveltyPulse.value = 1;
+    }
+  }, [!!noveltyPopup]);
 
   // Sound toggle
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
@@ -1919,45 +1938,131 @@ export default function GameScreen() {
       )}
 
       {/* ═══ NOVELTY POPUP (New Features — shown once ever, tap to dismiss) ═══ */}
-      {noveltyPopup && (
-        <Modal visible={true} transparent animationType="fade">
-          <Pressable
-            style={[s.backdrop, { justifyContent: 'center', alignItems: 'center' }]}
-            onPress={() => setNoveltyPopup(null)}
-          >
-            <Animated.View entering={ZoomIn.springify()}>
-              <View style={[s.modalCard, { maxWidth: 300, alignItems: 'center' }]}>
-                <View style={{
-                  width: 72, height: 72, borderRadius: 36,
-                  backgroundColor: noveltyPopup.type === 'category' ? 'rgba(253,211,77,0.15)' : 'rgba(167,139,250,0.15)',
-                  alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 14,
-                  borderWidth: 2,
-                  borderColor: noveltyPopup.type === 'category' ? 'rgba(253,211,77,0.4)' : 'rgba(167,139,250,0.4)',
-                }}>
-                  {noveltyPopup.icon}
-                </View>
-                <Text style={[s.modalTitle, { fontSize: 19, marginBottom: 8, textAlign: 'center' }]}>
-                  {noveltyPopup.title}
-                </Text>
-                <Text style={[s.modalBody, { fontSize: 14, textAlign: 'center', marginBottom: 18 }]}>
-                  {noveltyPopup.message}
-                </Text>
-                <Pressable
-                  onPress={() => setNoveltyPopup(null)}
-                  style={({ pressed }) => ({
-                    backgroundColor: noveltyPopup.type === 'category' ? '#4090e8' : '#6366f1',
-                    borderRadius: 10, paddingVertical: 11, paddingHorizontal: 28,
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+      {noveltyPopup && (() => {
+        const isCat = noveltyPopup.type === 'category' && !!noveltyPopup.category;
+        const cat = noveltyPopup.category;
+        const cc = cat ? CAT_COLORS[cat] : null;
+        // Per-constraint icon + color
+        const CONSTRAINT_DISPLAY: Record<string, { icon: React.ReactNode; color: string; gradA: string; gradB: string }> = {
+          min_word_length:   { icon: <Text style={{ fontSize: 34 }}>📏</Text>, color: '#a78bfa', gradA: '#7c3aed', gradB: '#4c1d95' },
+          max_word_length:   { icon: <Text style={{ fontSize: 34 }}>✂️</Text>,  color: '#f472b6', gradA: '#db2777', gradB: '#831843' },
+          ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
+          double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
+          contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
+          odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
+          no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
+          combo:             { icon: <Text style={{ fontSize: 34 }}>⚡</Text>,  color: '#e879f9', gradA: '#a21caf', gradB: '#4a044e' },
+          survival:          { icon: <Text style={{ fontSize: 34 }}>💀</Text>, color: '#fb7185', gradA: '#e11d48', gradB: '#4c0519' },
+          time_pressure:     { icon: <Text style={{ fontSize: 34 }}>⏱️</Text>, color: '#facc15', gradA: '#ca8a04', gradB: '#713f12' },
+        };
+        const cd = noveltyPopup.constraintType ? (CONSTRAINT_DISPLAY[noveltyPopup.constraintType] ?? CONSTRAINT_DISPLAY.combo) : CONSTRAINT_DISPLAY.combo;
+        const accentColor  = isCat ? cc!.darkAccent  : cd.color;
+        const borderColor  = isCat ? cc!.darkBorder  : cd.color;
+        const bgGradStart  = isCat ? cc!.darkBg      : '#0e0820';
+        const bgGradEnd    = '#0a0f1e';
+        const btnGradA     = isCat ? cc!.gradA       : cd.gradA;
+        const btnGradB     = isCat ? cc!.gradB       : cd.gradB;
+
+        // Category-specific icon at larger size
+        const catIconMap: Record<CategoryType, React.ReactNode> = {
+          names:             <User       size={40} color={accentColor} strokeWidth={2} />,
+          places:            <MapPin     size={40} color={accentColor} strokeWidth={2} />,
+          animal:            <Cat        size={40} color={accentColor} strokeWidth={2} />,
+          thing:             <Box        size={40} color={accentColor} strokeWidth={2} />,
+          sports_games:      <Gamepad2   size={40} color={accentColor} strokeWidth={2} />,
+          brands:            <ShoppingBag size={40} color={accentColor} strokeWidth={2} />,
+          health_issues:     <HeartPulse size={40} color={accentColor} strokeWidth={2} />,
+          countries:         <Globe      size={40} color={accentColor} strokeWidth={2} />,
+          professions:       <Briefcase  size={40} color={accentColor} strokeWidth={2} />,
+          food_dishes:       <Utensils   size={40} color={accentColor} strokeWidth={2} />,
+          celebrities:       <Landmark   size={40} color={accentColor} strokeWidth={2} />,
+          fruits_vegetables: <Apple      size={40} color={accentColor} strokeWidth={2} />,
+        };
+        const mainIcon = isCat && cat ? catIconMap[cat] : cd.icon;
+        const badgeLabel = isCat ? 'NEW CATEGORY' : 'NEW RULE';
+
+        return (
+          <Modal visible={true} transparent animationType="none">
+            <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
+              {/* Tap backdrop to dismiss */}
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+
+              <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
+                <LinearGradient
+                  colors={[bgGradStart, bgGradEnd]}
+                  style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}
                 >
-                  <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Got it!</Text>
-                </Pressable>
-              </View>
+                  {/* Top accent bar */}
+                  <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
+
+                  <View style={{ padding: 28, alignItems: 'center' }}>
+                    {/* Badge */}
+                    <Animated.View entering={FadeInDown.duration(300).delay(120)}>
+                      <View style={{
+                        backgroundColor: borderColor + '20', borderRadius: 99,
+                        paddingHorizontal: 14, paddingVertical: 5,
+                        borderWidth: 1, borderColor: borderColor + '55', marginBottom: 22,
+                      }}>
+                        <Text style={{ color: accentColor, fontSize: 11, fontWeight: '800', letterSpacing: 2.5 }}>
+                          {badgeLabel}
+                        </Text>
+                      </View>
+                    </Animated.View>
+
+                    {/* Pulse ring + icon */}
+                    <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                      <Animated.View style={[noveltyPulseStyle, {
+                        position: 'absolute',
+                        width: 112, height: 112, borderRadius: 56,
+                        borderWidth: 2, borderColor: accentColor + '55',
+                      }]} />
+                      <Animated.View entering={ZoomIn.springify().delay(100).damping(12).stiffness(140)}>
+                        <LinearGradient
+                          colors={[btnGradA + '30', btnGradB + '15']}
+                          style={{
+                            width: 84, height: 84, borderRadius: 42,
+                            alignItems: 'center', justifyContent: 'center',
+                            borderWidth: 2, borderColor: borderColor + '90',
+                          }}
+                        >
+                          {mainIcon}
+                        </LinearGradient>
+                      </Animated.View>
+                    </View>
+
+                    {/* Title */}
+                    <Animated.View entering={FadeInDown.duration(280).delay(160)} style={{ alignItems: 'center' }}>
+                      <Text style={{ color: '#fff', fontSize: isCat ? 26 : 20, fontWeight: '900', textAlign: 'center', marginBottom: 6, letterSpacing: 0.3 }}>
+                        {isCat && cat ? getCategoryName(cat) : noveltyPopup.title}
+                      </Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>
+                        {noveltyPopup.message}
+                      </Text>
+                    </Animated.View>
+
+                    {/* CTA button */}
+                    <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
+                      <Pressable
+                        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
+                        style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
+                      >
+                        <LinearGradient
+                          colors={[btnGradA, btnGradB]}
+                          style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 0.3 }}>
+                            {isCat ? "Let's Go! →" : 'Got It!'}
+                          </Text>
+                        </LinearGradient>
+                      </Pressable>
+                    </Animated.View>
+                  </View>
+                </LinearGradient>
+              </Animated.View>
             </Animated.View>
-          </Pressable>
-        </Modal>
-      )}
+          </Modal>
+        );
+      })()}
     </View>
   );
 }
