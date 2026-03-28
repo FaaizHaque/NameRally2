@@ -286,18 +286,18 @@ function BasicsContent() {
 // Categories Content
 function CategoriesContent() {
   const categories = [
-    { name: 'Name', emoji: '👤', color: '#3BA99C', description: 'A real person\'s first or full name. No fictional characters.' },
+    { name: 'Name', emoji: '👤', color: '#3BA99C', description: 'Valid human names.' },
     { name: 'Place', emoji: '📍', color: '#D4A84B', description: 'Any city, country, landmark, or geographic location.' },
     { name: 'Animal', emoji: '🐾', color: '#6EC4B8', description: 'Any living creature — mammals, birds, fish, insects, reptiles.' },
     { name: 'Thing', emoji: '📦', color: '#9B6ED8', description: 'Any physical object you can touch.' },
-    { name: 'Food & Dishes', emoji: '🍽️', color: '#FF6B6B', description: 'Any meal or dish from around the world.' },
-    { name: 'Sports & Games', emoji: '⚽', color: '#3BA99C', description: 'Any sport, game, or athletic discipline.' },
+    { name: 'Food & Dishes', emoji: '🍽️', color: '#FF6B6B', description: 'Any meal, dish, or cuisine from around the world. Fruits, vegetables, and ingredients also accepted.' },
+    { name: 'Sports & Games', emoji: '⚽', color: '#3BA99C', description: 'A sport, game (e-games included), or athletic discipline. Popular traditional games also accepted.' },
     { name: 'Fruits & Vegetables', emoji: '🍎', color: '#D4A84B', description: 'Any fruit or vegetable, common or exotic.' },
     { name: 'Brands', emoji: '™️', color: '#6EC4B8', description: 'A company or brand you\'d recognise on a billboard.' },
     { name: 'Countries', emoji: '🌍', color: '#3BA99C', description: 'Any sovereign country in the world.' },
     { name: 'Health Issues', emoji: '🏥', color: '#9B6ED8', description: 'Medical conditions, illnesses, or symptoms.' },
     { name: 'Professions', emoji: '💼', color: '#6EC4B8', description: 'Any job or occupation.' },
-    { name: 'Celebrities', emoji: '⭐', color: '#D4A84B', description: 'A famous person — actor, musician, athlete, or public figure.' },
+    { name: 'Celebrities', emoji: '⭐', color: '#D4A84B', description: 'A real historical person — world leader, scientist, social activist, sportsman, music artist, or explorer.' },
   ];
 
   return (
