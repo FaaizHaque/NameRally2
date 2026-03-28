@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
@@ -20,6 +20,7 @@ export default function GameModeScreen() {
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
   const levelProgress = useGameStore((s) => s.levelProgress);
   const startLevelGame = useGameStore((s) => s.startLevelGame);
+  const setSession = useGameStore((s) => s.setSession);
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [showSpIntro, setShowSpIntro] = useState(false);
@@ -28,7 +29,14 @@ export default function GameModeScreen() {
   const shimmer = useSharedValue(0);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: 0.4 + shimmer.value * 0.4 }));
 
+  // Clear any stale game session when this screen mounts (e.g. after exiting daily challenge,
+  // single player, or multiplayer) so the game screen never flashes old content.
+  const didClear = useRef(false);
   useEffect(() => {
+    if (!didClear.current) {
+      didClear.current = true;
+      setSession(null);
+    }
     shimmer.value = withRepeat(
       withSequence(withTiming(1, { duration: 700 }), withTiming(0, { duration: 700 })),
       -1, true
