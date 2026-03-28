@@ -13,6 +13,7 @@ type CategoryType =
   | 'places'
   | 'animal'
   | 'thing'
+  | 'fruits_vegetables'
   | 'sports_games'
   | 'brands'
   | 'health_issues'
