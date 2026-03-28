@@ -83,7 +83,7 @@ const S = {
   // Background tracks — each mode has its own vibe
   BG_HOME:            require('../assets/sounds/bg_home.mp3'),          // retro arcade chiptune
   BG_GAME:            require('../assets/sounds/bg_game.mp3'),          // single player lo-fi
-  BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_mp.mp3'),      // multiplayer lobby — chill fireplace
+  BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_silkroad.wav'), // multiplayer lobby — Silk Road ambient
   BG_GAME_MP:         require('../assets/sounds/bg_game_mp.mp3'),       // multiplayer game — chill but prominent
   BG_DAILY_CHALLENGE: require('../assets/sounds/bg_daily_challenge.mp3'), // daily challenge — fun, slight pressure
 };
