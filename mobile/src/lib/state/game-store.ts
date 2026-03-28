@@ -583,8 +583,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ isLoading: true, error: null, currentLevel: level });
 
     try {
-      // Calculate round duration based on level timer (timerSeconds is per category)
-      const roundDuration = level.categories.length * level.timerSeconds;
+      // Calculate round duration — timerSeconds from backend is already the total
+      const roundDuration = level.timerSeconds;
 
       // For single-player level mode, create a LOCAL session only (no Supabase)
       // This avoids column size limitations and is faster

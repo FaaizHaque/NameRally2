@@ -409,7 +409,7 @@ export default function GameScreen() {
 
   // Load persisted seen-novelties from AsyncStorage once
   useEffect(() => {
-    AsyncStorage.getItem('npat_seen_novelties').then((raw) => {
+    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
       if (raw) {
         try {
           const arr: string[] = JSON.parse(raw);
@@ -422,10 +422,10 @@ export default function GameScreen() {
 
   const markNoveltyShown = (key: string) => {
     shownNovelties.current.add(key);
-    AsyncStorage.getItem('npat_seen_novelties').then((raw) => {
+    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
       const existing: string[] = raw ? JSON.parse(raw) : [];
       if (!existing.includes(key)) {
-        AsyncStorage.setItem('npat_seen_novelties', JSON.stringify([...existing, key]));
+        AsyncStorage.setItem('npat_seen_novelties_v2', JSON.stringify([...existing, key]));
       }
     }).catch(() => {});
   };
