@@ -423,7 +423,7 @@ export default function GameModeScreen() {
             elevation: 20, width: '100%',
           }}>
             <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
-              Solo Play 🎮
+              Single Player 🎮
             </Text>
             <Text style={{ color: 'rgba(160,200,255,0.85)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
               A letter is revealed each round — type words for every category before time runs out.{'\n\n'}

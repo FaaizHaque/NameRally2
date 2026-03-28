@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useEffect } from 'react';
 import { registerForPushNotifications } from '@/lib/notifications';
+import MobileAds from 'react-native-google-mobile-ads';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -41,6 +42,7 @@ function RootLayoutNav() {
 export default function RootLayout() {
   useEffect(() => {
     registerForPushNotifications();
+    MobileAds().initialize();
   }, []);
 
   return (
