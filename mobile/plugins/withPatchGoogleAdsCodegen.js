@@ -22,14 +22,16 @@ const PATCH_MARKER = '# [NameRally] patch-google-ads-codegen';
 const PATCH_RUBY = `
 ${PATCH_MARKER}
 # Fix react-native-google-mobile-ads NativeModule specs for RN 0.79 codegen.
-# Promise<void> is parsed as Promise<undefined> which codegen rejects.
+# 1. Promise<void> -> Promise<null>  (void treated as undefined in generics)
+# 2. CodegenTypes.UnsafeObject -> Object  (namespace unresolved -> undefined)
 Dir.glob(File.join(File.dirname(__FILE__), '..', 'node_modules',
     'react-native-google-mobile-ads', 'src', 'specs', 'modules', '*.ts')).each do |f|
   content = File.read(f)
-  if content.include?('Promise<void>')
-    File.write(f, content.gsub('Promise<void>', 'Promise<null>'))
-    puts "[patch-google-ads-codegen] patched \#{File.basename(f)}"
-  end
+  content.gsub!('Promise<void>', 'Promise<null>')
+  content.gsub!('CodegenTypes.UnsafeObject', 'Object')
+  content.gsub!(/import type \\{ CodegenTypes \\} from 'react-native';\\n?/, '')
+  File.write(f, content)
+  puts "[patch-google-ads-codegen] patched \#{File.basename(f)}"
 end
 `;
 
