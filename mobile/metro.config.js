@@ -125,4 +125,7 @@ config.resolver = {
 };
 
 // Integrate NativeWind with the Metro configuration.
-module.exports = withNativeWind(config, { input: "./global.css" });
+module.exports = withNativeWind(config, {
+  input: "./global.css",
+  configPath: path.resolve(__dirname, "./tailwind.config.js"),
+});

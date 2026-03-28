@@ -28,6 +28,7 @@
       "package": "com.haquegames.napt"
     },
     "plugins": [
+      "./plugins/withPatchGoogleAdsCodegen",
       "expo-router",
       [
         "react-native-google-mobile-ads",
