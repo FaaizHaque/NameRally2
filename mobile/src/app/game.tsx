@@ -869,6 +869,8 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (!session || session.status !== 'playing') return;
+    // Skip prefill on letterOptions levels — player picks which option to use
+    if (currentLevel?.letterOptions) return;
     const needsPrefill = session.settings.selectedCategories.every(cat => !localAnswers[cat] || !localAnswers[cat].startsWith(session.currentLetter));
     if (needsPrefill) session.settings.selectedCategories.forEach(cat => updateLocalAnswer(cat, session.currentLetter));
   }, [session?.currentRound, session?.currentLetter, session?.status]);
@@ -1410,7 +1412,11 @@ export default function GameScreen() {
               {/* Pencil mark lines on sticky — like someone wrote on it */}
               <View style={{ position: 'absolute', top: 8, left: 6, right: 6, height: 1, backgroundColor: P.stickyDark, opacity: 0.18, transform: [{ rotate: '-1deg' }] }} />
               <View style={{ position: 'absolute', bottom: 10, left: 8, right: 8, height: 1, backgroundColor: P.stickyDark, opacity: 0.12 }} />
-              <Text style={[s.stickyLetter, { fontWeight: '900' }]}>{session.currentLetter}</Text>
+              <Text style={[s.stickyLetter, { fontWeight: '900' }]}>
+                {currentLevel?.letterOptions
+                  ? currentLevel.letterOptions.join(' / ')
+                  : session.currentLetter}
+              </Text>
             </Animated.View>
           </View>
 

@@ -1067,7 +1067,8 @@ export const hasSpellingPenalty = (
 export const validateAnswer = (
   answer: string,
   letter: string,
-  _category: CategoryType
+  _category: CategoryType,
+  letterOptions?: string[]
 ): { isValid: boolean; reason?: string } => {
   const trimmedAnswer = answer.trim();
 
@@ -1075,8 +1076,13 @@ export const validateAnswer = (
     return { isValid: false, reason: 'Empty answer' };
   }
 
-  if (!trimmedAnswer.toLowerCase().startsWith(letter.toLowerCase())) {
-    return { isValid: false, reason: `Must start with "${letter}"` };
+  const validLetters = letterOptions && letterOptions.length > 0 ? letterOptions : [letter];
+  const startsWithValid = validLetters.some((opt) =>
+    trimmedAnswer.toLowerCase().startsWith(opt.toLowerCase())
+  );
+  if (!startsWithValid) {
+    const display = validLetters.join(' / ');
+    return { isValid: false, reason: `Must start with "${display}"` };
   }
 
   // Must have at least 3 characters for a real word (rejects two-letter combos like "lo", "za")
@@ -1419,17 +1425,20 @@ const CATEGORY_REJECTION_INDICATORS: Record<CategoryType, string[]> = {
 export const validateWithFallback = async (
   answer: string,
   letter: string,
-  category: CategoryType
+  category: CategoryType,
+  letterOptions?: string[]
 ): Promise<{ isValid: boolean; source: 'supabase' | 'local' | 'online' | 'none' }> => {
   // Basic validation (starts with letter, min length)
   const trimmed = answer.trim().toLowerCase();
-  const letterLower = letter.toLowerCase();
 
-  const startsWithLetter = trimmed.startsWith(letterLower);
+  const validLetters = letterOptions && letterOptions.length > 0 ? letterOptions : [letter];
+  const startsWithLetter = validLetters.some((opt) => trimmed.startsWith(opt.toLowerCase()));
 
   if (!trimmed || trimmed.length < 2 || !startsWithLetter) {
     return { isValid: false, source: 'none' };
   }
+  // Use the matching letter option as the effective letter for further validation
+  const letterLower = validLetters.find((opt) => trimmed.startsWith(opt.toLowerCase()))?.toLowerCase() ?? letter.toLowerCase();
 
   // Reject if answer is EXACTLY the letter prefix (user didn't type anything beyond pre-fill)
   // This handles both single letters ("S") and two-letter combos ("LO", "CH", etc.)
