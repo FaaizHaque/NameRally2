@@ -178,23 +178,23 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
     'fruits_vegetables',
   ],
   Q: [
-    'animal', 'names', 'sports_games', 'food_dishes', 'thing',
+    'sports_games', 'food_dishes',
     'health_issues', 'brands', 'professions', 'celebrities', 'fruits_vegetables',
   ],
   Z: [
-    'sports_games', 'food_dishes', 'thing', 'health_issues', 'professions',
+    'sports_games', 'food_dishes', 'health_issues', 'professions',
     'celebrities', 'fruits_vegetables',
   ],
   Y: [
-    'health_issues', 'sports_games', 'professions', 'celebrities', 'thing',
+    'health_issues', 'sports_games', 'professions', 'celebrities',
     'brands', 'food_dishes', 'fruits_vegetables',
   ],
-  U: ['health_issues', 'sports_games', 'thing', 'celebrities'],
-  V: ['sports_games', 'health_issues', 'thing', 'celebrities'],
-  K: ['health_issues', 'celebrities', 'thing'],
-  J: ['health_issues', 'sports_games', 'thing', 'celebrities'],
-  I: ['sports_games', 'thing', 'health_issues'],
-  O: ['health_issues', 'sports_games', 'thing'],
+  U: ['health_issues', 'sports_games', 'celebrities'],
+  V: ['sports_games', 'health_issues', 'celebrities'],
+  K: ['health_issues', 'celebrities'],
+  J: ['health_issues', 'sports_games', 'celebrities'],
+  I: ['sports_games', 'health_issues'],
+  O: ['health_issues', 'sports_games'],
   W: ['health_issues'],
 };
 
@@ -305,7 +305,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L15 → TWO_LETTER_LEVELS = 'SH'
   // ── L16-20: +Fruits&Veg (6 cats), BA combo at 19 ──────────────────────────
   16: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
-  17: { forceLetter: 'Q', categoryCount: 6 },
+  17: { forceLetter: 'Q', categoryCount: 5 },
   18: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
   // L19 → TWO_LETTER_LEVELS = 'BA'
   20: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
