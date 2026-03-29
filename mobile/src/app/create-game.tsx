@@ -127,6 +127,7 @@ export default function CreateGameScreen() {
   // Chill background while setting up — lobby_mp plays here, arcade kicks in when people join
   useEffect(() => {
     Sounds.startBackground('lobby_mp');
+    return () => { Sounds.stopBackground(); };
   }, []);
 
   const handleRoundsChange = (delta: number) => {

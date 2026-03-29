@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   View,
@@ -96,6 +96,10 @@ const CATEGORY_ICONS: Record<CategoryType, (color: string) => React.ReactNode> =
   celebrities:      (c: string) => <Landmark size={20} color={c} strokeWidth={2.5} />,
   fruits_vegetables:  (c: string) => <Apple size={20} color={c} strokeWidth={2.5} />,
 };
+
+// Pre-computed alphabet for the letter picker (avoids repeated split on every render)
+const PICKER_ALPHABET = 'ABCDEFGHIJKLMNOPRSTUVW';
+const PICKER_ALPHABET_CHARS = PICKER_ALPHABET.split('');
 
 // ─── Sound helpers ─────────────────────────────────────────────────────────────
 async function playTick() {
@@ -379,6 +383,12 @@ export default function GameScreen() {
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
   const HINT_COST = 5;
 
+  // Memoize sorted leaderboard to avoid re-sorting on every render
+  const sortedPlayers = useMemo(
+    () => session ? [...session.players].sort((a, b) => b.totalScore - a.totalScore) : [],
+    [session?.players],
+  );
+
   const [showExitModal,    setShowExitModal]    = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
   const [stopCountdown,    setStopCountdown]    = useState(5);
@@ -437,82 +447,7 @@ export default function GameScreen() {
     return () => { show.remove(); hide.remove(); };
   }, []);
 
-  // Queue novelty popup when level starts — fires after letter reveal animation
-  // Only in single player mode — multiplayer has no level progression
-  useEffect(() => {
-    if (!currentLevel || gameMode !== 'single') return;
-    // Reset any pending novelty from the previous level
-    pendingNovelty.current = null;
-
-    if (!noveltiesLoaded.current) {
-      // Retry after a short delay to allow AsyncStorage to load
-      const t = setTimeout(() => {
-        if (noveltiesLoaded.current) checkNovelty();
-      }, 300);
-      return () => clearTimeout(t);
-    }
-    checkNovelty();
-
-    function checkNovelty() {
-      if (!currentLevel) return;
-
-      // Check each category in this level — queue a popup the very first time
-      // any category is encountered, regardless of level number.
-      for (const cat of currentLevel.categories) {
-        const catKey = `novelty_cat_${cat}`;
-        if (!shownNovelties.current.has(catKey)) {
-          const catName = getCategoryName(cat as CategoryType);
-          markNoveltyShown(catKey);
-          pendingNovelty.current = {
-            type: 'category',
-            title: 'New Category Unlocked!',
-            message: `${catName} joins the rally for the first time!`,
-            category: cat as CategoryType,
-          };
-          return;
-        }
-      }
-
-      // Check for new constraint type (key: constraint type, fires once ever)
-      if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
-        const cType = currentLevel.constraint.type;
-        const constraintKey = `novelty_constraint_${cType}`;
-        if (!shownNovelties.current.has(constraintKey)) {
-          const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
-            min_word_length:   { title: 'New Rule: Long Words',       message: 'Answers must be 4+ letters long' },
-            max_word_length:   { title: 'New Rule: Short Words',      message: 'Answers must be short — keep it brief!' },
-            ends_with_letter:  { title: 'New Rule: Ending Letter',    message: 'Each answer must end with a specific letter' },
-            double_letters:    { title: 'New Rule: Double Letters',   message: 'Answers must contain double letters (ee, ll, ss…)' },
-            contains_vowel:    { title: 'New Rule: Contains Vowel',   message: 'Answers must contain a specific vowel letter' },
-            odd_length:        { title: 'New Rule: Odd Letters',      message: 'Answers must have an odd number of letters (3, 5, 7…)' },
-            no_repeat_letters: { title: 'New Rule: No Repeats',       message: 'No letter can appear more than once in your answer' },
-            no_common_words:   { title: 'New Rule: No Common Words',  message: 'Avoid obvious, common answers — get creative!' },
-            combo:             { title: 'New Rule: Multi-Constraint', message: 'Multiple rules apply at the same time' },
-            survival:          { title: 'New Rule: Survival Mode',    message: 'One invalid answer ends the level instantly' },
-            time_pressure:     { title: 'New Rule: Time Pressure',    message: 'The clock is tighter — think fast!' },
-          };
-          const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
-          markNoveltyShown(constraintKey);
-          pendingNovelty.current = {
-            type: 'constraint',
-            title: info.title,
-            message: info.message,
-            constraintType: cType,
-          };
-        }
-      }
-    }
-  }, [currentLevel?.level, currentLevel?.constraint?.type]);
-
-  // Fire queued novelty popup right after the letter reveal overlay fades out
-  useEffect(() => {
-    if (showReveal || gameMode !== 'single') return;
-    if (!pendingNovelty.current) return;
-    const popup = pendingNovelty.current;
-    pendingNovelty.current = null;
-    const t = setTimeout(() => setNoveltyPopup(popup), 350);
-    return () => clearTimeout(t);
-  }, [showReveal]);
+  // Novelty popups for SP are now shown in game-mode.tsx before the game starts.
 
   // Pulse ring animation — runs while novelty popup is visible
   useEffect(() => {
@@ -603,9 +538,8 @@ export default function GameScreen() {
   }));
 
   // Letter picker cycling effect (multiplayer)
-  const PICKER_ALPHABET = 'ABCDEFGHIJKLMNOPRSTUVW';
   const usedLetters = session?.usedLetters || [];
-  const availableLetters = PICKER_ALPHABET.split('').filter(l => !usedLetters.includes(l));
+  const availableLetters = PICKER_ALPHABET_CHARS.filter(l => !usedLetters.includes(l));
 
   useEffect(() => {
     if (session?.status !== 'picking_letter' || !isPicker || !pickerCycling || pickerLocked) return;
@@ -1609,7 +1543,7 @@ export default function GameScreen() {
               </Pressable>
               {showLeaderboard && (
                 <Animated.View entering={FadeIn.duration(200)} style={s.lbBody}>
-                  {[...session.players].sort((a, b) => b.totalScore - a.totalScore).map((p, i) => {
+                  {sortedPlayers.map((p, i) => {
                     const isMe = p.visibleId === currentUser?.id;
                     return (
                       <View key={p.id} style={[s.lbRow, isMe && s.lbRowMe]}>
@@ -1849,7 +1783,7 @@ export default function GameScreen() {
               {/* Used letters display */}
               {usedLetters.length > 0 && (
                 <View style={s.usedLettersRow}>
-                  {PICKER_ALPHABET.split('').map(letter => {
+                  {PICKER_ALPHABET_CHARS.map(letter => {
                     const isUsed = usedLetters.includes(letter);
                     return (
                       <Text
@@ -1888,7 +1822,7 @@ export default function GameScreen() {
               {/* Used letters display */}
               {usedLetters.length > 0 && (
                 <View style={s.usedLettersRow}>
-                  {PICKER_ALPHABET.split('').map(letter => {
+                  {PICKER_ALPHABET_CHARS.map(letter => {
                     const isUsed = usedLetters.includes(letter);
                     return (
                       <Text

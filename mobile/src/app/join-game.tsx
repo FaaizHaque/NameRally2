@@ -31,18 +31,28 @@ export default function JoinGameScreen() {
       return;
     }
     setIsJoining(true);
+    setError(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const success = await joinGame(code);
-    setIsJoining(false);
-    if (success) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const latestSession = useGameStore.getState().session;
-      if (latestSession && latestSession.status !== 'lobby') {
-        router.replace('/game');
+    try {
+      const timeout = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 15000)
+      );
+      const success = await Promise.race([joinGame(code), timeout]);
+      setIsJoining(false);
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        const latestSession = useGameStore.getState().session;
+        if (latestSession && latestSession.status !== 'lobby') {
+          router.replace('/game');
+        } else {
+          router.replace('/lobby');
+        }
       } else {
-        router.replace('/lobby');
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
-    } else {
+    } catch {
+      setIsJoining(false);
+      setError('Connection timed out — please try again');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
