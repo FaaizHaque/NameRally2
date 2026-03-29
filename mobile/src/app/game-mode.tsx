@@ -1,16 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { FadeIn, FadeInDown, ZoomIn, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays, User, MapPin, Cat, Box, Gamepad2, ShoppingBag, HeartPulse, Globe, Briefcase, Utensils, Landmark, Apple } from 'lucide-react-native';
+import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { useGameStore, type CategoryType } from '@/lib/state/game-store';
+import { useGameStore } from '@/lib/state/game-store';
 import { Sounds } from '@/lib/sounds';
-import { getCategoryName } from '@/lib/word-validation';
-import { CAT_COLORS } from '@/lib/category-colors';
 import type { LevelData } from '@/lib/level-types';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
@@ -26,78 +24,6 @@ export default function GameModeScreen() {
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [showSpIntro, setShowSpIntro] = useState(false);
-
-  // Novelty popup — fires BEFORE the game starts (on this screen)
-  type NoveltyPopup = { type: string; title: string; message: string; category?: CategoryType; constraintType?: string };
-  const [noveltyPopup, setNoveltyPopup] = useState<NoveltyPopup | null>(null);
-  const pendingLevelData = useRef<LevelData | null>(null);
-  const shownNovelties = useRef<Set<string>>(new Set());
-  const noveltiesLoaded = useRef(false);
-  const noveltyPulse = useSharedValue(1);
-  const noveltyPulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: noveltyPulse.value }],
-    opacity: (2 - noveltyPulse.value),
-  }));
-
-  useEffect(() => {
-    if (noveltyPopup) {
-      noveltyPulse.value = 1;
-      noveltyPulse.value = withRepeat(
-        withSequence(withTiming(1.55, { duration: 900, easing: Easing.out(Easing.ease) }), withTiming(1, { duration: 600 })),
-        -1, false,
-      );
-    } else {
-      noveltyPulse.value = 1;
-    }
-  }, [!!noveltyPopup]);
-
-  const markNoveltyShown = (key: string) => {
-    shownNovelties.current.add(key);
-    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
-      const existing: string[] = raw ? JSON.parse(raw) : [];
-      if (!existing.includes(key)) {
-        AsyncStorage.setItem('npat_seen_novelties_v2', JSON.stringify([...existing, key]));
-      }
-    }).catch(() => {});
-  };
-
-  function checkLevelNovelty(level: LevelData): NoveltyPopup | null {
-    for (const cat of level.categories) {
-      const catKey = `novelty_cat_${cat}`;
-      if (!shownNovelties.current.has(catKey)) {
-        markNoveltyShown(catKey);
-        return {
-          type: 'category',
-          title: 'New Category Unlocked!',
-          message: `${getCategoryName(cat as CategoryType)} joins the rally for the first time!`,
-          category: cat as CategoryType,
-        };
-      }
-    }
-    if (level.constraint?.type && level.constraint.type !== 'none') {
-      const cType = level.constraint.type;
-      const constraintKey = `novelty_constraint_${cType}`;
-      if (!shownNovelties.current.has(constraintKey)) {
-        const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
-          min_word_length:   { title: 'New Rule: Long Words',       message: 'Answers must be 4+ letters long' },
-          max_word_length:   { title: 'New Rule: Short Words',      message: 'Answers must be short — keep it brief!' },
-          ends_with_letter:  { title: 'New Rule: Ending Letter',    message: 'Each answer must end with a specific letter' },
-          double_letters:    { title: 'New Rule: Double Letters',   message: 'Answers must contain double letters (ee, ll, ss…)' },
-          contains_vowel:    { title: 'New Rule: Contains Vowel',   message: 'Answers must contain a specific vowel letter' },
-          odd_length:        { title: 'New Rule: Odd Letters',      message: 'Answers must have an odd number of letters (3, 5, 7…)' },
-          no_repeat_letters: { title: 'New Rule: No Repeats',       message: 'No letter can appear more than once in your answer' },
-          no_common_words:   { title: 'New Rule: No Common Words',  message: 'Avoid obvious, common answers — get creative!' },
-          combo:             { title: 'New Rule: Multi-Constraint', message: 'Multiple rules apply at the same time' },
-          survival:          { title: 'New Rule: Survival Mode',    message: 'One invalid answer ends the level instantly' },
-          time_pressure:     { title: 'New Rule: Time Pressure',    message: 'The clock is tighter — think fast!' },
-        };
-        markNoveltyShown(constraintKey);
-        const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: level.constraint.description };
-        return { type: 'constraint', title: info.title, message: info.message, constraintType: cType };
-      }
-    }
-    return null;
-  }
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -115,19 +41,16 @@ export default function GameModeScreen() {
       withSequence(withTiming(1, { duration: 700 }), withTiming(0, { duration: 700 })),
       -1, true
     );
-    // Load seen novelties from AsyncStorage
-    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
-      if (raw) {
-        try { (JSON.parse(raw) as string[]).forEach((k) => shownNovelties.current.add(k)); } catch { /* ignore */ }
-      }
-      noveltiesLoaded.current = true;
-    }).catch(() => { noveltiesLoaded.current = true; });
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
-  const launchGame = useCallback(async (levelData: LevelData) => {
+  const startGame = useCallback(async () => {
+    setGameMode('single');
     setIsStartingGame(true);
     try {
+      const response = await fetch(`${BACKEND_URL}/api/levels/${levelProgress.unlockedLevel}`);
+      if (!response.ok) throw new Error('Failed to fetch level');
+      const levelData: LevelData = await response.json();
       await startLevelGame(levelData);
       Sounds.navigate();
       router.push('/game');
@@ -137,38 +60,7 @@ export default function GameModeScreen() {
     } finally {
       setIsStartingGame(false);
     }
-  }, [startLevelGame, router]);
-
-  const startGame = useCallback(async () => {
-    setGameMode('single');
-    setIsStartingGame(true);
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/levels/${levelProgress.unlockedLevel}`);
-      if (!response.ok) throw new Error('Failed to fetch level');
-      const levelData: LevelData = await response.json();
-      // Check for a first-time unlock popup before the game starts
-      const novelty = checkLevelNovelty(levelData);
-      if (novelty) {
-        pendingLevelData.current = levelData;
-        setIsStartingGame(false);
-        setNoveltyPopup(novelty);
-        return;
-      }
-      await launchGame(levelData);
-    } catch (error: any) {
-      console.error('Error starting level:', error?.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setIsStartingGame(false);
-    }
-  }, [levelProgress.unlockedLevel, setGameMode, launchGame]);
-
-  const handleNoveltyDismiss = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setNoveltyPopup(null);
-    const data = pendingLevelData.current;
-    pendingLevelData.current = null;
-    if (data) launchGame(data);
-  }, [launchGame]);
+  }, [levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
 
   const handleSinglePlayer = useCallback(async () => {
     if (isStartingGame || !levelLoaded) return;
@@ -534,116 +426,6 @@ export default function GameModeScreen() {
 
         </View>
       </LinearGradient>
-
-      {/* ═══ NOVELTY POPUP — new category / rule unlock, shown before game starts ═══ */}
-      {noveltyPopup && (() => {
-        const isCat = noveltyPopup.type === 'category' && !!noveltyPopup.category;
-        const cat = noveltyPopup.category;
-        const cc = cat ? CAT_COLORS[cat] : null;
-        const CONSTRAINT_DISPLAY: Record<string, { icon: React.ReactNode; color: string; gradA: string; gradB: string }> = {
-          min_word_length:   { icon: <Text style={{ fontSize: 34 }}>📏</Text>, color: '#a78bfa', gradA: '#7c3aed', gradB: '#4c1d95' },
-          max_word_length:   { icon: <Text style={{ fontSize: 34 }}>✂️</Text>,  color: '#f472b6', gradA: '#db2777', gradB: '#831843' },
-          ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
-          double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
-          contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
-          odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
-          no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
-          combo:             { icon: <Text style={{ fontSize: 34 }}>⚡</Text>,  color: '#e879f9', gradA: '#a21caf', gradB: '#4a044e' },
-          survival:          { icon: <Text style={{ fontSize: 34 }}>💀</Text>, color: '#fb7185', gradA: '#e11d48', gradB: '#4c0519' },
-          time_pressure:     { icon: <Text style={{ fontSize: 34 }}>⏱️</Text>, color: '#facc15', gradA: '#ca8a04', gradB: '#713f12' },
-        };
-        const cd = noveltyPopup.constraintType ? (CONSTRAINT_DISPLAY[noveltyPopup.constraintType] ?? CONSTRAINT_DISPLAY.combo) : CONSTRAINT_DISPLAY.combo;
-        const accentColor = isCat ? cc!.darkAccent  : cd.color;
-        const borderColor = isCat ? cc!.darkBorder  : cd.color;
-        const bgGradStart = isCat ? cc!.darkBg      : '#0e0820';
-        const btnGradA    = isCat ? cc!.gradA       : cd.gradA;
-        const btnGradB    = isCat ? cc!.gradB       : cd.gradB;
-        const catIconMap: Record<CategoryType, React.ReactNode> = {
-          names:             <User        size={40} color={accentColor} strokeWidth={2} />,
-          places:            <MapPin      size={40} color={accentColor} strokeWidth={2} />,
-          animal:            <Cat         size={40} color={accentColor} strokeWidth={2} />,
-          thing:             <Box         size={40} color={accentColor} strokeWidth={2} />,
-          sports_games:      <Gamepad2    size={40} color={accentColor} strokeWidth={2} />,
-          brands:            <ShoppingBag size={40} color={accentColor} strokeWidth={2} />,
-          health_issues:     <HeartPulse  size={40} color={accentColor} strokeWidth={2} />,
-          countries:         <Globe       size={40} color={accentColor} strokeWidth={2} />,
-          professions:       <Briefcase   size={40} color={accentColor} strokeWidth={2} />,
-          food_dishes:       <Utensils    size={40} color={accentColor} strokeWidth={2} />,
-          celebrities:       <Landmark    size={40} color={accentColor} strokeWidth={2} />,
-          fruits_vegetables: <Apple       size={40} color={accentColor} strokeWidth={2} />,
-        };
-        const mainIcon = isCat && cat ? catIconMap[cat] : cd.icon;
-        return (
-          <Modal visible={true} transparent animationType="none">
-            <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.82)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
-              <Pressable style={StyleSheet.absoluteFill} onPress={handleNoveltyDismiss} />
-              <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
-                <LinearGradient
-                  colors={[bgGradStart, '#0a0f1e']}
-                  style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}
-                >
-                  <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
-                  <View style={{ padding: 28, alignItems: 'center' }}>
-                    <Animated.View entering={FadeInDown.duration(300).delay(120)}>
-                      <View style={{
-                        backgroundColor: borderColor + '20', borderRadius: 99,
-                        paddingHorizontal: 14, paddingVertical: 5,
-                        borderWidth: 1, borderColor: borderColor + '55', marginBottom: 22,
-                      }}>
-                        <Text style={{ color: accentColor, fontSize: 11, fontWeight: '800', letterSpacing: 2.5 }}>
-                          {isCat ? 'NEW CATEGORY' : 'NEW RULE'}
-                        </Text>
-                      </View>
-                    </Animated.View>
-                    <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                      <Animated.View style={[noveltyPulseStyle, {
-                        position: 'absolute',
-                        width: 112, height: 112, borderRadius: 56,
-                        borderWidth: 2, borderColor: accentColor + '55',
-                      }]} />
-                      <Animated.View entering={ZoomIn.springify().delay(100).damping(12).stiffness(140)}>
-                        <LinearGradient
-                          colors={[btnGradA + '30', btnGradB + '15']}
-                          style={{
-                            width: 84, height: 84, borderRadius: 42,
-                            alignItems: 'center', justifyContent: 'center',
-                            borderWidth: 2, borderColor: borderColor + '90',
-                          }}
-                        >
-                          {mainIcon}
-                        </LinearGradient>
-                      </Animated.View>
-                    </View>
-                    <Animated.View entering={FadeInDown.duration(280).delay(160)} style={{ alignItems: 'center' }}>
-                      <Text style={{ color: '#fff', fontSize: isCat ? 26 : 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>
-                        {isCat && cat ? getCategoryName(cat) : noveltyPopup.title}
-                      </Text>
-                      <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>
-                        {noveltyPopup.message}
-                      </Text>
-                    </Animated.View>
-                    <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
-                      <Pressable
-                        onPress={handleNoveltyDismiss}
-                        style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
-                      >
-                        <LinearGradient
-                          colors={[btnGradA, btnGradB]}
-                          style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
-                        >
-                          <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 0.3 }}>
-                            {isCat ? "Let's Go! →" : 'Got It!'}
-                          </Text>
-                        </LinearGradient>
-                      </Pressable>
-                    </Animated.View>
-                  </View>
-                </LinearGradient>
-              </Animated.View>
-            </Animated.View>
-          </Modal>
-        );
-      })()}
 
       {/* Single Player first-time intro */}
       <Modal visible={showSpIntro} transparent animationType="fade" onRequestClose={() => {}}>

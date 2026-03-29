@@ -404,31 +404,27 @@ export default function GameScreen() {
   const adPauseStart  = useRef<number | null>(null);
   const { showAd } = useRewardedAd();
 
-  // Novelty popup state — persisted to AsyncStorage so each feature is announced exactly once
+  // Level 1 tutorial — shown once, skippable, gives newcomers 3 quick tips
+  const [showL1Tutorial, setShowL1Tutorial] = useState(false);
+  useEffect(() => {
+    if (gameMode !== 'single' || currentLevel?.level !== 1) return;
+    AsyncStorage.getItem('npat_l1_tutorial_shown').then((val) => {
+      if (!val) setShowL1Tutorial(true);
+    });
+  }, [currentLevel?.level]);
+
+  // Novelty popup state — shown once per new category/constraint, fires at game start before reveal
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
   const shownNovelties = useRef<Set<string>>(new Set());
   const noveltiesLoaded = useRef(false);
-  // Queued novelty — fires after the letter reveal overlay disappears
-  const pendingNovelty = useRef<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
+  // While novelty popup is visible, block the reveal overlay from auto-dismissing
+  const noveltyShowing = useRef(false);
   // Pulse ring animation for novelty popup icon
   const noveltyPulse = useSharedValue(1);
   const noveltyPulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: noveltyPulse.value }],
     opacity: (2 - noveltyPulse.value),
   }));
-
-  // Load persisted seen-novelties from AsyncStorage once
-  useEffect(() => {
-    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
-      if (raw) {
-        try {
-          const arr: string[] = JSON.parse(raw);
-          arr.forEach((k) => shownNovelties.current.add(k));
-        } catch { /* ignore corrupt data */ }
-      }
-      noveltiesLoaded.current = true;
-    });
-  }, []);
 
   const markNoveltyShown = (key: string) => {
     shownNovelties.current.add(key);
@@ -440,14 +436,76 @@ export default function GameScreen() {
     }).catch(() => {});
   };
 
+  // Check the current level for first-time novelties (new category or new rule).
+  // Only for SP, skip level 1 (names/places/animal are always known).
+  // Shows popup on top of the reveal overlay — dismissing it also skips the reveal.
+  useEffect(() => {
+    if (gameMode !== 'single' || !currentLevel || currentLevel.level === 1) return;
+
+    const runCheck = () => {
+      if (!currentLevel) return;
+      // Check for a new category in this level
+      for (const cat of currentLevel.categories) {
+        const catKey = `novelty_cat_${cat}`;
+        if (!shownNovelties.current.has(catKey)) {
+          markNoveltyShown(catKey);
+          noveltyShowing.current = true;
+          setNoveltyPopup({
+            type: 'category',
+            title: 'New Category Unlocked!',
+            message: `${getCategoryName(cat as CategoryType)} joins the rally for the first time!`,
+            category: cat as CategoryType,
+          });
+          return;
+        }
+      }
+      // Check for a new constraint
+      if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
+        const cType = currentLevel.constraint.type;
+        const constraintKey = `novelty_constraint_${cType}`;
+        if (!shownNovelties.current.has(constraintKey)) {
+          markNoveltyShown(constraintKey);
+          const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
+            min_word_length:   { title: 'New Rule: Long Words',      message: 'Answers must be 4+ letters long' },
+            max_word_length:   { title: 'New Rule: Short Words',     message: 'Answers must be short — keep it brief!' },
+            ends_with_letter:  { title: 'New Rule: Ending Letter',   message: 'Each answer must end with a specific letter' },
+            double_letters:    { title: 'New Rule: Double Letters',  message: 'Answers must contain double letters (ee, ll, ss…)' },
+            contains_vowel:    { title: 'New Rule: Contains Vowel',  message: 'Answers must contain a specific vowel letter' },
+            odd_length:        { title: 'New Rule: Odd Letters',     message: 'Answers must have an odd number of letters (3, 5, 7…)' },
+            no_repeat_letters: { title: 'New Rule: No Repeats',      message: 'No letter can appear more than once in your answer' },
+            no_common_words:   { title: 'New Rule: No Common Words', message: 'Avoid obvious, common answers — get creative!' },
+            combo:             { title: 'New Rule: Multi-Constraint',message: 'Multiple rules apply at the same time' },
+            survival:          { title: 'New Rule: Survival Mode',   message: 'One invalid answer ends the level instantly' },
+            time_pressure:     { title: 'New Rule: Time Pressure',   message: 'The clock is tighter — think fast!' },
+          };
+          const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
+          noveltyShowing.current = true;
+          setNoveltyPopup({ type: 'constraint', title: info.title, message: info.message, constraintType: cType });
+        }
+      }
+    };
+
+    if (!noveltiesLoaded.current) {
+      AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
+        if (raw) {
+          try { (JSON.parse(raw) as string[]).forEach((k) => shownNovelties.current.add(k)); } catch { /* ignore */ }
+        }
+        // Level 1 default categories are always known — mark as seen so they never trigger
+        ['names', 'places', 'animal'].forEach((c) => shownNovelties.current.add(`novelty_cat_${c}`));
+        noveltiesLoaded.current = true;
+        runCheck();
+      });
+    } else {
+      runCheck();
+    }
+  }, [currentLevel?.level]);
+
   // Track keyboard to control STOP button visibility
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
     return () => { show.remove(); hide.remove(); };
   }, []);
-
-  // Novelty popups for SP are now shown in game-mode.tsx before the game starts.
 
   // Pulse ring animation — runs while novelty popup is visible
   useEffect(() => {
@@ -649,7 +707,7 @@ export default function GameScreen() {
         if (gameMode === 'single') {
           shuffleTimeoutRef.current = setTimeout(() => {
             revealOpacity.value = withTiming(0, { duration: 350 });
-            setTimeout(() => setShowReveal(false), 350);
+            setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 350);
           }, 800);
         }
         return;
@@ -1919,7 +1977,7 @@ export default function GameScreen() {
           <Modal visible={true} transparent animationType="none">
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
 
               <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                 <LinearGradient
@@ -1977,7 +2035,7 @@ export default function GameScreen() {
                     {/* CTA button */}
                     <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
                       <Pressable
-                        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
+                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }}
                         style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
                       >
                         <LinearGradient
@@ -1997,6 +2055,73 @@ export default function GameScreen() {
           </Modal>
         );
       })()}
+
+      {/* ═══ LEVEL 1 TUTORIAL — quick tips for first-timers, skippable ═══ */}
+      {showL1Tutorial && (
+        <Modal visible={true} transparent animationType="none">
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end', paddingBottom: 48, paddingHorizontal: 20 }}
+          >
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => { AsyncStorage.setItem('npat_l1_tutorial_shown', '1'); setShowL1Tutorial(false); }} />
+            <Animated.View entering={FadeInDown.springify().damping(18).stiffness(160)}>
+              <LinearGradient
+                colors={['#1a2845', '#0f1929']}
+                style={{ borderRadius: 24, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.3)' }}
+              >
+                {/* Top accent */}
+                <LinearGradient colors={['#4090e8', '#6366f1']} style={{ height: 4 }} />
+
+                <View style={{ padding: 22 }}>
+                  {/* Header */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                    <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: 0.3 }}>Quick tips</Text>
+                    <Pressable
+                      onPress={() => { AsyncStorage.setItem('npat_l1_tutorial_shown', '1'); setShowL1Tutorial(false); }}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                    >
+                      <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 99, paddingHorizontal: 12, paddingVertical: 5 }}>
+                        <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '700' }}>Skip</Text>
+                      </View>
+                    </Pressable>
+                  </View>
+
+                  {/* 3 tip rows */}
+                  {[
+                    { icon: '🔤', title: '3 categories to fill', desc: 'Type a word for Names, Places, and Animal — all starting with the revealed letter.' },
+                    { icon: '✍️', title: 'Tap a field to answer', desc: 'Tap any category row then type your word. Tap Submit or the ✓ when you\'re done.' },
+                    { icon: '💡', title: 'Need a hint?', desc: 'Tap the lightbulb icon on any category — it costs stars but fills in a valid word.' },
+                  ].map(({ icon, title, desc }) => (
+                    <View key={title} style={{ flexDirection: 'row', gap: 14, marginBottom: 14 }}>
+                      <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(64,144,232,0.15)', borderWidth: 1, borderColor: 'rgba(64,144,232,0.3)', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 20 }}>{icon}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800', marginBottom: 2 }}>{title}</Text>
+                        <Text style={{ color: 'rgba(160,200,255,0.65)', fontSize: 12, lineHeight: 17 }}>{desc}</Text>
+                      </View>
+                    </View>
+                  ))}
+
+                  {/* CTA */}
+                  <Pressable
+                    onPress={() => { AsyncStorage.setItem('npat_l1_tutorial_shown', '1'); setShowL1Tutorial(false); }}
+                    style={({ pressed }) => ({ marginTop: 4, opacity: pressed ? 0.85 : 1 })}
+                  >
+                    <LinearGradient
+                      colors={['#4090e8', '#5b6bf7']}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                      style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 15, fontWeight: '900', letterSpacing: 0.3 }}>Got it — let's go!</Text>
+                    </LinearGradient>
+                  </Pressable>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          </Animated.View>
+        </Modal>
+      )}
     </View>
   );
 }
