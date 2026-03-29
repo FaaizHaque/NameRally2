@@ -269,7 +269,7 @@ export default function CreateGameScreen() {
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Clock size={18} color="#818CF8" strokeWidth={2.5} />
                     <Text style={{ color: '#ffffff', fontWeight: '800', marginTop: 4, fontSize: 15 }}>{currentLevel.timerSeconds}s</Text>
-                    <Text style={{ color: '#6366f1', fontSize: 10 }}>per category</Text>
+                    <Text style={{ color: '#6366f1', fontSize: 10 }}>total time</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Star size={18} color="#FCD34D" fill="#FCD34D" strokeWidth={2} />
