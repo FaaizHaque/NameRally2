@@ -81,7 +81,7 @@ const S = {
   JOIN:           require('../assets/sounds/join.wav'),
   LETTER_LOCK:    require('../assets/sounds/letter_lock.wav'),
   // Background tracks — each mode has its own vibe
-  BG_HOME:            require('../assets/sounds/bg_home.mp3'),          // retro arcade chiptune
+  BG_HOME:            require('../assets/sounds/bg_lobby_silkroad.wav'),  // home screen — Silk Road ambient
   BG_GAME:            require('../assets/sounds/bg_game.mp3'),          // single player lo-fi
   BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_silkroad.wav'), // multiplayer lobby — Silk Road ambient
   BG_GAME_MP:         require('../assets/sounds/bg_game_mp.mp3'),       // multiplayer game — chill but prominent
