@@ -1110,7 +1110,7 @@ export default function GameScreen() {
             <Text style={{ color: '#FCD34D', fontSize: 15, fontWeight: '800' }}>{levelProgress.totalStars}</Text>
             <Text style={{ color: 'rgba(253,211,77,0.4)', fontSize: 14 }}>|</Text>
             <Lightbulb size={15} color="rgba(253,211,77,0.65)" strokeWidth={1.5} />
-            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint</Text>
+            <Text style={{ color: 'rgba(253,211,77,0.65)', fontSize: 14, fontWeight: '700' }}>hint = {HINT_COST}★</Text>
           </View>
 
           {/* Constraint banner */}
@@ -1147,8 +1147,8 @@ export default function GameScreen() {
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
             <ScrollView
               style={{ flex: 1 }}
-              contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 160, gap: 8 }}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 20, gap: 8 }}
+              showsVerticalScrollIndicator={true}
               keyboardShouldPersistTaps="handled"
             >
               {[...session.settings.selectedCategories]
@@ -1259,17 +1259,15 @@ export default function GameScreen() {
                   </Animated.View>
                 );
               })}
-            </ScrollView>
 
-            {/* Submit button — hidden while keyboard is open, shown once keyboard dismissed */}
-            {!keyboardVisible ? (
-              <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 16 }}>
+              {/* Submit button — inside scroll so it's always reachable on any screen size */}
+              <View style={{ paddingTop: 4, paddingBottom: insets.bottom + 16 }}>
                 {!allAnswersFilled && (
                   <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
                     Fill all categories to submit
                   </Text>
                 )}
-                <Pressable onPress={handleStop} disabled={!allAnswersFilled || !!session.stopRequested}>
+                <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
                   <LinearGradient
                     colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
                     start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
@@ -1293,31 +1291,7 @@ export default function GameScreen() {
                   </LinearGradient>
                 </Pressable>
               </View>
-            ) : (
-              /* Keyboard visible — show a slim status bar */
-              <View style={{ paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center' }}>
-                {allAnswersFilled ? (
-                  <Pressable
-                    onPress={() => { Keyboard.dismiss(); handleStop(); }}
-                    style={{
-                      flexDirection: 'row', alignItems: 'center', gap: 8,
-                      backgroundColor: 'rgba(64,144,232,0.22)', borderRadius: 12,
-                      paddingVertical: 10, paddingHorizontal: 24,
-                      borderWidth: 1.5, borderColor: 'rgba(64,144,232,0.55)',
-                    }}
-                  >
-                    <Check size={16} color="#90c0ff" strokeWidth={2.5} />
-                    <Text style={{ color: '#a0d0ff', fontSize: 14, fontWeight: '800' }}>
-                      Submit Answers
-                    </Text>
-                  </Pressable>
-                ) : (
-                  <Text style={{ color: 'rgba(144,192,255,0.3)', fontSize: 12, fontWeight: '500' }}>
-                    Filling answers...
-                  </Text>
-                )}
-              </View>
-            )}
+            </ScrollView>
           </KeyboardAvoidingView>
 
           {/* Exit Modal */}
