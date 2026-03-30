@@ -492,7 +492,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   94: { categoryCount: 10 },
   // L95 → TWO_LETTER_LEVELS = 'PR'
   95: {
-    specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'professions', 'fruits_vegetables'],
+    specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'professions', 'sports_games'],
     timerSecondsPerCategory: 6,
   },
   96: {
@@ -1322,25 +1322,25 @@ export function generateLevel(levelNumber: number): LevelData {
     // Exact set — bypass impossible-combo filtering (user designed this deliberately)
     categories = override.specificCategories;
   } else if (override?.useFullPool) {
-    // In multi-letter mode each cat gets its own letter so no impossible-combo filtering needed
     if (isMultiLetterMode) {
-      categories = rng.shuffle(availableCategories);
+      categories = enforceMutualExclusion(rng.shuffle(availableCategories), rng);
     } else {
       const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
-      categories = rng.shuffle(availableCategories.filter((c) => !impossible.includes(c)));
+      const valid = availableCategories.filter((c) => !impossible.includes(c));
+      categories = enforceMutualExclusion(rng.shuffle(valid), rng);
     }
   } else if (override?.useEasyCategories) {
     const easyPool = getEasyCategoriesForLevel(levelNumber);
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
     const validEasy = easyPool.filter((c) => !impossible.includes(c));
-    // Apply mutual exclusion to easy pool too
     const exclusionPool = enforceMutualExclusion(rng.shuffle(validEasy), rng);
     const count = Math.min(override.easyCount ?? override.categoryCount ?? exclusionPool.length, exclusionPool.length);
     categories = exclusionPool.slice(0, count);
   } else if (override?.categoryCount !== undefined) {
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
     const valid = availableCategories.filter((c) => !impossible.includes(c));
-    categories = rng.shuffle(valid).slice(0, Math.min(override.categoryCount, valid.length));
+    const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
+    categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
   } else {
     // L101+ default: all available (filtered by impossible combos)
     categories = selectCategories(levelNumber, rng, getCategoryCount(levelNumber, rng), letter);

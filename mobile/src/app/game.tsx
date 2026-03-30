@@ -415,6 +415,8 @@ export default function GameScreen() {
 
   // Novelty popup state — shown once per new category/constraint, fires at game start before reveal
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
+  // Track which category is newly introduced this level (for highlight + sort-to-bottom)
+  const [newCategoryForLevel, setNewCategoryForLevel] = useState<CategoryType | null>(null);
   const shownNovelties = useRef<Set<string>>(new Set());
   const noveltiesLoaded = useRef(false);
   // While novelty popup is visible, block the reveal overlay from auto-dismissing
@@ -450,6 +452,7 @@ export default function GameScreen() {
         if (!shownNovelties.current.has(catKey)) {
           markNoveltyShown(catKey);
           noveltyShowing.current = true;
+          setNewCategoryForLevel(cat as CategoryType);
           setNoveltyPopup({
             type: 'category',
             title: 'New Category Unlocked!',
@@ -1148,7 +1151,9 @@ export default function GameScreen() {
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
-              {session.settings.selectedCategories.map((cat, i) => {
+              {[...session.settings.selectedCategories]
+                .sort((a, b) => a === newCategoryForLevel ? 1 : b === newCategoryForLevel ? -1 : 0)
+                .map((cat, i) => {
                 const answer = localAnswers[cat] || '';
                 const letter = currentLevel.isMultiLetterMode && currentLevel.lettersPerCategory
                   ? (currentLevel.lettersPerCategory[i] || session.currentLetter)
@@ -1159,6 +1164,7 @@ export default function GameScreen() {
                 const isLoad = loadingHints.has(cat);
                 const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad;
                 const mc = modernCategoryColors[cat] || { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' };
+                const isNewCat = cat === newCategoryForLevel;
 
                 return (
                   <Animated.View
@@ -1166,23 +1172,30 @@ export default function GameScreen() {
                     entering={FadeInDown.duration(280).delay(60 + i * 50).springify().damping(14)}
                     style={{
                       borderRadius: 12, overflow: 'hidden',
-                      borderWidth: 1.5,
-                      borderColor: isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.2)',
+                      borderWidth: isNewCat ? 2 : 1.5,
+                      borderColor: isNewCat ? '#fbbf24' : isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.2)',
                       backgroundColor: isComplete ? mc.bg : '#0e2040',
-                      shadowColor: isComplete ? mc.border : 'transparent',
-                      shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 8,
+                      shadowColor: isNewCat ? '#fbbf24' : isComplete ? mc.border : 'transparent',
+                      shadowOffset: { width: 0, height: 0 }, shadowOpacity: isNewCat ? 0.5 : 0.3, shadowRadius: isNewCat ? 12 : 8,
                     }}
                   >
+                    {/* NEW banner for newly introduced category */}
+                    {isNewCat && (
+                      <View style={{ backgroundColor: '#fbbf24', paddingVertical: 3, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Sparkles size={11} color="#000" strokeWidth={2} />
+                        <Text style={{ color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 }}>NEW CATEGORY</Text>
+                      </View>
+                    )}
                     {/* Category label row */}
                     <View style={{
                       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
                       paddingHorizontal: 12, paddingTop: 10, paddingBottom: 4,
                     }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: mc.bg, borderWidth: 1.5, borderColor: mc.border, alignItems: 'center', justifyContent: 'center' }}>
-                          {CATEGORY_ICONS[cat](mc.accent)}
+                        <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: isNewCat ? 'rgba(251,191,36,0.15)' : mc.bg, borderWidth: 1.5, borderColor: isNewCat ? '#fbbf24' : mc.border, alignItems: 'center', justifyContent: 'center' }}>
+                          {CATEGORY_ICONS[cat](isNewCat ? '#fbbf24' : mc.accent)}
                         </View>
-                        <Text style={{ color: isComplete ? mc.accent : 'rgba(165,180,252,0.7)', fontSize: 12, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                        <Text style={{ color: isNewCat ? '#fbbf24' : isComplete ? mc.accent : 'rgba(165,180,252,0.7)', fontSize: 12, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                           {getCategoryName(cat)}
                         </Text>
                       </View>
@@ -1367,6 +1380,107 @@ export default function GameScreen() {
               </Pressable>
             </Animated.View>
           )}
+
+          {/* ════ HINT CHOICE MODAL (single player) ════ */}
+          <Modal visible={!!pendingHint} transparent animationType="fade" onRequestClose={() => setPendingHint(null)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+              <Animated.View entering={ZoomIn.duration(260).springify()} style={{
+                width: '100%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
+                borderWidth: 1.5, borderColor: 'rgba(252,211,77,0.4)',
+                shadowColor: '#FCD34D', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.2, shadowRadius: 20,
+              }}>
+                <View style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 1.5, borderColor: '#FCD34D', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 14 }}>
+                  <Lightbulb size={24} color="#FCD34D" strokeWidth={2} />
+                </View>
+                <Text style={{ color: '#e0e7ff', fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>Get a Hint</Text>
+                <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>Choose how to unlock this hint.</Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+                  <Pressable onPress={() => setPendingHint(null)} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1a3a6e', alignItems: 'center' }}>
+                    <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Cancel</Text>
+                  </Pressable>
+                  <Pressable onPress={handleHintViaStars} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: '#FCD34D', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
+                    <Star size={14} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+                    <Text style={{ color: '#FCD34D', fontWeight: '900', fontSize: 15 }}>{HINT_COST}★</Text>
+                  </Pressable>
+                </View>
+                <Pressable onPress={handleHintViaAd} style={{ backgroundColor: '#10b981', borderRadius: 12, paddingVertical: 14, alignItems: 'center' }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Watch Ad — Free</Text>
+                </Pressable>
+              </Animated.View>
+            </View>
+          </Modal>
+
+          {/* ════ NOVELTY POPUP (single player) ════ */}
+          {noveltyPopup && (() => {
+            const isCat = noveltyPopup.type === 'category' && !!noveltyPopup.category;
+            const cat = noveltyPopup.category;
+            const cc = cat ? CAT_COLORS[cat] : null;
+            const CONSTRAINT_DISPLAY: Record<string, { icon: React.ReactNode; color: string; gradA: string; gradB: string }> = {
+              min_word_length:   { icon: <Text style={{ fontSize: 34 }}>📏</Text>, color: '#a78bfa', gradA: '#7c3aed', gradB: '#4c1d95' },
+              max_word_length:   { icon: <Text style={{ fontSize: 34 }}>✂️</Text>,  color: '#f472b6', gradA: '#db2777', gradB: '#831843' },
+              ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
+              double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
+              contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
+              odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
+              no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
+              combo:             { icon: <Text style={{ fontSize: 34 }}>⚡</Text>,  color: '#e879f9', gradA: '#a21caf', gradB: '#4a044e' },
+              survival:          { icon: <Text style={{ fontSize: 34 }}>💀</Text>, color: '#fb7185', gradA: '#e11d48', gradB: '#4c0519' },
+              time_pressure:     { icon: <Text style={{ fontSize: 34 }}>⏱️</Text>, color: '#facc15', gradA: '#ca8a04', gradB: '#713f12' },
+            };
+            const cd = noveltyPopup.constraintType ? (CONSTRAINT_DISPLAY[noveltyPopup.constraintType] ?? CONSTRAINT_DISPLAY.combo!) : CONSTRAINT_DISPLAY.combo!;
+            const accentColor = isCat ? cc!.darkAccent : cd.color;
+            const borderColor = isCat ? cc!.darkBorder : cd.color;
+            const bgGradStart = isCat ? cc!.darkBg : '#0e0820';
+            const btnGradA    = isCat ? cc!.gradA : cd.gradA;
+            const btnGradB    = isCat ? cc!.gradB : cd.gradB;
+            const catIconMap: Record<CategoryType, React.ReactNode> = {
+              names: <User size={40} color={accentColor} strokeWidth={2} />, places: <MapPin size={40} color={accentColor} strokeWidth={2} />,
+              animal: <Cat size={40} color={accentColor} strokeWidth={2} />, thing: <Box size={40} color={accentColor} strokeWidth={2} />,
+              sports_games: <Gamepad2 size={40} color={accentColor} strokeWidth={2} />, brands: <ShoppingBag size={40} color={accentColor} strokeWidth={2} />,
+              health_issues: <HeartPulse size={40} color={accentColor} strokeWidth={2} />, countries: <Globe size={40} color={accentColor} strokeWidth={2} />,
+              professions: <Briefcase size={40} color={accentColor} strokeWidth={2} />, food_dishes: <Utensils size={40} color={accentColor} strokeWidth={2} />,
+              celebrities: <Landmark size={40} color={accentColor} strokeWidth={2} />, fruits_vegetables: <Apple size={40} color={accentColor} strokeWidth={2} />,
+            };
+            const mainIcon = isCat && cat ? catIconMap[cat] : cd.icon;
+            return (
+              <Modal visible={true} transparent animationType="none">
+                <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
+                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
+                  <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
+                    <LinearGradient colors={[bgGradStart, '#0a0f1e']} style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}>
+                      <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
+                      <View style={{ padding: 28, alignItems: 'center' }}>
+                        <Animated.View entering={FadeInDown.duration(300).delay(120)}>
+                          <View style={{ backgroundColor: borderColor + '20', borderRadius: 99, paddingHorizontal: 14, paddingVertical: 5, borderWidth: 1, borderColor: borderColor + '55', marginBottom: 22 }}>
+                            <Text style={{ color: accentColor, fontSize: 11, fontWeight: '800', letterSpacing: 2.5 }}>{isCat ? 'NEW CATEGORY' : 'NEW RULE'}</Text>
+                          </View>
+                        </Animated.View>
+                        <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                          <Animated.View style={[noveltyPulseStyle, { position: 'absolute', width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: accentColor + '55' }]} />
+                          <Animated.View entering={ZoomIn.springify().delay(100).damping(12).stiffness(140)}>
+                            <LinearGradient colors={[btnGradA + '30', btnGradB + '15']} style={{ width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: borderColor + '90' }}>
+                              {mainIcon}
+                            </LinearGradient>
+                          </Animated.View>
+                        </View>
+                        <Animated.View entering={FadeInDown.duration(280).delay(160)} style={{ alignItems: 'center' }}>
+                          <Text style={{ color: '#fff', fontSize: isCat ? 26 : 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>{isCat && cat ? getCategoryName(cat) : noveltyPopup.title}</Text>
+                          <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>{noveltyPopup.message}</Text>
+                        </Animated.View>
+                        <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
+                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
+                            <LinearGradient colors={[btnGradA, btnGradB]} style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{isCat ? "Let's Go! →" : 'Got It!'}</Text>
+                            </LinearGradient>
+                          </Pressable>
+                        </Animated.View>
+                      </View>
+                    </LinearGradient>
+                  </Animated.View>
+                </Animated.View>
+              </Modal>
+            );
+          })()}
         </LinearGradient>
       </View>
     );
