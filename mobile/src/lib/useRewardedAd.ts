@@ -68,11 +68,25 @@ export function useRewardedAd() {
     const unsubClose = ad.addAdEventListener(AdEventType.CLOSED, () => {
       unsubReward();
       unsubClose();
-      if (rewarded) onRewarded();
-      onDismissed();
+      // Defer to next JS tick — required with new arch (JSI) so state updates
+      // don't run inside a native event callback and cause a UI freeze.
+      setTimeout(() => {
+        if (rewarded) onRewarded();
+        onDismissed();
+      }, 0);
     });
 
-    ad.show();
+    try {
+      ad.show();
+    } catch {
+      // Ad failed to show (e.g. not ready despite loaded=true) — grant hint free
+      unsubReward();
+      unsubClose();
+      setTimeout(() => {
+        onRewarded();
+        onDismissed();
+      }, 0);
+    }
   };
 
   return { loaded, showAd };
