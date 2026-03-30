@@ -272,6 +272,53 @@ const TWO_LETTER_LEVELS: Record<number, string> = {
 };
 
 // ============================================
+// BLOCK LETTER NON-REPETITION
+// Within each 15-level block (1-15, 16-30, ...) letters should not repeat.
+// ============================================
+
+/**
+ * Returns the set of letters already used by levels in the same 15-level block,
+ * prior to `currentLevel`. Used to exclude those letters from RNG selection.
+ * Letters are computed sequentially with the same exclusions that would be active
+ * at each level's generation time, so the tracking is consistent with actual play.
+ */
+function getBlockLettersSoFar(currentLevel: number): Set<string> {
+  const blockSize = 15;
+  const blockStart = Math.floor((currentLevel - 1) / blockSize) * blockSize + 1;
+  const blockEnd = blockStart + blockSize - 1;
+
+  // Pre-seed all forced letters in the ENTIRE block so RNG-picked levels don't collide
+  // with forced letters that appear later in the same block.
+  const forcedInBlock = new Set<string>();
+  for (let lvl = blockStart; lvl <= blockEnd; lvl++) {
+    const twoLetter = TWO_LETTER_LEVELS[lvl];
+    if (twoLetter) forcedInBlock.add(twoLetter);
+    const ovr = LEVEL_OVERRIDES[lvl];
+    if (ovr?.forceLetter) forcedInBlock.add(ovr.forceLetter);
+  }
+
+  // `used` starts with all forced letters so RNG picks avoid them throughout the block.
+  // Then accumulate per-level so each level sees consistent exclusions at generation time.
+  const used = new Set<string>(forcedInBlock);
+
+  for (let lvl = blockStart; lvl < currentLevel; lvl++) {
+    const twoLetter = TWO_LETTER_LEVELS[lvl];
+    if (twoLetter) continue; // already in `used` from forced set
+
+    const ovr = LEVEL_OVERRIDES[lvl];
+    if (ovr?.forceLetter) continue; // already in `used`
+    if (ovr?.forceLetterOptions) continue; // multiple options — skip tracking
+
+    // Compute the letter this level uses WITH its current exclusion state
+    const rng = new SeededRandom(lvl * 12345);
+    const available = getAvailableCategories(lvl);
+    const sel = selectLetter(lvl, rng, available, new Set<string>(used));
+    used.add(sel.letter);
+  }
+  return used;
+}
+
+// ============================================
 // LEVEL OVERRIDES — explicit config for levels 1-100
 // ============================================
 
@@ -290,6 +337,7 @@ interface LevelOverride {
   constraintValue?: number;
   constraintEndLetter?: string;
   constraintEndLetterOptions?: string[]; // pick one at random (seeded) — e.g. ['E','R']
+  comboConstraints?: Array<{ type: LevelConstraint['type']; value?: number; endLetter?: string }>;
   // Timer
   timerSecondsPerCategory?: number; // overrides base calc; total = value × catCount
   // Multi-letter mode
@@ -301,35 +349,34 @@ interface LevelOverride {
 const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L1-4: starter cats, no constraint ─────────────────────────────────────
   // L1 = 3 cats (names, places, animal), L2 = 4 cats (+thing)
-  1: { categoryCount: 3 },
-  2: { categoryCount: 4 },
+  1: { specificCategories: ['names', 'places', 'animal'] },
+  2: { specificCategories: ['names', 'places', 'animal', 'thing'] },
   3: { categoryCount: 4 },
-  4: { categoryCount: 4, constraintType: 'min_word_length', constraintValue: 4 },
+  4: { categoryCount: 4 },
   // ── L5-10: +Food&Dishes (5 cats), CH combo at 10 ──────────────────────────
   5:  { categoryCount: 5 },
   6:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
-  7:  { categoryCount: 5 },
+  7:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   8:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   9:  { categoryCount: 5 },
   // L10 → TWO_LETTER_LEVELS = 'CH'
+  10: { categoryCount: 5 },
   // ── L11-15: +Sports&Games (6 cats), SH combo at 15 ────────────────────────
-  11: { categoryCount: 6 },
-  12: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
+  11: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
+  12: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
   13: { categoryCount: 6 },
-  14: { forceLetter: 'Z', categoryCount: 5 },
+  14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
+  15: { categoryCount: 5 },
   // ── L16-20: +Fruits&Veg (7 cats), BA combo at 19 ──────────────────────────
-  // Note: {food_dishes, fruits_vegetables} become mutually exclusive from L16+
-  // L16 is the unlock milestone — show all 7 to introduce the new category
-  16: {
-    specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes', 'sports_games', 'fruits_vegetables'],
-    constraintType: 'min_word_length', constraintValue: 4,
-  },
+  // Note: {food_dishes, fruits_vegetables} are mutually exclusive from L16+
+  16: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
   17: { forceLetter: 'Q', categoryCount: 5 },
   18: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
   // L19 → TWO_LETTER_LEVELS = 'BA'
+  19: { categoryCount: 6 },
   // L20: "all 7" exception — food&fruits both appear (useFullPool bypasses mutual exclusion)
-  20: { useFullPool: true, constraintType: 'min_word_length', constraintValue: 5 },
+  20: { useFullPool: true },
   // ── L21-30: +Countries (8 cats, 6 max after mutual exclusion), CO at 23, MA at 29 ─
   21: { categoryCount: 6 },
   22: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
@@ -406,7 +453,12 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
   },
   73: { categoryCount: 7 },
-  74: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 4, timerSecondsPerCategory: 6 },
+  74: {
+    categoryCount: 9,
+    constraintType: 'combo',
+    comboConstraints: [{ type: 'min_word_length', value: 4 }, { type: 'max_word_length', value: 10 }],
+    timerSecondsPerCategory: 6,
+  },
   75: { categoryCount: 7 },
   // L76 → TWO_LETTER_LEVELS = 'HA'
   76: {
@@ -456,11 +508,12 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     isMultiLetterMode: true,
     multiLetterOptions: ['BR', 'E', 'G', 'I', 'J', 'NA', 'O', 'RO', 'U', 'V', 'Y', 'Z'],
   },
-  // L100: all 12, min 5 letters, tight timer — grand finale
+  // L100: all 12, combo constraint (min 5 + max 12), tight timer — grand finale
   100: {
     useFullPool: true,
     isMultiLetterMode: true,
-    constraintType: 'min_word_length', constraintValue: 5,
+    constraintType: 'combo',
+    comboConstraints: [{ type: 'min_word_length', value: 5 }, { type: 'max_word_length', value: 12 }],
     timerSecondsPerCategory: 5,
   },
 };
@@ -659,12 +712,12 @@ function isPlayableForAll(
 // ============================================
 
 /**
- * Seconds allowed per category — flat 15s per category globally.
- * Total timer = categoryCount × 15.
+ * Seconds allowed per category — flat 10s per category globally.
+ * Total timer = categoryCount × 10.
  * Time-pressure levels use timerSecondsPerCategory override.
  */
 function getSecondsPerCategory(_level: number): number {
-  return 15;
+  return 10;
 }
 
 function getBaseTimerSeconds(level: number, categoryCount: number): number {
@@ -764,7 +817,8 @@ const MIN_VALID_CATEGORIES_FOR_LETTER = 3;
 function selectLetter(
   level: number,
   rng: SeededRandom,
-  availableCategories: CategoryType[]
+  availableCategories: CategoryType[],
+  excludedLetters: Set<string> = new Set()
 ): { letter: string; type: LevelData['letterType'] } {
   const diffPool = getLetterDifficultyPool(level);
   const difficulty = rng.pick(diffPool);
@@ -772,6 +826,7 @@ function selectLetter(
   const tryPool = (pool: string[]): string | null => {
     const shuffled = rng.shuffle([...pool]);
     for (const l of shuffled) {
+      if (excludedLetters.has(l)) continue;
       if (getValidCategoryCount(l, availableCategories) >= MIN_VALID_CATEGORIES_FOR_LETTER) {
         return l;
       }
@@ -802,9 +857,25 @@ function selectLetter(
     letter = tryPool(LETTER_POOLS.normal);
     if (letter) type = 'normal';
   }
-  if (!letter) {
+  if (!letter && type !== 'easy') {
     letter = tryPool(LETTER_POOLS.easy);
     if (letter) type = 'easy';
+  }
+  // If block exclusions exhausted the preferred pool, fall back to normal pool
+  if (!letter) {
+    letter = tryPool(LETTER_POOLS.normal);
+    if (letter) type = 'normal';
+  }
+  // Last resort: ignore block exclusions, pick any valid letter
+  if (!letter) {
+    const allLetters = rng.shuffle([...new Set([...LETTER_POOLS.easy, ...LETTER_POOLS.normal])]);
+    for (const l of allLetters) {
+      if (getValidCategoryCount(l, availableCategories) >= MIN_VALID_CATEGORIES_FOR_LETTER) {
+        letter = l;
+        type = LETTER_POOLS.easy.includes(l) ? 'easy' : 'normal';
+        break;
+      }
+    }
   }
   if (!letter) {
     letter = 'S';
@@ -1215,6 +1286,9 @@ export function generateLevel(levelNumber: number): LevelData {
   const override = LEVEL_OVERRIDES[levelNumber];
   const twoLetterCombo = TWO_LETTER_LEVELS[levelNumber];
 
+  // Compute letters already used in the same 15-level block (for non-repeat constraint)
+  const blockExcludedLetters = getBlockLettersSoFar(levelNumber);
+
   // ─── LETTER ───────────────────────────────────────────────────────────────
   let letter: string;
   let letterType: LevelData['letterType'];
@@ -1232,7 +1306,7 @@ export function generateLevel(levelNumber: number): LevelData {
     letter = override.forceLetterOptions[0]!; // primary letter for validation/display
     letterType = letter.length > 1 ? 'two_letter' : 'normal';
   } else {
-    const sel = selectLetter(levelNumber, rng, availableCategories);
+    const sel = selectLetter(levelNumber, rng, availableCategories, blockExcludedLetters);
     letter = sel.letter;
     letterType = sel.type;
   }
@@ -1296,6 +1370,9 @@ export function generateLevel(levelNumber: number): LevelData {
     if (cType === 'min_word_length') {
       const val = override.constraintValue ?? 4;
       constraint = { type: 'min_word_length', value: val, description: `Words must be ${val}+ letters` };
+    } else if (cType === 'max_word_length') {
+      const val = override.constraintValue ?? 8;
+      constraint = { type: 'max_word_length', value: val, description: `Words must be ${val} letters or less` };
     } else if (cType === 'ends_with_letter') {
       const el = override.constraintEndLetterOptions
         ? rng.pick(override.constraintEndLetterOptions)
@@ -1303,6 +1380,17 @@ export function generateLevel(levelNumber: number): LevelData {
       constraint = { type: 'ends_with_letter', endLetter: el, description: `Words must end with "${el}"` };
     } else if (cType === 'double_letters') {
       constraint = { type: 'double_letters', description: 'Words must contain double letters (ee, ll, ss...)' };
+    } else if (cType === 'no_repeat_letters') {
+      constraint = { type: 'no_repeat_letters', description: 'No letter can repeat in your answer' };
+    } else if (cType === 'combo' && override.comboConstraints) {
+      const combos = override.comboConstraints;
+      const descriptions = combos.map((c) => {
+        if (c.type === 'min_word_length') return `${c.value}+ letters`;
+        if (c.type === 'max_word_length') return `${c.value} letters or less`;
+        if (c.type === 'ends_with_letter') return `ends with "${c.endLetter}"`;
+        return c.type;
+      });
+      constraint = { type: 'combo', comboConstraints: combos, description: descriptions.join(' + ') };
     } else {
       constraint = { type: 'none', description: 'No special constraints' };
     }
@@ -1318,32 +1406,9 @@ export function generateLevel(levelNumber: number): LevelData {
   let timerSeconds: number;
 
   if (override?.timerSecondsPerCategory) {
-    // Explicit time-pressure override: no bonus time added
     timerSeconds = override.timerSecondsPerCategory * categories.length;
   } else {
     timerSeconds = getBaseTimerSeconds(levelNumber, categories.length);
-
-    // Bonus time for difficult constraints
-    const hasMinWordLength =
-      constraint.type === 'min_word_length' ||
-      (constraint.type === 'combo' && constraint.comboConstraints?.some((c) => c.type === 'min_word_length'));
-    const minWordValue =
-      constraint.type === 'min_word_length'
-        ? constraint.value ?? 4
-        : constraint.comboConstraints?.find((c) => c.type === 'min_word_length')?.value ?? 0;
-
-    if (constraint.type !== 'none' && constraint.type !== 'time_pressure') timerSeconds += 3;
-    if (hasMinWordLength && minWordValue >= 5) timerSeconds += 3;
-    if (hasMinWordLength && minWordValue >= 6) timerSeconds += 2;
-    if (constraint.type === 'ends_with_letter') timerSeconds += 2;
-    if (constraint.type === 'no_repeat_letters') timerSeconds += 3;
-    if (constraint.type === 'contains_vowel') timerSeconds += 2;
-    if (constraint.type === 'odd_length') timerSeconds += 2;
-    if (constraint.type === 'double_letters') timerSeconds += 2;
-    if (constraint.type === 'combo') timerSeconds += 4;
-    if (constraint.type === 'survival') timerSeconds += 2;
-    if (constraint.type === 'time_pressure') timerSeconds = Math.max(6, timerSeconds - 4);
-    timerSeconds = clamp(timerSeconds, 10, getBaseTimerSeconds(levelNumber, categories.length) + 30);
   }
 
   // --- Scoring ---
