@@ -1502,15 +1502,10 @@ export default function GameScreen() {
           <View style={s.stickyOuter}>
             <View style={s.tapePiece} />
             <Animated.View style={[s.stickyBody, stickyStyle]}>
-              {/* Shading gradient — top-left lighter, bottom-right darker */}
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '45%', backgroundColor: 'rgba(255,255,255,0.18)', borderTopLeftRadius: 3, borderTopRightRadius: 3 }} />
-              <View style={{ position: 'absolute', bottom: 0, right: 0, left: 0, height: '30%', backgroundColor: 'rgba(160,120,0,0.1)' }} />
-              {/* Corner fold — bottom-right */}
-              <View style={{ position: 'absolute', bottom: 0, right: 0, width: 0, height: 0, borderLeftWidth: 12, borderTopWidth: 12, borderLeftColor: 'transparent', borderTopColor: 'rgba(160,120,0,0.25)' }} />
-              <View style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, backgroundColor: 'rgba(200,160,10,0.35)', borderTopLeftRadius: 4 }} />
-              {/* Pencil mark lines on sticky — like someone wrote on it */}
-              <View style={{ position: 'absolute', top: 8, left: 6, right: 6, height: 1, backgroundColor: P.stickyDark, opacity: 0.18, transform: [{ rotate: '-1deg' }] }} />
-              <View style={{ position: 'absolute', bottom: 10, left: 8, right: 8, height: 1, backgroundColor: P.stickyDark, opacity: 0.12 }} />
+              {/* Subtle top highlight */}
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', backgroundColor: 'rgba(255,255,255,0.22)', borderTopLeftRadius: 3, borderTopRightRadius: 3 }} />
+              {/* Subtle bottom shadow */}
+              <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '25%', backgroundColor: 'rgba(140,100,0,0.08)' }} />
               <Text style={[s.stickyLetter, { fontWeight: '900' }]}>
                 {currentLevel?.letterOptions
                   ? currentLevel.letterOptions.join(' / ')
@@ -1539,113 +1534,17 @@ export default function GameScreen() {
       {/* ════ PAPER BODY ════ */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <NotebookBackground lineStartY={32} lineSpacing={30} lineCount={45} marginX={62} showMargin={true}>
-          {/* ── Static notebook doodles — pointerEvents none, purely decorative ── */}
+          {/* ── Minimal tasteful margin accents — purely decorative ── */}
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} pointerEvents="none">
-            {/* Top-left corner: NPAT initials scrawled in margin */}
-            <Text style={{ position: 'absolute', top: 8, left: 4, fontSize: 11, color: '#2A1A0A', opacity: 0.55, fontStyle: 'italic', transform: [{ rotate: '-3deg' }] }}>N</Text>
-            <Text style={{ position: 'absolute', top: 20, left: 5, fontSize: 11, color: '#2A1A0A', opacity: 0.55, fontStyle: 'italic', transform: [{ rotate: '1deg' }] }}>P</Text>
-            <Text style={{ position: 'absolute', top: 32, left: 4, fontSize: 11, color: '#2A1A0A', opacity: 0.55, fontStyle: 'italic', transform: [{ rotate: '-2deg' }] }}>A</Text>
-            <Text style={{ position: 'absolute', top: 44, left: 6, fontSize: 11, color: '#2A1A0A', opacity: 0.55, fontStyle: 'italic', transform: [{ rotate: '1.5deg' }] }}>T</Text>
+            {/* Single refined star in top-right corner */}
+            <Text style={{ position: 'absolute', top: 12, right: 14, fontSize: 13, color: P.amber, opacity: 0.4 }}>★</Text>
 
-            {/* Top-right corner: little star cluster */}
-            <Text style={{ position: 'absolute', top: 10, right: 12, fontSize: 14, color: P.amber, opacity: 0.55, transform: [{ rotate: '12deg' }] }}>★</Text>
-            <Text style={{ position: 'absolute', top: 22, right: 22, fontSize: 9, color: P.amber, opacity: 0.4, transform: [{ rotate: '-8deg' }] }}>★</Text>
-            <Text style={{ position: 'absolute', top: 6, right: 26, fontSize: 8, color: P.amber, opacity: 0.35 }}>✦</Text>
+            {/* Subtle double underline near first row — like a teacher's mark */}
+            <View style={{ position: 'absolute', top: 66, left: 70, width: 52, height: 1.5, backgroundColor: P.inkMed, opacity: 0.18 }} />
+            <View style={{ position: 'absolute', top: 70, left: 70, width: 40, height: 1, backgroundColor: P.inkMed, opacity: 0.10 }} />
 
-            {/* Small arrow doodle top-right pointing down */}
-            <View style={{ position: 'absolute', top: 38, right: 14, opacity: 0.5 }}>
-              <View style={{ width: 1.5, height: 14, backgroundColor: '#2A1A0A', alignSelf: 'center' }} />
-              <View style={{ width: 0, height: 0, borderLeftWidth: 4, borderRightWidth: 4, borderTopWidth: 7, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: '#2A1A0A', alignSelf: 'center' }} />
-            </View>
-
-            {/* Mid-right margin: circled doodle */}
-            <View style={{ position: 'absolute', top: 180, right: 8, width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: '#2A1A0A', opacity: 0.35 }} />
-            <View style={{ position: 'absolute', top: 184, right: 12, width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, borderColor: '#B07820', opacity: 0.45 }} />
-
-            {/* Left margin: heavy pencil scribble lines — graphite style */}
-            <View style={{ position: 'absolute', top: 122, left: 10, width: 24, height: 2, backgroundColor: '#2A1A0A', opacity: 0.4, transform: [{ rotate: '-3deg' }] }} />
-            <View style={{ position: 'absolute', top: 126, left: 12, width: 18, height: 1.5, backgroundColor: '#2A1A0A', opacity: 0.3, transform: [{ rotate: '2deg' }] }} />
-            <View style={{ position: 'absolute', top: 130, left: 14, width: 12, height: 1, backgroundColor: '#2A1A0A', opacity: 0.2, transform: [{ rotate: '-1deg' }] }} />
-
-            <View style={{ position: 'absolute', top: 212, left: 10, width: 26, height: 2, backgroundColor: '#2A1A0A', opacity: 0.38, transform: [{ rotate: '2deg' }] }} />
-            <View style={{ position: 'absolute', top: 216, left: 13, width: 16, height: 1.5, backgroundColor: '#2A1A0A', opacity: 0.28 }} />
-            <View style={{ position: 'absolute', top: 220, left: 16, width: 10, height: 1, backgroundColor: '#2A1A0A', opacity: 0.18 }} />
-
-            {/* Heavy cross-hatch shading patch — left margin mid */}
-            {[0,1,2,3,4].map(i => (
-              <View key={`hatchL${i}`} style={{
-                position: 'absolute', top: 300 + i * 6, left: 4,
-                width: 36, height: 1.5,
-                backgroundColor: '#2A1A0A', opacity: 0.22,
-                transform: [{ rotate: '-35deg' }],
-              }} />
-            ))}
-            {[0,1,2,3].map(i => (
-              <View key={`hatchLr${i}`} style={{
-                position: 'absolute', top: 303 + i * 6, left: 4,
-                width: 28, height: 1,
-                backgroundColor: '#2A1A0A', opacity: 0.14,
-                transform: [{ rotate: '35deg' }],
-              }} />
-            ))}
-
-            {/* Tiny check mark doodle in margin */}
-            <Text style={{ position: 'absolute', top: 272, left: 8, fontSize: 13, color: '#206030', opacity: 0.55, transform: [{ rotate: '-4deg' }] }}>✓</Text>
-
-            {/* Small bracket in margin */}
-            <View style={{ position: 'absolute', top: 155, left: 8, width: 8, height: 30, borderLeftWidth: 2, borderTopWidth: 2, borderBottomWidth: 2, borderColor: '#2A1A0A', borderRadius: 3, opacity: 0.35 }} />
-
-            {/* Graphite shading patch — right side, lower */}
-            {[0,1,2,3,4,5].map(i => (
-              <View key={`hatchR${i}`} style={{
-                position: 'absolute', bottom: 200 + i * 7, right: 6,
-                width: 30, height: 1.5,
-                backgroundColor: '#2A1A0A', opacity: 0.18,
-                transform: [{ rotate: '-40deg' }],
-              }} />
-            ))}
-            {[0,1,2,3,4].map(i => (
-              <View key={`hatchRr${i}`} style={{
-                position: 'absolute', bottom: 204 + i * 7, right: 6,
-                width: 24, height: 1,
-                backgroundColor: '#2A1A0A', opacity: 0.1,
-                transform: [{ rotate: '40deg' }],
-              }} />
-            ))}
-
-            {/* Bottom corner: doodle circle/face */}
-            <Text style={{ position: 'absolute', bottom: 170, right: 16, fontSize: 18, color: '#2A1A0A', opacity: 0.3, transform: [{ rotate: '8deg' }] }}>◯</Text>
-            <Text style={{ position: 'absolute', bottom: 168, right: 18, fontSize: 10, color: '#2A1A0A', opacity: 0.25 }}>··</Text>
-            <View style={{ position: 'absolute', bottom: 162, right: 21, width: 8, height: 2, borderBottomWidth: 2, borderColor: '#2A1A0A', opacity: 0.28, borderRadius: 2 }} />
-
-            {/* Hatching in top-left corner — denser and darker */}
-            {[0,1,2,3,4,5].map(i => (
-              <View key={`hatch${i}`} style={{
-                position: 'absolute', top: 8 + i * 5, left: 0,
-                width: 48, height: 1.5,
-                backgroundColor: '#2A1A0A', opacity: 0.14,
-                transform: [{ rotate: '-45deg' }, { translateX: i * 3 }],
-              }} />
-            ))}
-            {/* Cross-hatch overlay on top-left */}
-            {[0,1,2,3].map(i => (
-              <View key={`hatchX${i}`} style={{
-                position: 'absolute', top: 8 + i * 6, left: 0,
-                width: 36, height: 1,
-                backgroundColor: '#2A1A0A', opacity: 0.09,
-                transform: [{ rotate: '45deg' }, { translateX: i * 2 }],
-              }} />
-            ))}
-
-            {/* Scribble underline near top — like someone underlined something */}
-            <View style={{ position: 'absolute', top: 66, left: 68, width: 60, height: 2, backgroundColor: '#2A1A0A', opacity: 0.3, transform: [{ rotate: '-0.5deg' }] }} />
-            <View style={{ position: 'absolute', top: 69, left: 72, width: 44, height: 1, backgroundColor: '#2A1A0A', opacity: 0.18, transform: [{ rotate: '0.3deg' }] }} />
-
-            {/* Random dash marks in right margin */}
-            <View style={{ position: 'absolute', top: 95, right: 10, width: 14, height: 2, backgroundColor: '#2A1A0A', opacity: 0.35, transform: [{ rotate: '-5deg' }] }} />
-            <View style={{ position: 'absolute', top: 99, right: 12, width: 10, height: 1.5, backgroundColor: '#2A1A0A', opacity: 0.25, transform: [{ rotate: '3deg' }] }} />
-            <View style={{ position: 'absolute', top: 250, right: 9, width: 16, height: 2, backgroundColor: '#2A1A0A', opacity: 0.3, transform: [{ rotate: '-2deg' }] }} />
-            <View style={{ position: 'absolute', top: 254, right: 14, width: 9, height: 1.5, backgroundColor: '#2A1A0A', opacity: 0.2, transform: [{ rotate: '4deg' }] }} />
+            {/* Faint bracket in left margin — groups the answer rows */}
+            <View style={{ position: 'absolute', top: 120, left: 10, width: 7, height: 50, borderLeftWidth: 1.5, borderTopWidth: 1.5, borderBottomWidth: 1.5, borderColor: P.inkMed, borderRadius: 3, opacity: 0.22 }} />
           </View>
 
           <View style={[s.paper, { backgroundColor: 'transparent' }]}>
@@ -2236,15 +2135,15 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   headerBorderLine1: {
-    height: 3,
+    height: 2,
     backgroundColor: P.paperDeep,
-    opacity: 0.7,
-    marginBottom: 3,
+    opacity: 0.55,
+    marginBottom: 4,
   },
   headerBorderLine2: {
-    height: 1.5,
+    height: 1,
     backgroundColor: P.paperLine,
-    opacity: 0.9,
+    opacity: 0.45,
   },
 
   // ── Top bar ──
@@ -2258,17 +2157,19 @@ const s = StyleSheet.create({
     gap: 6,
   },
   exitBtn: {
-    width: 32, height: 32, borderRadius: 7,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderWidth: 1, borderColor: P.paperLine,
+    width: 32, height: 32, borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderWidth: 1, borderColor: 'rgba(140,112,64,0.3)',
     alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2,
   },
   roundPill: {
-    backgroundColor: P.paperDark,
-    paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 20, borderWidth: 1, borderColor: P.paperLine,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(140,112,64,0.3)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2,
   },
-  roundTxt: { color: P.inkMed, fontSize: 16 },
+  roundTxt: { color: P.inkMed, fontSize: 15, letterSpacing: 0.3 },
 
   // Sticky note
   stickyOuter: { alignItems: 'center' },
@@ -2297,10 +2198,11 @@ const s = StyleSheet.create({
   timerPill: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     paddingHorizontal: 10, paddingVertical: 6,
-    borderRadius: 8, borderWidth: 1.5, borderColor: P.paperLine,
-    backgroundColor: P.paperDark,
+    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(140,112,64,0.35)',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2,
   },
-  timerTxt: { color: P.inkMed, fontSize: 17 },
+  timerTxt: { color: P.inkMed, fontSize: 16, letterSpacing: 0.5 },
 
   // ── Paper ──
   paper: { flex: 1, backgroundColor: P.paper },
@@ -2323,46 +2225,50 @@ const s = StyleSheet.create({
   constraintBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 14, marginTop: 10,
-    backgroundColor: '#EAE0FF',
-    paddingHorizontal: 14, paddingVertical: 11,
-    borderRadius: 8, borderWidth: 1.5, borderColor: '#B090D8',
-    transform: [{ rotate: '-0.5deg' }],
-    shadowColor: '#B090D8', shadowOffset: { width: 2, height: 2 }, shadowOpacity: 0.3, shadowRadius: 0,
+    backgroundColor: '#EDE8F8',
+    paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 10, borderWidth: 1, borderColor: '#C4B0E8',
+    shadowColor: '#8060C0', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.12, shadowRadius: 4,
     zIndex: 2,
   },
-  constraintTxt: { color: '#604898', fontSize: 17, flex: 1, fontWeight: '600' },
+  constraintTxt: { color: '#5040A0', fontSize: 15, flex: 1, fontWeight: '600', letterSpacing: 0.1 },
 
   stopBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 14, marginTop: 8,
-    backgroundColor: P.amberBg,
+    backgroundColor: '#FEF3DC',
     paddingHorizontal: 14, paddingVertical: 9,
-    borderRadius: 5, borderWidth: 2.5, borderColor: P.amber,
-    transform: [{ rotate: '0.4deg' }],
-    shadowColor: P.amber, shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.35, shadowRadius: 0,
+    borderRadius: 10, borderWidth: 1, borderColor: '#D4A030',
+    shadowColor: '#C08020', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 4,
     zIndex: 2,
   },
-  stopBannerTxt: { color: '#7A3800', fontSize: 18 },
+  stopBannerTxt: { color: '#7A4A00', fontSize: 16, letterSpacing: 0.2 },
 
   // ── Leaderboard ──
   lbWrap: { marginHorizontal: 14, marginTop: 8, zIndex: 2 },
   lbToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: P.paperDark, borderRadius: 6,
-    borderWidth: 1.5, borderColor: P.paperLine,
-    paddingHorizontal: 12, paddingVertical: 7,
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10,
+    borderWidth: 1, borderColor: 'rgba(160,130,60,0.3)',
+    paddingHorizontal: 12, paddingVertical: 8,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2,
   },
-  lbToggleTxt: { color: P.inkMed, fontSize: 15 },
+  lbToggleTxt: { color: P.inkMed, fontSize: 14, letterSpacing: 0.3 },
   lbBody: {
-    backgroundColor: P.paperDark, paddingHorizontal: 8, paddingVertical: 6,
-    gap: 3, borderRadius: 6, borderWidth: 1.5, borderTopWidth: 0,
-    borderTopLeftRadius: 0, borderTopRightRadius: 0, borderColor: P.paperLine,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    paddingHorizontal: 10, paddingVertical: 8,
+    gap: 2, borderRadius: 10, borderTopLeftRadius: 0, borderTopRightRadius: 0,
+    borderWidth: 1, borderTopWidth: 0, borderColor: 'rgba(160,130,60,0.25)',
   },
-  lbRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 3, paddingHorizontal: 4, borderRadius: 4 },
-  lbRowMe: { backgroundColor: '#D0EEE0' },
-  lbRank: { width: 20, color: P.inkFaint, fontSize: 16 },
-  lbName: { flex: 1, color: P.inkMed, fontSize: 15 },
-  lbScore: { color: P.ink, fontSize: 17 },
+  lbRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: 5, paddingHorizontal: 6,
+    borderRadius: 7,
+  },
+  lbRowMe: { backgroundColor: 'rgba(180,150,60,0.14)' },
+  lbRank: { width: 22, color: P.inkFaint, fontSize: 14, fontWeight: '600' },
+  lbName: { flex: 1, color: P.inkMed, fontSize: 14, fontWeight: '500' },
+  lbScore: { color: P.ink, fontSize: 15, fontWeight: '800' },
 
   // paddingTop=8 aligns first row's input baseline with the first notebook ruled line
   scrollContent: { paddingTop: 8, paddingBottom: 160, paddingHorizontal: 0 },
@@ -2370,7 +2276,7 @@ const s = StyleSheet.create({
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 },
   starsTxt: { color: P.amber, fontSize: 17 },
   instrRow: { marginBottom: 12, paddingHorizontal: 2, paddingVertical: 4 },
-  instrTxt: { color: P.ink, fontSize: 21, fontFamily: 'Comic Sans MS', fontWeight: '700' },
+  instrTxt: { color: P.ink, fontSize: 19, fontWeight: '700', letterSpacing: 0.2 },
 
   // ── Instruction bar ──
   instrBar: {
