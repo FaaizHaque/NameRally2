@@ -1164,13 +1164,16 @@ export default function GameScreen() {
           )}
 
           {/* Category rows */}
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 20, gap: 8 }}
-              showsVerticalScrollIndicator={true}
-              keyboardShouldPersistTaps="handled"
-            >
+          {/* automaticallyAdjustKeyboardInsets is more reliable than KAV+padding
+              for flex-1 scroll views — it natively insets the scroll area when the
+              keyboard appears so every category and the Submit button stay reachable */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 24, gap: 8 }}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={true}
+          >
               {[...session.settings.selectedCategories]
                 .sort((a, b) => a === newCategoryForLevel ? 1 : b === newCategoryForLevel ? -1 : 0)
                 .map((cat, i) => {
@@ -1312,7 +1315,6 @@ export default function GameScreen() {
                 </Pressable>
               </View>
             </ScrollView>
-          </KeyboardAvoidingView>
 
           {/* Exit Modal */}
           <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
