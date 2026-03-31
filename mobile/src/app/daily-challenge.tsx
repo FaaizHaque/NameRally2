@@ -43,6 +43,7 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
+  RefreshCw,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
@@ -255,6 +256,15 @@ export default function DailyChallengeScreen() {
       );
     }
   }, [phase]);
+
+  // Auto-refresh leaderboard every 30s while viewing results so friends' scores appear
+  useEffect(() => {
+    if ((phase !== 'results' && phase !== 'already_completed') || !challenge) return;
+    const interval = setInterval(() => {
+      fetchLeaderboard(challenge.date);
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [phase, challenge?.date]);
 
   const trophyAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: trophyScale.value }],
@@ -760,7 +770,13 @@ export default function DailyChallengeScreen() {
                   <Trophy size={16} color="#4ADE80" strokeWidth={2.5} />
                   <Text style={{ color: '#4ADE80', fontSize: 14, fontWeight: '900', letterSpacing: 0.5 }}>Today's Leaderboard</Text>
                   <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(74,222,128,0.15)' }} />
-                  <Globe size={13} color="rgba(74,222,128,0.45)" strokeWidth={2} />
+                  <Pressable
+                    onPress={() => challenge && fetchLeaderboard(challenge.date)}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 4 })}
+                    hitSlop={8}
+                  >
+                    <RefreshCw size={13} color="rgba(74,222,128,0.65)" strokeWidth={2.5} />
+                  </Pressable>
                 </View>
                 <View style={{ backgroundColor: 'rgba(74,222,128,0.05)', borderRadius: 16, padding: 10, borderWidth: 1, borderColor: 'rgba(74,222,128,0.12)' }}>
                   {leaderboardLoading ? (
