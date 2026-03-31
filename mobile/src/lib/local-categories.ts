@@ -38,8 +38,231 @@ function buildSet(data: string[]): Set<string> {
   return s;
 }
 
+// ─── Known Western/Latin aliases for Arabic/Islamic scholarly names ───────────
+// Maps the canonical normalized form → array of alternate normalized aliases.
+const SCHOLAR_ALIASES: Record<string, string[]> = {
+  'ibn sina':           ['avicenna', 'abu ali sina', 'abu ali al husayn ibn sina'],
+  'ibn rushd':          ['averroes', 'averrhoes', 'abu al walid ibn rushd'],
+  'ibn al haytham':     ['alhazen', 'alhacen', 'al haytham', 'abu ali al haytham'],
+  'al zahrawi':         ['abulcasis', 'albucasis', 'abu al qasim al zahrawi'],
+  'al khwarizmi':       ['algoritmi', 'al khawarizmi', 'khawarizmi', 'al-khawarizmi'],
+  'al biruni':          ['alberuni', 'abu rayhan al biruni', 'abu rayhan biruni', 'biruni'],
+  'al razi':            ['rhazes', 'rasis', 'abu bakr al razi', 'abu bakr razi'],
+  'al kindi':           ['alkindus', 'abu yusuf al kindi'],
+  'al farabi':          ['alpharabius', 'alfarabi', 'abu nasr al farabi'],
+  'ibn khaldun':        ['abu zayd ibn khaldun', 'abd al rahman ibn khaldun'],
+  'al idrisi':          ['edrisi', 'al-idrisi', 'abu abdallah al idrisi'],
+  'al battani':         ['albategnius', 'albatenius'],
+  'al tusi':            ['nasir al din al tusi', 'nasireddin tusi'],
+  'al masudi':          ['al-masudi', 'abu al hasan al masudi'],
+  'al jazari':          ['al-jazari', 'ibn al razzaz al jazari'],
+  'ibn al nafis':       ['ibn nafis', 'ala al din ibn al nafis'],
+  'jabir ibn hayyan':   ['geber', 'jabir', 'al kimia'],
+  'ferdowsi':           ['firdausi', 'firdusi', 'firdousi', 'firdawsi', 'abu al qasim ferdowsi'],
+  'omar khayyam':       ['khayyam', 'umar khayyam', 'omar khayyam nishaburi'],
+  'rumi':               ['jalal al din rumi', 'mevlana', 'mawlana rumi', 'jalal ud din rumi'],
+  'hafez':              ['hafiz', 'khwaja shams ud din hafiz', 'hafiz shirazi'],
+  'saadi shirazi':      ['saadi', 'sa di shirazi', 'shaykh saadi'],
+  'attar of nishapur':  ['farid ud din attar', 'attar', 'farid al din attar'],
+  'nizami ganjavi':     ['nizami', 'ilyas ibn yusuf nizami'],
+  'amir khusrow':       ['khusrow', 'amir khusrau', 'khusrau'],
+  'jami':               ['nur al din jami', 'molla jami'],
+  'al mutanabbi':       ['mutanabbi', 'abu tayyib al mutanabbi'],
+  'al ghazali':         ['algazel', 'abu hamid al ghazali', 'imam ghazali'],
+  'ibn arabi':          ['muhyiddin ibn arabi', 'shaykh al akbar'],
+  'harun al rashid':    ['haroun al rashid', 'harun rashid', 'haroon al rashid'],
+  'salah al din al ayyubi': ['saladin', 'salah al din', 'salahuddin', 'saladdin'],
+  'tariq ibn ziyad':    ['tariq ziyad', 'tarik ibn ziyad'],
+  'khalid ibn al walid':['khalid bin walid', 'khalid al walid', 'khalid ibn walid', 'sword of allah'],
+  'muhammad ibn qasim': ['muhammad bin qasim', 'bin qasim', 'ibn qasim'],
+  'abu bakr al siddiq': ['abu bakr', 'abu bakr siddiq', 'al siddiq'],
+  'umar ibn al khattab':['umar ibn khattab', 'omar ibn khattab', 'umar al farooq', 'farooq'],
+  'uthman ibn affan':   ['uthman', 'usman ibn affan', 'usman'],
+  'ali ibn abi talib':  ['ali ibn abi talib', 'imam ali', 'ali al murtaza'],
+  'suleiman the magnificent': ['suleiman', 'suleyman', 'sulaiman', 'kanuni sultan suleyman'],
+  'mehmed ii':          ['mehmed the conqueror', 'sultan mehmed', 'fatih sultan mehmed', 'fatih'],
+  'allama iqbal':       ['iqbal', 'muhammad iqbal', 'sir muhammad iqbal'],
+  'faiz ahmed faiz':    ['faiz', 'faiz ahmed'],
+  'mirza ghalib':       ['ghalib', 'asadullah khan ghalib', 'mirza asadullah'],
+  'bulleh shah':        ['bullah shah', 'sayyed abdullah shah qadri'],
+  'waris shah':         ['warris shah'],
+  'malala yousafzai':   ['malala', 'malala yusufzai', 'malala yousufzai'],
+  'abdus salam':        ['dr abdus salam', 'professor abdus salam'],
+
+  // Prophets — Arabic / Hebrew / common name variants
+  'prophet noah':       ['nuh', 'prophet nuh', 'nooh'],
+  'prophet idris':      ['enoch', 'prophet enoch', 'idris enoch'],
+  'prophet hud':        ['hud', 'eber'],
+  'prophet salih':      ['saleh', 'saleh prophet'],
+  'prophet lot':        ['lut', 'prophet lut'],
+  'prophet ishmael':    ['ismail', 'prophet ismail', 'prophet ismael'],
+  'prophet isaac':      ['ishaq', 'prophet ishaq'],
+  'prophet jacob':      ['yaqub', 'prophet yaqub', 'israel'],
+  'prophet joseph':     ['yusuf', 'prophet yusuf'],
+  'prophet shuaib':     ['jethro', 'prophet jethro', 'shuayb'],
+  'prophet job':        ['ayyub', 'prophet ayyub'],
+  'prophet aaron':      ['harun', 'prophet harun'],
+  'prophet david':      ['dawud', 'prophet dawud'],
+  'prophet solomon':    ['sulayman', 'prophet sulayman', 'prophet sulaiman'],
+  'prophet elijah':     ['ilyas', 'prophet ilyas'],
+  'prophet elisha':     ['al yasa', 'prophet al yasa'],
+  'prophet jonah':      ['yunus', 'prophet yunus'],
+  'prophet zechariah':  ['zakariya', 'prophet zakariya', 'prophet zachariah'],
+  'prophet john the baptist': ['yahya', 'prophet yahya', 'john the baptist'],
+  'prophet jesus':      ['isa', 'prophet isa', 'jesus christ', 'jesus of nazareth'],
+  'prophet ezra':       ['uzayr', 'prophet uzayr', 'uzair'],
+
+  // Associated biblical / Quranic figures
+  'queen of sheba':     ['bilqis', 'queen bilqis', 'queen of saba'],
+  'virgin mary':        ['maryam', 'saint mary', 'our lady', 'blessed virgin'],
+  'fatimah bint muhammad': ['fatima', 'fatimah', 'fatima al zahra'],
+
+  // Russian Tsars variants
+  'ivan iii of russia': ['ivan the great', 'ivan iii'],
+  'boris godunov':      ['boris godunov tsar', 'tsar boris'],
+  'michael i of russia':['mikhail romanov', 'tsar mikhail'],
+  'elizabeth of russia':['empress elizabeth', 'elizaveta petrovna'],
+  'peter iii of russia':['tsar peter iii'],
+  'paul i of russia':   ['tsar paul', 'emperor paul i'],
+  'nicholas i of russia':['tsar nicholas i', 'nicholas i'],
+  'alexander nevsky':   ['prince alexander nevsky', 'nevsky'],
+
+  // Mughal variants
+  'bahadur shah zafar': ['bahadur shah ii', 'zafar', 'last mughal emperor'],
+  'bahadur shah i':     ['bahadur shah', 'muazzam'],
+  'jahandar shah':      ['jahandar'],
+  'farrukhsiyar':       ['farrukh siyar'],
+  'muhammad shah':      ['muhammad shah mughal', 'rangila'],
+  'shah alam ii':       ['shah alam', 'ali gauhar'],
+  'akbar shah ii':      ['akbar ii'],
+};
+
+// Reverse-index: alias → canonical, so we can look up by alias directly
+const ALIAS_TO_CANONICAL = new Map<string, string>();
+for (const [canonical, aliases] of Object.entries(SCHOLAR_ALIASES)) {
+  for (const alias of aliases) {
+    ALIAS_TO_CANONICAL.set(normalizeForComparison(alias), canonical);
+  }
+}
+
+/**
+ * Generates additional lookup variants for a person's name:
+ * - First name only ("Malala Yousafzai" → "malala")
+ * - Last name only ("Angela Merkel" → "merkel")
+ * - First + Last, skipping middle particles ("Omar Abdullah Khan" → "omar khan")
+ * - Arabic/Islamic particle substitutions: ibn↔bin, al↔el, etc.
+ * - Muhammad spelling variants
+ * - Dropping common particles entirely
+ */
+function nameVariants(norm: string): string[] {
+  const variants: string[] = [];
+  const words = norm.split(' ').filter(Boolean);
+  if (words.length < 2) return variants;
+
+  // First name only
+  variants.push(words[0]);
+  // Last word only
+  variants.push(words[words.length - 1]);
+
+  // First + last (skip middle words) when 3+ tokens
+  if (words.length >= 3) {
+    variants.push(words[0] + ' ' + words[words.length - 1]);
+  }
+
+  // Arabic particles set — used to build particle-free variants
+  const PARTICLES = new Set(['ibn', 'bin', 'ben', 'bint', 'al', 'el', 'ul', 'abu', 'abi', 'umm', 'abd', 'aba', 'the']);
+
+  // ibn ↔ bin substitution (keep other words intact)
+  const ibnBin = norm
+    .replace(/\bibn\b/g, 'bin')
+    .replace(/\bbin\b(?! laden)/g, 'ibn'); // bin laden is a special case
+  if (ibnBin !== norm) variants.push(ibnBin);
+
+  // al ↔ el substitution
+  const alEl = norm.replace(/\bal\b/g, 'el').replace(/\bel\b/g, 'al');
+  if (alEl !== norm) variants.push(alEl);
+
+  // Combined ibn→bin + al→el
+  const ibnBinAlEl = norm.replace(/\bibn\b/g, 'bin').replace(/\bal\b/g, 'el');
+  if (ibnBinAlEl !== norm) variants.push(ibnBinAlEl);
+
+  // Strip ALL particles → bare name tokens only
+  const noParticleWords = words.filter(w => !PARTICLES.has(w));
+  if (noParticleWords.length > 0 && noParticleWords.length < words.length) {
+    const noParticle = noParticleWords.join(' ');
+    variants.push(noParticle);
+    // Also add first + last of stripped version
+    if (noParticleWords.length >= 2) {
+      variants.push(noParticleWords[0] + ' ' + noParticleWords[noParticleWords.length - 1]);
+    }
+    if (noParticleWords.length >= 1) variants.push(noParticleWords[0]);
+  }
+
+  // Muhammad / Mohammed / Mohamed spelling normalisation
+  const muhNorm = norm.replace(/\b(mohammed|mohamed|mohammad|mohamad|mahomet|mehmed(?!\s+[iv]+\b)|muhammed)\b/g, 'muhammad');
+  if (muhNorm !== norm) variants.push(muhNorm);
+
+  // Transliteration: 'kh' ↔ 'h', 'dh' ↔ 'd' (very loose but helps)
+  // e.g. "khayyam" vs "hayyam"
+  // Skip — too aggressive, would create false positives
+
+  return [...new Set(variants)];
+}
+
+/**
+ * Builds the celebrities Set: standard variants + name-specific variants + aliases.
+ */
+function buildCelebritySet(data: string[]): Set<string> {
+  const s = buildSet(data); // all standard variants first
+
+  for (const entry of data) {
+    if (!entry?.trim()) continue;
+    const norm = normalizeForComparison(entry);
+
+    // Name variants (first name, last name, particle substitutions, etc.)
+    for (const v of nameVariants(norm)) {
+      if (v && v.length >= 2) s.add(v);
+    }
+
+    // Known scholar/historical aliases
+    const aliases = SCHOLAR_ALIASES[norm];
+    if (aliases) {
+      for (const alias of aliases) {
+        const an = normalizeForComparison(alias);
+        s.add(an);
+        // Also add no-space and hyphenated variants of alias
+        s.add(an.replace(/\s+/g, ''));
+        s.add(an.replace(/\s+/g, '-'));
+      }
+    }
+  }
+
+  // Also add all reverse-alias entries (so looking up "avicenna" works even if
+  // the canonical "ibn sina" wasn't directly in the data somehow)
+  for (const [alias] of ALIAS_TO_CANONICAL) {
+    s.add(alias);
+  }
+
+  return s;
+}
+
+// Also enhance names set with first-name-only and last-name-only variants
+function buildNamesSet(data: string[]): Set<string> {
+  const s = buildSet(data);
+  for (const entry of data) {
+    if (!entry?.trim()) continue;
+    const norm = normalizeForComparison(entry);
+    const words = norm.split(' ').filter(Boolean);
+    if (words.length >= 2) {
+      s.add(words[0]);                          // first name only
+      s.add(words[words.length - 1]);           // last name only
+    }
+  }
+  return s;
+}
+
 const LOCAL_SETS: Partial<Record<CategoryType, Set<string>>> = {
-  names:              buildSet(namesData as string[]),
+  names:              buildNamesSet(namesData as string[]),
   places:             buildSet(placesData as string[]),
   thing:              buildSet(thingsData as string[]),
   animal:             buildSet(animalsData as string[]),
@@ -47,7 +270,7 @@ const LOCAL_SETS: Partial<Record<CategoryType, Set<string>>> = {
   sports_games:       buildSet(sportsGamesData as string[]),
   food_dishes:        buildSet(foodDishesData as string[]),
   health_issues:      buildSet(healthIssuesData as string[]),
-  celebrities: buildSet(celebritiesData as string[]),
+  celebrities:        buildCelebritySet(celebritiesData as string[]),
   professions:        buildSet(professionsData as string[]),
   brands:             buildSet(brandsData as string[]),
 };

@@ -695,6 +695,19 @@ export default function GameScreen() {
     // Clear any running shuffle
     if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
 
+    // In multiplayer, the picker already saw their letter during the cycling overlay —
+    // skip the slot-machine and go straight to the final reveal for them.
+    if (gameMode === 'multiplayer' && isPicker) {
+      setShuffleLetter(targetLetter);
+      setRevealDone(true);
+      // Auto-dismiss after a brief pause so the picker sees the confirm screen
+      shuffleTimeoutRef.current = setTimeout(() => {
+        revealOpacity.value = withTiming(0, { duration: 350 });
+        setTimeout(() => setShowReveal(false), 350);
+      }, 1500);
+      return () => { if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current); };
+    }
+
     // Slot-machine deceleration: start fast, slow down, then snap to target
     // Never show target letter until final step — no premature flashes
     const totalSteps = 20;
@@ -712,6 +725,13 @@ export default function GameScreen() {
             revealOpacity.value = withTiming(0, { duration: 350 });
             setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 350);
           }, 800);
+        } else {
+          // Multiplayer non-pickers: auto-dismiss after 2.5s — no manual button needed,
+          // everyone dismisses at roughly the same time
+          shuffleTimeoutRef.current = setTimeout(() => {
+            revealOpacity.value = withTiming(0, { duration: 350 });
+            setTimeout(() => setShowReveal(false), 350);
+          }, 2500);
         }
         return;
       }
@@ -1144,13 +1164,16 @@ export default function GameScreen() {
           )}
 
           {/* Category rows */}
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 20, gap: 8 }}
-              showsVerticalScrollIndicator={true}
-              keyboardShouldPersistTaps="handled"
-            >
+          {/* automaticallyAdjustKeyboardInsets is more reliable than KAV+padding
+              for flex-1 scroll views — it natively insets the scroll area when the
+              keyboard appears so every category and the Submit button stay reachable */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 24, gap: 8 }}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={true}
+          >
               {[...session.settings.selectedCategories]
                 .sort((a, b) => a === newCategoryForLevel ? 1 : b === newCategoryForLevel ? -1 : 0)
                 .map((cat, i) => {
@@ -1292,7 +1315,6 @@ export default function GameScreen() {
                 </Pressable>
               </View>
             </ScrollView>
-          </KeyboardAvoidingView>
 
           {/* Exit Modal */}
           <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
@@ -1891,26 +1913,18 @@ export default function GameScreen() {
 
       {/* ════ LETTER REVEAL OVERLAY (plays after letter is picked, or for single player) ════ */}
       {showReveal && session?.status === 'playing' && (
-        <Animated.View style={[s.revealOverlay, revealOverlayStyle]} pointerEvents={revealDone && gameMode === 'multiplayer' ? 'auto' : 'none'}>
+        <Animated.View style={[s.revealOverlay, revealOverlayStyle]} pointerEvents="none">
           <View style={s.revealCard}>
             <Text style={[s.revealLabel, { fontWeight: '500' }]}>Fill Out Words Starting With:</Text>
             <View style={s.revealTileWrap}>
               <Text style={[s.revealTile, { fontWeight: '900' }]}>{shuffleLetter}</Text>
             </View>
             {gameMode === 'multiplayer' && revealDone && (
-              <Pressable
-                style={s.revealStopBtn}
-                onPress={() => {
-                  revealOpacity.value = withTiming(0, { duration: 300 });
-                  setTimeout(() => setShowReveal(false), 300);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Play size={18} color="#FFF" fill="#FFF" strokeWidth={1} />
-                  <Text style={[s.revealStopTxt, { fontWeight: '800' }]}>Let's Play!</Text>
-                </View>
-              </Pressable>
+              <Animated.View entering={FadeIn.duration(300)}>
+                <Text style={{ color: P.amber, fontSize: 16, fontWeight: '700', textAlign: 'center', marginTop: 12 }}>
+                  Get ready…
+                </Text>
+              </Animated.View>
             )}
           </View>
         </Animated.View>

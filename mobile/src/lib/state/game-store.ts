@@ -8,7 +8,8 @@ import { calculateStars, didPassLevel } from '../level-types';
 
 // Helper function to normalize answer for shared points (singular/plural treated as same)
 const normalizeAnswerForScoring = (answer: string, category: CategoryType): string => {
-  const w = answer.toLowerCase().trim();
+  // Strip all internal spaces so "water melon" == "watermelon", "New York" == "newyork"
+  const w = answer.toLowerCase().trim().replace(/\s+/g, '');
 
   // Categories where singular/plural should be treated as the same answer
   const normalizePluralCategories: CategoryType[] = ['animal', 'thing'];

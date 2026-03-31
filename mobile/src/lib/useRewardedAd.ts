@@ -27,11 +27,15 @@ export function useRewardedAd() {
     setLoaded(false);
 
     const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
-      setLoaded(true);
+      // Defer state update — required with new arch (JSI) to avoid UI freeze
+      setTimeout(() => setLoaded(true), 0);
     });
     const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
-      setLoaded(false);
-      loadAd(); // immediately preload the next one
+      // Defer state update and next-ad preload — required with new arch (JSI)
+      setTimeout(() => {
+        setLoaded(false);
+        loadAd(); // preload next ad
+      }, 0);
     });
 
     ad.load();
@@ -54,8 +58,8 @@ export function useRewardedAd() {
   const showAd = (onRewarded: () => void, onDismissed: () => void) => {
     const ad = adRef.current;
     if (!ad || !loaded) {
-      onRewarded();
-      onDismissed();
+      // No ad ready — grant hint for free as fallback
+      setTimeout(() => { onRewarded(); onDismissed(); }, 0);
       return;
     }
 
