@@ -686,8 +686,13 @@ export default function GameScreen() {
     if (!session?.currentLetter) return;
     // For multiplayer, only run when status just became 'playing' (letter was picked)
     if (gameMode === 'multiplayer' && session.status !== 'playing') return;
-    // Reset reveal for the shuffle animation
-    setShowReveal(true);
+    // If a novelty popup is about to show, suppress the letter reveal — the letter
+    // is already visible in the header tile, and showing both overlays simultaneously
+    // is confusing. The game starts normally once the novelty popup is dismissed.
+    if (noveltyShowing.current) {
+      setShowReveal(false);
+      return;
+    }
     setRevealDone(false);
     revealOpacity.value = 1;
     const targetLetter = session.currentLetter;
@@ -1441,7 +1446,7 @@ export default function GameScreen() {
             return (
               <Modal visible={true} transparent animationType="none">
                 <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
-                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
+                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
                   <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                     <LinearGradient colors={[bgGradStart, '#0a0f1e']} style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}>
                       <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
@@ -1464,7 +1469,7 @@ export default function GameScreen() {
                           <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>{noveltyPopup.message}</Text>
                         </Animated.View>
                         <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
-                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
+                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
                             <LinearGradient colors={[btnGradA, btnGradB]} style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
                               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{isCat ? "Let's Go! →" : 'Got It!'}</Text>
                             </LinearGradient>
@@ -1978,7 +1983,7 @@ export default function GameScreen() {
           <Modal visible={true} transparent animationType="none">
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
 
               <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                 <LinearGradient
@@ -2036,7 +2041,7 @@ export default function GameScreen() {
                     {/* CTA button */}
                     <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
                       <Pressable
-                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }}
+                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
                         style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
                       >
                         <LinearGradient
