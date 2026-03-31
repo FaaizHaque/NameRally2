@@ -88,6 +88,53 @@ const SCHOLAR_ALIASES: Record<string, string[]> = {
   'waris shah':         ['warris shah'],
   'malala yousafzai':   ['malala', 'malala yusufzai', 'malala yousufzai'],
   'abdus salam':        ['dr abdus salam', 'professor abdus salam'],
+
+  // Prophets — Arabic / Hebrew / common name variants
+  'prophet noah':       ['nuh', 'prophet nuh', 'nooh'],
+  'prophet idris':      ['enoch', 'prophet enoch', 'idris enoch'],
+  'prophet hud':        ['hud', 'eber'],
+  'prophet salih':      ['saleh', 'saleh prophet'],
+  'prophet lot':        ['lut', 'prophet lut'],
+  'prophet ishmael':    ['ismail', 'prophet ismail', 'prophet ismael'],
+  'prophet isaac':      ['ishaq', 'prophet ishaq'],
+  'prophet jacob':      ['yaqub', 'prophet yaqub', 'israel'],
+  'prophet joseph':     ['yusuf', 'prophet yusuf'],
+  'prophet shuaib':     ['jethro', 'prophet jethro', 'shuayb'],
+  'prophet job':        ['ayyub', 'prophet ayyub'],
+  'prophet aaron':      ['harun', 'prophet harun'],
+  'prophet david':      ['dawud', 'prophet dawud'],
+  'prophet solomon':    ['sulayman', 'prophet sulayman', 'prophet sulaiman'],
+  'prophet elijah':     ['ilyas', 'prophet ilyas'],
+  'prophet elisha':     ['al yasa', 'prophet al yasa'],
+  'prophet jonah':      ['yunus', 'prophet yunus'],
+  'prophet zechariah':  ['zakariya', 'prophet zakariya', 'prophet zachariah'],
+  'prophet john the baptist': ['yahya', 'prophet yahya', 'john the baptist'],
+  'prophet jesus':      ['isa', 'prophet isa', 'jesus christ', 'jesus of nazareth'],
+  'prophet ezra':       ['uzayr', 'prophet uzayr', 'uzair'],
+
+  // Associated biblical / Quranic figures
+  'queen of sheba':     ['bilqis', 'queen bilqis', 'queen of saba'],
+  'virgin mary':        ['maryam', 'saint mary', 'our lady', 'blessed virgin'],
+  'fatimah bint muhammad': ['fatima', 'fatimah', 'fatima al zahra'],
+
+  // Russian Tsars variants
+  'ivan iii of russia': ['ivan the great', 'ivan iii'],
+  'boris godunov':      ['boris godunov tsar', 'tsar boris'],
+  'michael i of russia':['mikhail romanov', 'tsar mikhail'],
+  'elizabeth of russia':['empress elizabeth', 'elizaveta petrovna'],
+  'peter iii of russia':['tsar peter iii'],
+  'paul i of russia':   ['tsar paul', 'emperor paul i'],
+  'nicholas i of russia':['tsar nicholas i', 'nicholas i'],
+  'alexander nevsky':   ['prince alexander nevsky', 'nevsky'],
+
+  // Mughal variants
+  'bahadur shah zafar': ['bahadur shah ii', 'zafar', 'last mughal emperor'],
+  'bahadur shah i':     ['bahadur shah', 'muazzam'],
+  'jahandar shah':      ['jahandar'],
+  'farrukhsiyar':       ['farrukh siyar'],
+  'muhammad shah':      ['muhammad shah mughal', 'rangila'],
+  'shah alam ii':       ['shah alam', 'ali gauhar'],
+  'akbar shah ii':      ['akbar ii'],
 };
 
 // Reverse-index: alias → canonical, so we can look up by alias directly
