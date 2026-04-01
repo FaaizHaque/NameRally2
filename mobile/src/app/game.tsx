@@ -686,8 +686,13 @@ export default function GameScreen() {
     if (!session?.currentLetter) return;
     // For multiplayer, only run when status just became 'playing' (letter was picked)
     if (gameMode === 'multiplayer' && session.status !== 'playing') return;
-    // Reset reveal for the shuffle animation
-    setShowReveal(true);
+    // If a novelty popup is about to show, suppress the letter reveal — the letter
+    // is already visible in the header tile, and showing both overlays simultaneously
+    // is confusing. The game starts normally once the novelty popup is dismissed.
+    if (noveltyShowing.current) {
+      setShowReveal(false);
+      return;
+    }
     setRevealDone(false);
     revealOpacity.value = 1;
     const targetLetter = session.currentLetter;
@@ -845,12 +850,13 @@ export default function GameScreen() {
 
   const handleHintViaStars = () => {
     if (!pendingHint) return;
-    const { category, index } = pendingHint;
-    setPendingHint(null);
     if (levelProgress.totalStars < HINT_COST) {
+      // Keep modal open — feedback shown inline via hasEnoughStars flag below
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
+    const { category, index } = pendingHint;
+    setPendingHint(null);
     if (!spendStars(HINT_COST)) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
     executeHint(category, index);
   };
@@ -1389,12 +1395,31 @@ export default function GameScreen() {
                   <Lightbulb size={24} color="#FCD34D" strokeWidth={2} />
                 </View>
                 <Text style={{ color: '#e0e7ff', fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>Get a Hint</Text>
-                <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>Choose how to unlock this hint.</Text>
+                {/* Star balance */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 4 }}>
+                  <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+                  <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '700' }}>
+                    You have {levelProgress.totalStars} star{levelProgress.totalStars !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+                {levelProgress.totalStars < HINT_COST ? (
+                  <Text style={{ color: '#f87171', fontSize: 13, fontWeight: '700', textAlign: 'center', marginBottom: 16 }}>
+                    Need {HINT_COST - levelProgress.totalStars} more star{HINT_COST - levelProgress.totalStars !== 1 ? 's' : ''} — watch the ad instead!
+                  </Text>
+                ) : (
+                  <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
+                    Spend {HINT_COST} stars or watch a free ad.
+                  </Text>
+                )}
                 <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
                   <Pressable onPress={() => setPendingHint(null)} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1a3a6e', alignItems: 'center' }}>
                     <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Cancel</Text>
                   </Pressable>
-                  <Pressable onPress={handleHintViaStars} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: '#FCD34D', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
+                  <Pressable
+                    onPress={handleHintViaStars}
+                    disabled={levelProgress.totalStars < HINT_COST}
+                    style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: levelProgress.totalStars >= HINT_COST ? '#FCD34D' : 'rgba(252,211,77,0.25)', opacity: levelProgress.totalStars >= HINT_COST ? 1 : 0.45, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+                  >
                     <Star size={14} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
                     <Text style={{ color: '#FCD34D', fontWeight: '900', fontSize: 15 }}>{HINT_COST}★</Text>
                   </Pressable>
@@ -1441,7 +1466,7 @@ export default function GameScreen() {
             return (
               <Modal visible={true} transparent animationType="none">
                 <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
-                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
+                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
                   <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                     <LinearGradient colors={[bgGradStart, '#0a0f1e']} style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}>
                       <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
@@ -1464,7 +1489,7 @@ export default function GameScreen() {
                           <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>{noveltyPopup.message}</Text>
                         </Animated.View>
                         <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
-                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
+                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
                             <LinearGradient colors={[btnGradA, btnGradB]} style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
                               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{isCat ? "Let's Go! →" : 'Got It!'}</Text>
                             </LinearGradient>
@@ -1978,7 +2003,7 @@ export default function GameScreen() {
           <Modal visible={true} transparent animationType="none">
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); setShowReveal(false); }} />
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
 
               <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                 <LinearGradient
@@ -2036,7 +2061,7 @@ export default function GameScreen() {
                     {/* CTA button */}
                     <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
                       <Pressable
-                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); setShowReveal(false); }}
+                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
                         style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
                       >
                         <LinearGradient

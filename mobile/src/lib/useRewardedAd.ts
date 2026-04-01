@@ -74,8 +74,9 @@ export function useRewardedAd() {
       unsubClose();
       // Defer to next JS tick — required with new arch (JSI) so state updates
       // don't run inside a native event callback and cause a UI freeze.
+      // Always grant the hint on close — user watched (or partially watched) the ad.
       setTimeout(() => {
-        if (rewarded) onRewarded();
+        onRewarded();
         onDismissed();
       }, 0);
     });

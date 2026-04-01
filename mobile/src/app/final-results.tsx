@@ -90,6 +90,7 @@ export default function FinalResultsScreen() {
     loadLevelProgress();
   }, []);
 
+  // Sound, trophy animation, and score saving — re-runs only when meaningful data changes
   useEffect(() => {
     if (!soundPlayedRef.current) {
       soundPlayedRef.current = true;
@@ -111,14 +112,22 @@ export default function FinalResultsScreen() {
     if (isSoloMode && !isLevelMode && playerScore > 0) {
       saveHighScore(playerScore);
     }
-    // Staged reveal timers (level mode only)
-    if (isLevelMode) {
-      const t1 = setTimeout(() => { setRevealStage(1); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }, 900);
-      const t2 = setTimeout(() => { setRevealStage(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }, 1800);
-      const t3 = setTimeout(() => setRevealStage(3), 2600);
-      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-    }
-  }, [isLevelMode, currentLevel, playerScore, levelProcessed]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLevelMode]);
+
+  // Staged reveal timers — run ONCE on mount, never cancelled by data updates.
+  // Previously these were in the same effect as score-saving; any store update
+  // (Supabase Realtime pushing a session change, levelProcessed flipping) would
+  // cancel the in-flight timers, leaving revealStage stuck below 3 so buttons
+  // never appeared and the screen was unresponsive.
+  useEffect(() => {
+    if (!isLevelMode) return;
+    const t1 = setTimeout(() => { setRevealStage(1); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }, 900);
+    const t2 = setTimeout(() => { setRevealStage(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }, 1800);
+    const t3 = setTimeout(() => setRevealStage(3), 2600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const trophyAnimStyle = useAnimatedStyle(() => ({ transform: [{ scale: trophyScale.value }] }));
   const confettiStyle = useAnimatedStyle(() => ({ opacity: confettiOpacity.value }));
