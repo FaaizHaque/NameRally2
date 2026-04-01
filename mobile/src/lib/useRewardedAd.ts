@@ -32,13 +32,13 @@ export function useRewardedAd() {
     });
     const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
       // Defer state update and next-ad preload.
-      // Use 500ms delay so the Google SDK fully tears down before we create a
+      // Use 800ms delay so the Google SDK fully tears down before we create a
       // new ad object — creating one immediately on CLOSED can leave the SDK in
       // a bad state on new-arch (Fabric/JSI) and contribute to UI freezes.
       setTimeout(() => {
         setLoaded(false);
         loadAd(); // preload next ad
-      }, 500);
+      }, 800);
     });
 
     ad.load();
@@ -75,13 +75,13 @@ export function useRewardedAd() {
     const unsubClose = ad.addAdEventListener(AdEventType.CLOSED, () => {
       unsubReward();
       unsubClose();
-      // Defer to next JS tick — required with new arch (JSI) so state updates
-      // don't run inside a native event callback and cause a UI freeze.
-      // Always grant the hint on close — user watched (or partially watched) the ad.
+      // Defer callbacks by 200ms — gives the AdMob native ViewController enough
+      // time to fully tear down on iOS/Android before we update React state.
+      // 0ms was not sufficient on new arch (Fabric/JSI) and caused UI freezes.
       setTimeout(() => {
         onRewarded();
         onDismissed();
-      }, 0);
+      }, 200);
     });
 
     try {

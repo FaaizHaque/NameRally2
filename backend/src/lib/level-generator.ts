@@ -392,14 +392,14 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   5:  { categoryCount: 5 },
   6:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   7:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
-  8:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  8:  { forceLetter: 'L', categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   9:  { categoryCount: 5 },
   // L10 → TWO_LETTER_LEVELS = 'CH'
   10: { categoryCount: 5 },
   // ── L11-15: +Sports&Games (6 cats), SH combo at 15 ────────────────────────
   11: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
   12: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
-  13: { categoryCount: 6 },
+  13: { forceLetter: 'B', categoryCount: 6 },
   14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
   15: { categoryCount: 5 },
@@ -835,7 +835,6 @@ function getMaxComboCount(level: number): number {
 function getLetterDifficultyPool(level: number): Array<'easy' | 'normal' | 'hard'> {
   // Levels 1-100: easy letters only (no impossible-combo restrictions) unless explicitly forced
   if (level <= 100) return ['easy'];
-  if (level <= 75) return ['easy', 'easy', 'normal'];
   if (level <= 150) return ['easy', 'normal', 'normal'];
   if (level <= 250) return ['normal', 'normal', 'hard'];
   if (level <= 350) return ['normal', 'hard', 'hard'];
@@ -1376,10 +1375,13 @@ export function generateLevel(levelNumber: number): LevelData {
     const valid = availableCategories.filter((c) => !impossible.includes(c));
     const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
     categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
-    // Guarantee milestone category is included at its introduction level
+    // Guarantee milestone category is included at its introduction level.
+    // After forcing it in, re-enforce mutual exclusion so we don't end up with both
+    // food_dishes+fruits_vegetables (L16) or countries+places (L21) simultaneously.
     const thisMilestone = CATEGORY_MILESTONES.find(m => m.level === levelNumber);
     if (thisMilestone && !categories.includes(thisMilestone.category) && valid.includes(thisMilestone.category)) {
       categories = [...categories.slice(0, categories.length - 1), thisMilestone.category];
+      categories = enforceMutualExclusion(categories, rng);
     }
   } else {
     // L101+ default: all available (filtered by impossible combos)

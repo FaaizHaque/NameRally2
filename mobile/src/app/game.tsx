@@ -551,10 +551,13 @@ export default function GameScreen() {
   // Letter picker (multiplayer)
   const [pickerCycling,   setPickerCycling]   = useState(true);
   const [pickerLetter,    setPickerLetter]    = useState('A');
-  const [pickerCountdown, setPickerCountdown] = useState(15);
+  const [pickerCountdown, setPickerCountdown] = useState(5);
   const [pickerLocked,    setPickerLocked]    = useState(false);
   const pickerCycleRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const pickerTimerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Ref mirror of pickerLetter so handlePickerStop always reads the latest value
+  // even if React state hasn't committed yet (avoids stale-closure letter mismatch)
+  const pickerLetterRef = useRef('A');
   const letterPickerId  = session?.letterPickerId || null;
   const isPicker        = currentUser?.id === letterPickerId;
 
@@ -613,7 +616,9 @@ export default function GameScreen() {
 
     pickerCycleRef.current = setInterval(() => {
       const randomIdx = Math.floor(Math.random() * availableLetters.length);
-      setPickerLetter(availableLetters[randomIdx]);
+      const newLetter = availableLetters[randomIdx] ?? 'A';
+      pickerLetterRef.current = newLetter;
+      setPickerLetter(newLetter);
     }, 80);
 
     return () => {
@@ -621,33 +626,32 @@ export default function GameScreen() {
     };
   }, [session?.status, isPicker, pickerCycling, pickerLocked, availableLetters.join('')]);
 
-  // Picker 15-second countdown timer
+  // Picker 5-second countdown timer (auto-chooses if not picked in time)
   useEffect(() => {
     if (session?.status !== 'picking_letter' || !isPicker || pickerLocked) {
       if (pickerTimerRef.current) clearInterval(pickerTimerRef.current);
       return;
     }
 
-    setPickerCountdown(15);
+    setPickerCountdown(5);
     pickerTimerRef.current = setInterval(() => {
       setPickerCountdown(prev => {
         if (prev <= 1) {
-          // Auto-pick a random available letter
+          // Auto-pick — use the ref so we get the letter currently visible on screen
           if (pickerTimerRef.current) clearInterval(pickerTimerRef.current);
           if (pickerCycleRef.current) clearInterval(pickerCycleRef.current);
-          const randomLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)] || 'A';
+          const chosenLetter = pickerLetterRef.current ||
+            availableLetters[Math.floor(Math.random() * availableLetters.length)] || 'A';
           setPickerCycling(false);
-          setPickerLetter(randomLetter);
+          setPickerLetter(chosenLetter);
           setPickerLocked(true);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           setTimeout(() => {
-            confirmLetterPick(randomLetter);
+            confirmLetterPick(chosenLetter);
           }, 500);
           return 0;
         }
-        if (prev <= 5) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
-        }
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
         return prev - 1;
       });
     }, 1000);
@@ -662,7 +666,7 @@ export default function GameScreen() {
     if (session?.status === 'picking_letter') {
       setPickerCycling(true);
       setPickerLocked(false);
-      setPickerCountdown(15);
+      setPickerCountdown(5);
       setShowReveal(true);
       setRevealDone(false);
     }
@@ -671,13 +675,18 @@ export default function GameScreen() {
   // Handle STOP button press for picker
   const handlePickerStop = useCallback(() => {
     if (!pickerCycling || pickerLocked) return;
+    // Stop the interval FIRST so the letter can't change after we read it
     if (pickerCycleRef.current) clearInterval(pickerCycleRef.current);
     if (pickerTimerRef.current) clearInterval(pickerTimerRef.current);
+    // Read from ref (not state) — avoids stale-closure mismatch between what the
+    // player sees and what gets sent, since the 80ms interval may have just updated
+    // the ref but the React state hasn't re-rendered yet.
+    const chosenLetter = pickerLetterRef.current || pickerLetter;
     setPickerCycling(false);
+    setPickerLetter(chosenLetter);
     setPickerLocked(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Sounds.letterLock();
-    const chosenLetter = pickerLetter;
     setTimeout(() => {
       confirmLetterPick(chosenLetter);
     }, 500);
@@ -777,6 +786,28 @@ export default function GameScreen() {
     return a.toLowerCase().startsWith(getLetterForCategory(i).toLowerCase());
   });
 
+  // Duplicate answer detection — normalize to lowercase no-space for comparison
+  const duplicateAnswerCategories = useMemo((): Set<CategoryType> => {
+    if (!session) return new Set();
+    const cats = session.settings.selectedCategories;
+    const seen = new Map<string, CategoryType>();
+    const dupes = new Set<CategoryType>();
+    for (const cat of cats) {
+      const raw = localAnswers[cat]?.trim() || '';
+      if (!raw || raw.length <= 1) continue;
+      const key = raw.toLowerCase().replace(/\s+/g, '');
+      if (seen.has(key)) {
+        dupes.add(cat);
+        dupes.add(seen.get(key)!);
+      } else {
+        seen.set(key, cat);
+      }
+    }
+    return dupes;
+  }, [localAnswers, session?.settings.selectedCategories]);
+
+  const hasDuplicateAnswers = duplicateAnswerCategories.size > 0;
+
   // Bounce stamp when all filled
   const prevFilledRef = useRef(false);
   useEffect(() => {
@@ -842,10 +873,14 @@ export default function GameScreen() {
     const { category, index } = pendingHint;
     setPendingHint(null);
     adPauseStart.current = Date.now();
-    // Defer ad.show() to the next JS tick so the hint modal's native VC
-    // finishes dismissing before Google presents its own VC.
-    // On iOS, UIViewController.dismiss() is async even with animationType="none" —
-    // calling ad.show() on the same tick causes a blocked/frozen presentation.
+    // Pause background music before showing the ad — AdMob takes over the
+    // audio session on both iOS and Android, and if expo-av is still playing
+    // it can conflict with the ad and leave the audio/UI in a broken state.
+    Sounds.pauseBackground();
+    // Wait 350ms for the hint modal's native VC to fully dismiss before the
+    // AdMob VC is presented. 0ms (next tick) is NOT enough on iOS — the
+    // UIViewController.dismiss() call is async even with animationType="none"
+    // and colliding VCs cause a UI freeze.
     setTimeout(() => {
       showAd(
         () => { executeHint(category, index); },
@@ -854,9 +889,11 @@ export default function GameScreen() {
             adPauseOffset.current += Date.now() - adPauseStart.current;
             adPauseStart.current = null;
           }
+          // Resume background music after ad fully closes
+          Sounds.resumeBackground();
         },
       );
-    }, 0);
+    }, 350);
   };
 
   const handleHintViaStars = () => {
@@ -1014,6 +1051,10 @@ export default function GameScreen() {
 
   const handleStop = async () => {
     if (!allAnswersFilled) return;
+    if (hasDuplicateAnswers) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return; // UI highlights the duplicates — user must fix before submitting
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Sounds.roundEnd();
     if (isLevelMode) {
@@ -1208,6 +1249,7 @@ export default function GameScreen() {
                 const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad;
                 const mc = modernCategoryColors[cat] || { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' };
                 const isNewCat = cat === newCategoryForLevel;
+                const isDupe = duplicateAnswerCategories.has(cat);
 
                 return (
                   <Animated.View
@@ -1215,15 +1257,22 @@ export default function GameScreen() {
                     entering={FadeIn.duration(280).delay(60 + i * 50)}
                     style={{
                       borderRadius: 12, overflow: 'hidden',
-                      borderWidth: isNewCat ? 2 : 1.5,
-                      borderColor: isNewCat ? '#fbbf24' : isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.2)',
-                      backgroundColor: isComplete ? mc.bg : '#0e2040',
-                      shadowColor: isNewCat ? '#fbbf24' : isComplete ? mc.border : 'transparent',
-                      shadowOffset: { width: 0, height: 0 }, shadowOpacity: isNewCat ? 0.5 : 0.3, shadowRadius: isNewCat ? 12 : 8,
+                      borderWidth: isNewCat || isDupe ? 2 : 1.5,
+                      borderColor: isDupe ? '#f97316' : isNewCat ? '#fbbf24' : isComplete ? mc.border : (hasAnswer && !startsOk) ? '#f97316' : 'rgba(99,102,241,0.2)',
+                      backgroundColor: isDupe ? '#2d1000' : isComplete ? mc.bg : '#0e2040',
+                      shadowColor: isDupe ? '#f97316' : isNewCat ? '#fbbf24' : isComplete ? mc.border : 'transparent',
+                      shadowOffset: { width: 0, height: 0 }, shadowOpacity: isDupe ? 0.7 : isNewCat ? 0.5 : 0.3, shadowRadius: isDupe ? 10 : isNewCat ? 12 : 8,
                     }}
                   >
+                    {/* DUPLICATE banner */}
+                    {isDupe && (
+                      <View style={{ backgroundColor: '#f97316', paddingVertical: 3, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <AlertTriangle size={11} color="#000" strokeWidth={2.5} />
+                        <Text style={{ color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 }}>DUPLICATE — CHANGE THIS ANSWER</Text>
+                      </View>
+                    )}
                     {/* NEW banner for newly introduced category */}
-                    {isNewCat && (
+                    {isNewCat && !isDupe && (
                       <View style={{ backgroundColor: '#fbbf24', paddingVertical: 3, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Sparkles size={11} color="#000" strokeWidth={2} />
                         <Text style={{ color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 }}>NEW CATEGORY</Text>
@@ -1307,12 +1356,17 @@ export default function GameScreen() {
 
           {/* Submit button — sticky at bottom, always visible regardless of scroll position */}
           <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 12, backgroundColor: 'rgba(20,45,88,0.97)', borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.15)' }}>
-            {!allAnswersFilled && (
+            {!allAnswersFilled && !hasDuplicateAnswers && (
               <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
                 Fill all categories to submit
               </Text>
             )}
-            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
+            {hasDuplicateAnswers && (
+              <Text style={{ color: '#f97316', textAlign: 'center', fontSize: 12, fontWeight: '700', marginBottom: 8 }}>
+                Duplicate answers — each category must be unique
+              </Text>
+            )}
+            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={(!allAnswersFilled || !!session.stopRequested) || hasDuplicateAnswers}>
               <LinearGradient
                 colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}

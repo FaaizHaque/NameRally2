@@ -127,6 +127,18 @@ const SCHOLAR_ALIASES: Record<string, string[]> = {
   'nicholas i of russia':['tsar nicholas i', 'nicholas i'],
   'alexander nevsky':   ['prince alexander nevsky', 'nevsky'],
 
+  // US Presidents — common nickname forms
+  'theodore roosevelt':  ['ted roosevelt', 'teddy roosevelt', 'tr'],
+  'william howard taft': ['bill taft'],
+  'dwight d eisenhower': ['ike eisenhower', 'ike', 'dwight eisenhower'],
+  'john f kennedy':      ['jfk', 'jack kennedy', 'john kennedy', 'kennedy'],
+  'richard nixon':       ['dick nixon'],
+  'james carter':        ['jimmy carter', 'jimmy'],
+  'william jefferson clinton': ['bill clinton'],
+  'george h w bush':     ['george bush sr', 'george hw bush', 'bush sr'],
+  'george w bush':       ['george bush jr', 'george w bush', 'dubya'],
+  'barack obama':        ['obama', 'barry obama'],
+
   // Mughal variants
   'bahadur shah zafar': ['bahadur shah ii', 'zafar', 'last mughal emperor'],
   'bahadur shah i':     ['bahadur shah', 'muazzam'],
