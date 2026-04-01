@@ -305,6 +305,8 @@
   "Bengali Fish Curry",
   "Bengali Mustard Fish",
   "Bento",
+  "Berries",
+  "Berry",
   "Besan Barfi",
   "Besan Halwa",
   "Besan Ladoo",
@@ -780,6 +782,7 @@
   "Choux Pastry",
   "Chow Fun",
   "Chow Mein",
+  "Chowder",
   "Christmas Pudding",
   "Chum Chum",
   "Churrasco",
@@ -1115,6 +1118,7 @@
   "Fenugreek",
   "Fesenjan",
   "Feta",
+  "Fettuccine",
   "Fettuccine Alfredo",
   "Fettuccine Carbonara",
   "Fettuccini",
@@ -1482,6 +1486,8 @@
   "Izakaya",
   "Izgara Kofte",
   "Izmir Kofte",
+  "İskender Kebab",
+  "İçli Köfte",
   "Jaboticaba",
   "Jacket Potato",
   "Jackfruit",
@@ -3556,7 +3562,5 @@
   "Zuppa Toscana",
   "Zurbian",
   "Çiğ Köfte",
-  "Éclair",
-  "İskender Kebab",
-  "İçli Köfte"
+  "Éclair"
 ]

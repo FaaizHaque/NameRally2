@@ -1206,7 +1206,7 @@ export default function GameScreen() {
                 return (
                   <Animated.View
                     key={cat}
-                    entering={FadeInDown.duration(280).delay(60 + i * 50).springify().damping(14)}
+                    entering={FadeIn.duration(280).delay(60 + i * 50)}
                     style={{
                       borderRadius: 12, overflow: 'hidden',
                       borderWidth: isNewCat ? 2 : 1.5,
@@ -1393,7 +1393,7 @@ export default function GameScreen() {
           )}
 
           {/* ════ HINT CHOICE MODAL (single player) ════ */}
-          <Modal visible={!!pendingHint} transparent animationType="fade" onRequestClose={() => setPendingHint(null)}>
+          <Modal visible={!!pendingHint} transparent animationType="none" onRequestClose={() => setPendingHint(null)}>
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
               <Animated.View entering={ZoomIn.duration(260).springify()} style={{
                 width: '100%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
@@ -1795,7 +1795,7 @@ export default function GameScreen() {
       </Modal>
 
       {/* ════ HINT CHOICE MODAL ════ */}
-      <Modal visible={!!pendingHint} transparent animationType="fade" onRequestClose={() => setPendingHint(null)}>
+      <Modal visible={!!pendingHint} transparent animationType="none" onRequestClose={() => setPendingHint(null)}>
         <View style={s.backdrop}>
           <Animated.View entering={ZoomIn.duration(260).springify()} style={s.modalCard}>
             <View style={[s.modalIconWrap, { backgroundColor: '#1e2d50', borderColor: '#FCD34D' }]}>
