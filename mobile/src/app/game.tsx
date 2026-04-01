@@ -1175,13 +1175,13 @@ export default function GameScreen() {
               keyboard appears so every category and the Submit button stay reachable */}
           <ScrollView
             style={{ flex: 1 }}
-            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 24, gap: 8 }}
+            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8, gap: 8 }}
             showsVerticalScrollIndicator={true}
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets={true}
           >
               {[...session.settings.selectedCategories]
-                .sort((a, b) => a === newCategoryForLevel ? 1 : b === newCategoryForLevel ? -1 : 0)
+                .sort((a, b) => a === newCategoryForLevel ? -1 : b === newCategoryForLevel ? 1 : 0)
                 .map((cat, i) => {
                 const answer = localAnswers[cat] || '';
                 const letter = currentLevel.isMultiLetterMode && currentLevel.lettersPerCategory
@@ -1289,38 +1289,39 @@ export default function GameScreen() {
                 );
               })}
 
-              {/* Submit button — inside scroll so it's always reachable on any screen size */}
-              <View style={{ paddingTop: 4, paddingBottom: insets.bottom + 16 }}>
-                {!allAnswersFilled && (
-                  <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
-                    Fill all categories to submit
-                  </Text>
-                )}
-                <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
-                  <LinearGradient
-                    colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    style={{
-                      borderRadius: 16, paddingVertical: 18,
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                      borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
-                      shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
-                      shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
-                    }}
-                  >
-                    {session.stopRequested
-                      ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
-                      : <>
-                          <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
-                          <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                            Submit
-                          </Text>
-                        </>
-                    }
-                  </LinearGradient>
-                </Pressable>
-              </View>
             </ScrollView>
+
+          {/* Submit button — sticky at bottom, always visible regardless of scroll position */}
+          <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 12, backgroundColor: 'rgba(20,45,88,0.97)', borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.15)' }}>
+            {!allAnswersFilled && (
+              <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
+                Fill all categories to submit
+              </Text>
+            )}
+            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
+              <LinearGradient
+                colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={{
+                  borderRadius: 16, paddingVertical: 16,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
+                  shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
+                  shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
+                }}
+              >
+                {session.stopRequested
+                  ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                  : <>
+                      <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
+                      <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                        Submit
+                      </Text>
+                    </>
+                }
+              </LinearGradient>
+            </Pressable>
+          </View>
 
           {/* Exit Modal */}
           <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
