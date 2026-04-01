@@ -20,7 +20,7 @@ export interface DailyChallengeAnswer {
   isValid: boolean;
   score: number;
   timeMs: number; // Time taken to fill this answer in milliseconds
-  hasSpeedBonus: boolean; // +2 points if answered in <= 5 seconds
+  hasSpeedBonus: false; // kept for schema compatibility, always false
 }
 
 export interface DailyChallengeResult {
@@ -56,24 +56,18 @@ export interface DailyChallengeState {
   answerTimes: Record<LevelCategoryType, number>; // Time taken for each answer
 }
 
-// Speed bonus threshold in milliseconds (5 seconds)
-export const SPEED_BONUS_THRESHOLD_MS = 5000;
-export const SPEED_BONUS_POINTS = 2;
 export const BASE_CORRECT_POINTS = 10;
 export const DAILY_CHALLENGE_CATEGORY_COUNT = 6;
+export const DAILY_CHALLENGE_TIME_LIMIT_S = 60; // 1-minute countdown
 
 /**
- * Calculate score for a single answer
+ * Calculate score for a single answer (no speed bonus)
  */
-export function calculateAnswerScore(isValid: boolean, timeMs: number): { score: number; hasSpeedBonus: boolean } {
+export function calculateAnswerScore(isValid: boolean, _timeMs: number): { score: number; hasSpeedBonus: boolean } {
   if (!isValid) {
     return { score: 0, hasSpeedBonus: false };
   }
-
-  const hasSpeedBonus = timeMs <= SPEED_BONUS_THRESHOLD_MS;
-  const score = BASE_CORRECT_POINTS + (hasSpeedBonus ? SPEED_BONUS_POINTS : 0);
-
-  return { score, hasSpeedBonus };
+  return { score: BASE_CORRECT_POINTS, hasSpeedBonus: false };
 }
 
 /**
@@ -81,24 +75,19 @@ export function calculateAnswerScore(isValid: boolean, timeMs: number): { score:
  */
 export function generateShareMessage(result: DailyChallengeResult, challenge: DailyChallenge): string {
   const correctCount = result.answers.filter(a => a.isValid).length;
-  const speedBonusCount = result.answers.filter(a => a.hasSpeedBonus).length;
   const totalTime = Math.floor(result.totalTimeMs / 1000);
   const minutes = Math.floor(totalTime / 60);
   const seconds = totalTime % 60;
   const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 
   // Create result grid (emoji-based)
-  const grid = result.answers.map(a => {
-    if (!a.isValid) return '❌';
-    if (a.hasSpeedBonus) return '⚡';
-    return '✅';
-  }).join('');
+  const grid = result.answers.map(a => a.isValid ? '✅' : '❌').join('');
 
   return `NameRally Daily Challenge — ${result.date}
 
 ${grid}
 Letter: ${challenge.letter}
-Score: ${result.totalScore} pts · ${correctCount}/6 correct${speedBonusCount > 0 ? ` · ⚡${speedBonusCount}` : ''}
+Score: ${result.totalScore} pts · ${correctCount}/6 correct
 Time: ${timeStr}
 
 Can you beat my score? Download NameRally on the App Store:

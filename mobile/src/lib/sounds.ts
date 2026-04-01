@@ -83,7 +83,7 @@ const S = {
   // Background tracks — each mode has its own vibe
   BG_HOME:            require('../assets/sounds/bg_home.mp3'),            // home screen — Nocturne
   BG_GAME:            require('../assets/sounds/bg_game.mp3'),          // single player lo-fi
-  BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_mp.mp3'),       // multiplayer lobby — distinct chill track
+  BG_LOBBY_MP:        require('../assets/sounds/bg_lobby_silkroad.wav'),  // multiplayer lobby — arcade classic feel
   BG_GAME_MP:         require('../assets/sounds/bg_game_mp.mp3'),       // multiplayer game — chill but prominent
   BG_DAILY_CHALLENGE: require('../assets/sounds/bg_daily_challenge.mp3'), // daily challenge — fun, slight pressure
 };
@@ -92,7 +92,7 @@ const S = {
 const BG_VOLUME: Record<BackgroundType, number> = {
   home:            0.32,
   game:            0.34,
-  lobby_mp:        0.32,
+  lobby_mp:        0.42,
   game_mp:         0.34,
   daily_challenge: 0.34,
 };
