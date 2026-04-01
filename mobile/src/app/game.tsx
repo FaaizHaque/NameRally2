@@ -850,12 +850,13 @@ export default function GameScreen() {
 
   const handleHintViaStars = () => {
     if (!pendingHint) return;
-    const { category, index } = pendingHint;
-    setPendingHint(null);
     if (levelProgress.totalStars < HINT_COST) {
+      // Keep modal open — feedback shown inline via hasEnoughStars flag below
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
+    const { category, index } = pendingHint;
+    setPendingHint(null);
     if (!spendStars(HINT_COST)) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error); return; }
     executeHint(category, index);
   };
@@ -1394,12 +1395,31 @@ export default function GameScreen() {
                   <Lightbulb size={24} color="#FCD34D" strokeWidth={2} />
                 </View>
                 <Text style={{ color: '#e0e7ff', fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>Get a Hint</Text>
-                <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>Choose how to unlock this hint.</Text>
+                {/* Star balance */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 4 }}>
+                  <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+                  <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '700' }}>
+                    You have {levelProgress.totalStars} star{levelProgress.totalStars !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+                {levelProgress.totalStars < HINT_COST ? (
+                  <Text style={{ color: '#f87171', fontSize: 13, fontWeight: '700', textAlign: 'center', marginBottom: 16 }}>
+                    Need {HINT_COST - levelProgress.totalStars} more star{HINT_COST - levelProgress.totalStars !== 1 ? 's' : ''} — watch the ad instead!
+                  </Text>
+                ) : (
+                  <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
+                    Spend {HINT_COST} stars or watch a free ad.
+                  </Text>
+                )}
                 <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
                   <Pressable onPress={() => setPendingHint(null)} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1a3a6e', alignItems: 'center' }}>
                     <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Cancel</Text>
                   </Pressable>
-                  <Pressable onPress={handleHintViaStars} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: '#FCD34D', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
+                  <Pressable
+                    onPress={handleHintViaStars}
+                    disabled={levelProgress.totalStars < HINT_COST}
+                    style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: levelProgress.totalStars >= HINT_COST ? '#FCD34D' : 'rgba(252,211,77,0.25)', opacity: levelProgress.totalStars >= HINT_COST ? 1 : 0.45, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+                  >
                     <Star size={14} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
                     <Text style={{ color: '#FCD34D', fontWeight: '900', fontSize: 15 }}>{HINT_COST}★</Text>
                   </Pressable>
