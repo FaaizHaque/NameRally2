@@ -452,6 +452,10 @@ export default function GameScreen() {
         if (!shownNovelties.current.has(catKey)) {
           markNoveltyShown(catKey);
           noveltyShowing.current = true;
+          // Hide the letter reveal — novelty takes full priority; the letter is
+          // already shown in the header. Reveal may have started before AsyncStorage
+          // resolved, so we explicitly clear it here.
+          setShowReveal(false);
           setNewCategoryForLevel(cat as CategoryType);
           setNoveltyPopup({
             type: 'category',
@@ -483,6 +487,7 @@ export default function GameScreen() {
           };
           const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
           noveltyShowing.current = true;
+          setShowReveal(false);
           setNoveltyPopup({ type: 'constraint', title: info.title, message: info.message, constraintType: cType });
         }
       }
@@ -1175,17 +1180,20 @@ export default function GameScreen() {
               keyboard appears so every category and the Submit button stay reachable */}
           <ScrollView
             style={{ flex: 1 }}
-            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 24, gap: 8 }}
+            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8, gap: 8 }}
             showsVerticalScrollIndicator={true}
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets={true}
           >
               {[...session.settings.selectedCategories]
-                .sort((a, b) => a === newCategoryForLevel ? 1 : b === newCategoryForLevel ? -1 : 0)
+                .sort((a, b) => a === newCategoryForLevel ? -1 : b === newCategoryForLevel ? 1 : 0)
                 .map((cat, i) => {
+                // Use the ORIGINAL index for multi-letter assignments (lettersPerCategory is
+                // indexed by the original selectedCategories order, not the sorted display order)
+                const origIndex = session.settings.selectedCategories.indexOf(cat);
                 const answer = localAnswers[cat] || '';
                 const letter = currentLevel.isMultiLetterMode && currentLevel.lettersPerCategory
-                  ? (currentLevel.lettersPerCategory[i] || session.currentLetter)
+                  ? (currentLevel.lettersPerCategory[origIndex] || session.currentLetter)
                   : session.currentLetter;
                 const hasAnswer = answer.trim().length > letter.length;
                 const startsOk = answer.trim().toLowerCase().startsWith(letter.toLowerCase());
@@ -1231,7 +1239,7 @@ export default function GameScreen() {
                       {/* Hint button */}
                       {!usedHints.has(cat) && (
                         <Pressable
-                          onPress={() => handleUseHint(cat, i)}
+                          onPress={() => handleUseHint(cat, origIndex)}
                           disabled={!canHint && !isLoad}
                           style={{
                             flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -1289,38 +1297,39 @@ export default function GameScreen() {
                 );
               })}
 
-              {/* Submit button — inside scroll so it's always reachable on any screen size */}
-              <View style={{ paddingTop: 4, paddingBottom: insets.bottom + 16 }}>
-                {!allAnswersFilled && (
-                  <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
-                    Fill all categories to submit
-                  </Text>
-                )}
-                <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
-                  <LinearGradient
-                    colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    style={{
-                      borderRadius: 16, paddingVertical: 18,
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                      borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
-                      shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
-                      shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
-                    }}
-                  >
-                    {session.stopRequested
-                      ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
-                      : <>
-                          <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
-                          <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                            Submit
-                          </Text>
-                        </>
-                    }
-                  </LinearGradient>
-                </Pressable>
-              </View>
             </ScrollView>
+
+          {/* Submit button — sticky at bottom, always visible regardless of scroll position */}
+          <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 12, backgroundColor: 'rgba(20,45,88,0.97)', borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.15)' }}>
+            {!allAnswersFilled && (
+              <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
+                Fill all categories to submit
+              </Text>
+            )}
+            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
+              <LinearGradient
+                colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={{
+                  borderRadius: 16, paddingVertical: 16,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
+                  shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
+                  shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
+                }}
+              >
+                {session.stopRequested
+                  ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                  : <>
+                      <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
+                      <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                        Submit
+                      </Text>
+                    </>
+                }
+              </LinearGradient>
+            </Pressable>
+          </View>
 
           {/* Exit Modal */}
           <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
@@ -1466,7 +1475,7 @@ export default function GameScreen() {
             return (
               <Modal visible={true} transparent animationType="none">
                 <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
-                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
                   <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                     <LinearGradient colors={[bgGradStart, '#0a0f1e']} style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}>
                       <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
@@ -1489,7 +1498,7 @@ export default function GameScreen() {
                           <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>{noveltyPopup.message}</Text>
                         </Animated.View>
                         <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
-                          <Pressable onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
+                          <Pressable onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
                             <LinearGradient colors={[btnGradA, btnGradB]} style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
                               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{isCat ? "Let's Go! →" : 'Got It!'}</Text>
                             </LinearGradient>
@@ -2003,7 +2012,7 @@ export default function GameScreen() {
           <Modal visible={true} transparent animationType="none">
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
 
               <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                 <LinearGradient
@@ -2061,7 +2070,7 @@ export default function GameScreen() {
                     {/* CTA button */}
                     <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
                       <Pressable
-                        onPress={() => { noveltyShowing.current = false; Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
+                        onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
                         style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
                       >
                         <LinearGradient
