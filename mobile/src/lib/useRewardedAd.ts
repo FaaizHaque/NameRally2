@@ -31,11 +31,14 @@ export function useRewardedAd() {
       setTimeout(() => setLoaded(true), 0);
     });
     const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
-      // Defer state update and next-ad preload — required with new arch (JSI)
+      // Defer state update and next-ad preload.
+      // Use 500ms delay so the Google SDK fully tears down before we create a
+      // new ad object — creating one immediately on CLOSED can leave the SDK in
+      // a bad state on new-arch (Fabric/JSI) and contribute to UI freezes.
       setTimeout(() => {
         setLoaded(false);
         loadAd(); // preload next ad
-      }, 0);
+      }, 500);
     });
 
     ad.load();
