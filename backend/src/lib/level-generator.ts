@@ -1341,6 +1341,11 @@ export function generateLevel(levelNumber: number): LevelData {
     const valid = availableCategories.filter((c) => !impossible.includes(c));
     const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
     categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
+    // Guarantee milestone category is included at its introduction level
+    const thisMilestone = CATEGORY_MILESTONES.find(m => m.level === levelNumber);
+    if (thisMilestone && !categories.includes(thisMilestone.category) && valid.includes(thisMilestone.category)) {
+      categories = [...categories.slice(0, categories.length - 1), thisMilestone.category];
+    }
   } else {
     // L101+ default: all available (filtered by impossible combos)
     categories = selectCategories(levelNumber, rng, getCategoryCount(levelNumber, rng), letter);
