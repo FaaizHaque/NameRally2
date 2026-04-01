@@ -842,15 +842,21 @@ export default function GameScreen() {
     const { category, index } = pendingHint;
     setPendingHint(null);
     adPauseStart.current = Date.now();
-    showAd(
-      () => { executeHint(category, index); },
-      () => {
-        if (adPauseStart.current !== null) {
-          adPauseOffset.current += Date.now() - adPauseStart.current;
-          adPauseStart.current = null;
-        }
-      },
-    );
+    // Defer ad.show() to the next JS tick so the hint modal's native VC
+    // finishes dismissing before Google presents its own VC.
+    // On iOS, UIViewController.dismiss() is async even with animationType="none" —
+    // calling ad.show() on the same tick causes a blocked/frozen presentation.
+    setTimeout(() => {
+      showAd(
+        () => { executeHint(category, index); },
+        () => {
+          if (adPauseStart.current !== null) {
+            adPauseOffset.current += Date.now() - adPauseStart.current;
+            adPauseStart.current = null;
+          }
+        },
+      );
+    }, 0);
   };
 
   const handleHintViaStars = () => {
