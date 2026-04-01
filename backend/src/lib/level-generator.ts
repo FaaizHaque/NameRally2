@@ -272,50 +272,85 @@ const TWO_LETTER_LEVELS: Record<number, string> = {
 };
 
 // ============================================
-// BLOCK LETTER NON-REPETITION
-// Within each 15-level block (1-15, 16-30, ...) letters should not repeat.
+// SLIDING-WINDOW LETTER NON-REPETITION
+// A letter used at level N cannot appear again until level N+20 at the earliest.
+// This is enforced by excluding all letters used in the previous 20 levels.
 // ============================================
 
 /**
- * Returns the set of letters already used by levels in the same 15-level block,
- * prior to `currentLevel`. Used to exclude those letters from RNG selection.
- * Letters are computed sequentially with the same exclusions that would be active
- * at each level's generation time, so the tracking is consistent with actual play.
+ * Returns the set of letters that must be excluded from level `currentLevel`'s
+ * selection because they were used within the last 20 levels.
+ *
+ * Builds a letter map from level 1 forward so each level's exclusion set is
+ * computed with the same sliding-window logic that was active when it was generated,
+ * keeping the simulation consistent with actual play.
  */
-function getBlockLettersSoFar(currentLevel: number): Set<string> {
-  const blockSize = 15;
-  const blockStart = Math.floor((currentLevel - 1) / blockSize) * blockSize + 1;
-  const blockEnd = blockStart + blockSize - 1;
-
-  // Pre-seed all forced letters in the ENTIRE block so RNG-picked levels don't collide
-  // with forced letters that appear later in the same block.
-  const forcedInBlock = new Set<string>();
-  for (let lvl = blockStart; lvl <= blockEnd; lvl++) {
+/** Returns the set of forced letters (forceLetter / forceLetterOptions[0] / TWO_LETTER_LEVELS)
+ *  that appear in levels [from, to] inclusive. Used to pre-exclude future forced letters
+ *  so RNG picks never choose a letter that a later forced level will use. */
+function getForcedLettersInRange(from: number, to: number): Set<string> {
+  const out = new Set<string>();
+  for (let lvl = from; lvl <= to; lvl++) {
     const twoLetter = TWO_LETTER_LEVELS[lvl];
-    if (twoLetter) forcedInBlock.add(twoLetter);
+    if (twoLetter) { out.add(twoLetter); continue; }
     const ovr = LEVEL_OVERRIDES[lvl];
-    if (ovr?.forceLetter) forcedInBlock.add(ovr.forceLetter);
+    if (ovr?.forceLetter) out.add(ovr.forceLetter);
+    else if (ovr?.forceLetterOptions) out.add(ovr.forceLetterOptions[0]!);
   }
+  return out;
+}
 
-  // `used` starts with all forced letters so RNG picks avoid them throughout the block.
-  // Then accumulate per-level so each level sees consistent exclusions at generation time.
-  const used = new Set<string>(forcedInBlock);
+function getWindowExcludedLetters(currentLevel: number): Set<string> {
+  const WINDOW = 20;
 
-  for (let lvl = blockStart; lvl < currentLevel; lvl++) {
+  // letter assigned at each level (forced or RNG-picked)
+  const letterMap = new Map<number, string>();
+
+  for (let lvl = 1; lvl < currentLevel; lvl++) {
     const twoLetter = TWO_LETTER_LEVELS[lvl];
-    if (twoLetter) continue; // already in `used` from forced set
-
+    if (twoLetter) {
+      letterMap.set(lvl, twoLetter);
+      continue;
+    }
     const ovr = LEVEL_OVERRIDES[lvl];
-    if (ovr?.forceLetter) continue; // already in `used`
-    if (ovr?.forceLetterOptions) continue; // multiple options — skip tracking
-
-    // Compute the letter this level uses WITH its current exclusion state
+    if (ovr?.forceLetter) {
+      letterMap.set(lvl, ovr.forceLetter);
+      continue;
+    }
+    if (ovr?.forceLetterOptions) {
+      // Track primary option for window exclusion so future levels avoid repeating it
+      letterMap.set(lvl, ovr.forceLetterOptions[0]!);
+      continue;
+    }
+    // RNG-picked level: exclude letters from the past WINDOW levels AND forced letters
+    // in the next WINDOW-1 levels, so we don't pre-empt a letter a forced level will use.
+    const excludedForLvl = new Set<string>();
+    // Past window
+    for (let prev = Math.max(1, lvl - WINDOW); prev < lvl; prev++) {
+      const l = letterMap.get(prev);
+      if (l) excludedForLvl.add(l);
+    }
+    // Future forced letters within the same window radius
+    for (const l of getForcedLettersInRange(lvl + 1, lvl + WINDOW - 1)) {
+      excludedForLvl.add(l);
+    }
     const rng = new SeededRandom(lvl * 12345);
     const available = getAvailableCategories(lvl);
-    const sel = selectLetter(lvl, rng, available, new Set<string>(used));
-    used.add(sel.letter);
+    const sel = selectLetter(lvl, rng, available, excludedForLvl);
+    letterMap.set(lvl, sel.letter);
   }
-  return used;
+
+  // Collect exclusions for currentLevel: past window letters + future forced letters
+  const excluded = new Set<string>();
+  const windowStart = Math.max(1, currentLevel - WINDOW);
+  for (let prev = windowStart; prev < currentLevel; prev++) {
+    const l = letterMap.get(prev);
+    if (l) excluded.add(l);
+  }
+  for (const l of getForcedLettersInRange(currentLevel + 1, currentLevel + WINDOW - 1)) {
+    excluded.add(l);
+  }
+  return excluded;
 }
 
 // ============================================
@@ -408,7 +443,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   46: { categoryCount: 8 },
   // L47: 5+ easy cats, min 5 letters (softened — accessible challenge)
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5 },
-  48: { forceLetterOptions: ['LA', 'LO'], categoryCount: 6 },
+  48: { forceLetterOptions: ['LI', 'LE'], categoryCount: 6 },
   49: { categoryCount: 8 },
   50: { categoryCount: 8, timerSecondsPerCategory: 5 },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
@@ -1286,8 +1321,8 @@ export function generateLevel(levelNumber: number): LevelData {
   const override = LEVEL_OVERRIDES[levelNumber];
   const twoLetterCombo = TWO_LETTER_LEVELS[levelNumber];
 
-  // Compute letters already used in the same 15-level block (for non-repeat constraint)
-  const blockExcludedLetters = getBlockLettersSoFar(levelNumber);
+  // Compute letters used in the last 20 levels (sliding-window non-repeat constraint)
+  const blockExcludedLetters = getWindowExcludedLetters(levelNumber);
 
   // ─── LETTER ───────────────────────────────────────────────────────────────
   let letter: string;
