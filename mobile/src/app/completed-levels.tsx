@@ -13,6 +13,10 @@ import type { LevelData } from '@/lib/level-types';
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
 const COLS = 4;
 
+// ⚠️ TESTING FLAG — set to false to revert to showing only completed levels
+const SHOW_ALL_LEVELS = true;
+const ALL_LEVELS_COUNT = 100; // how many levels to show when flag is on
+
 export default function CompletedLevelsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -22,10 +26,12 @@ export default function CompletedLevelsScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Get list of completed level numbers
-  const completedLevels = Object.keys(levelProgress.levelScores || {})
-    .map(Number)
-    .filter(n => !isNaN(n))
-    .sort((a, b) => a - b);
+  const completedLevels = SHOW_ALL_LEVELS
+    ? Array.from({ length: ALL_LEVELS_COUNT }, (_, i) => i + 1)
+    : Object.keys(levelProgress.levelScores || {})
+        .map(Number)
+        .filter(n => !isNaN(n))
+        .sort((a, b) => a - b);
 
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -58,6 +64,7 @@ export default function CompletedLevelsScreen() {
   const renderLevelCard = ({ item: levelNum }: { item: number }) => {
     const score = levelProgress.levelScores[levelNum] || 0;
     const stars = levelProgress.levelStars?.[levelNum] || 0;
+    const isPlayed = !!levelProgress.levelScores[levelNum];
 
     return (
       <Animated.View
@@ -71,14 +78,16 @@ export default function CompletedLevelsScreen() {
           style={{ flex: 1 }}
         >
           <LinearGradient
-            colors={['rgba(100,150,255,0.3)', 'rgba(60,120,200,0.2)']}
+            colors={isPlayed
+              ? ['rgba(100,150,255,0.3)', 'rgba(60,120,200,0.2)']
+              : ['rgba(40,50,80,0.5)', 'rgba(30,40,70,0.3)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{
               flex: 1,
               borderRadius: 12,
               borderWidth: 1.5,
-              borderColor: 'rgba(120,170,255,0.4)',
+              borderColor: isPlayed ? 'rgba(120,170,255,0.4)' : 'rgba(80,100,160,0.25)',
               padding: 8,
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -90,7 +99,7 @@ export default function CompletedLevelsScreen() {
             ) : (
               <>
                 <Text style={{
-                  color: '#90c0ff',
+                  color: isPlayed ? '#90c0ff' : 'rgba(120,150,220,0.45)',
                   fontSize: 20,
                   fontWeight: '900',
                   marginBottom: 4,
