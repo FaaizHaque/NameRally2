@@ -301,7 +301,7 @@ function getForcedLettersInRange(from: number, to: number): Set<string> {
 }
 
 function getWindowExcludedLetters(currentLevel: number): Set<string> {
-  const WINDOW = 20;
+  const WINDOW = 25;
 
   // letter assigned at each level (forced or RNG-picked)
   const letterMap = new Map<number, string>();
@@ -397,8 +397,8 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L10 → TWO_LETTER_LEVELS = 'CH'
   10: { categoryCount: 5 },
   // ── L11-15: +Sports&Games (6 cats), SH combo at 15 ────────────────────────
-  11: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
-  12: { categoryCount: 5, constraintType: 'max_word_length', constraintValue: 8 },
+  11: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
+  12: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
   13: { forceLetter: 'B', categoryCount: 6 },
   14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
