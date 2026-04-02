@@ -417,8 +417,9 @@ export default function GameScreen() {
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
   // Track which category is newly introduced this level (for highlight + sort-to-bottom)
   const [newCategoryForLevel, setNewCategoryForLevel] = useState<CategoryType | null>(null);
+  // Tracks novelties shown in this session only — resets on component mount so
+  // retrying / replaying a level always shows the popup again.
   const shownNovelties = useRef<Set<string>>(new Set());
-  const noveltiesLoaded = useRef(false);
   // While novelty popup is visible, block the reveal overlay from auto-dismissing
   const noveltyShowing = useRef(false);
   // Pulse ring animation for novelty popup icon
@@ -430,12 +431,6 @@ export default function GameScreen() {
 
   const markNoveltyShown = (key: string) => {
     shownNovelties.current.add(key);
-    AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
-      const existing: string[] = raw ? JSON.parse(raw) : [];
-      if (!existing.includes(key)) {
-        AsyncStorage.setItem('npat_seen_novelties_v2', JSON.stringify([...existing, key]));
-      }
-    }).catch(() => {});
   };
 
   // Check the current level for first-time novelties (new category or new rule).
@@ -493,19 +488,9 @@ export default function GameScreen() {
       }
     };
 
-    if (!noveltiesLoaded.current) {
-      AsyncStorage.getItem('npat_seen_novelties_v2').then((raw) => {
-        if (raw) {
-          try { (JSON.parse(raw) as string[]).forEach((k) => shownNovelties.current.add(k)); } catch { /* ignore */ }
-        }
-        // Level 1 default categories are always known — mark as seen so they never trigger
-        ['names', 'places', 'animal'].forEach((c) => shownNovelties.current.add(`novelty_cat_${c}`));
-        noveltiesLoaded.current = true;
-        runCheck();
-      });
-    } else {
-      runCheck();
-    }
+    // Mark starter categories as seen so they never trigger a popup
+    ['names', 'places', 'animal'].forEach((c) => shownNovelties.current.add(`novelty_cat_${c}`));
+    runCheck();
   }, [currentLevel?.level]);
 
   // Track keyboard to control STOP button visibility
@@ -800,7 +785,12 @@ export default function GameScreen() {
       const raw = localAnswers[cat]?.trim() || '';
       // Skip entries that are only the pre-filled letter (covers 1-letter and 2-letter combos)
       if (!raw || raw.length <= letterLen) continue;
-      const key = raw.toLowerCase().replace(/\s+/g, '');
+      const normalized = raw.toLowerCase().replace(/\s+/g, '');
+      // Treat singular/plural as the same answer (e.g. "lobster" == "lobsters")
+      const key = normalized.endsWith('ies') ? normalized.slice(0, -3) + 'y'
+        : normalized.endsWith('es') ? normalized.slice(0, -2)
+        : normalized.endsWith('s') ? normalized.slice(0, -1)
+        : normalized;
       if (seen.has(key)) {
         dupes.add(cat);
         dupes.add(seen.get(key)!);
@@ -960,7 +950,7 @@ export default function GameScreen() {
     adPauseOffset.current = 0;
     adPauseStart.current = null;
     setRoundInputDisabled(false);
-  }, [session?.currentRound]);
+  }, [session?.currentRound, currentLevel?.level]);
 
   useEffect(() => {
     if (!session || session.status !== 'playing') return;
@@ -1255,7 +1245,7 @@ export default function GameScreen() {
                 const startsOk = answer.trim().toLowerCase().startsWith(letter.toLowerCase());
                 const isComplete = hasAnswer && startsOk;
                 const isLoad = loadingHints.has(cat);
-                const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad;
+                const canHint = !usedHints.has(cat) && !isLoad;
                 const mc = modernCategoryColors[cat] || { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' };
                 const isNewCat = cat === newCategoryForLevel;
                 const isDupe = submitAttempted && duplicateAnswerCategories.has(cat);
@@ -1376,7 +1366,7 @@ export default function GameScreen() {
                 Duplicate answers — each category must be unique
               </Text>
             )}
-            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={(!allAnswersFilled || !!session.stopRequested) || hasDuplicateAnswers}>
+            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
               <LinearGradient
                 colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
@@ -1752,7 +1742,7 @@ export default function GameScreen() {
                 : session.currentLetter;
               const hasAns  = answer.trim().length > letter.length;
               const isLoad  = loadingHints.has(cat);
-              const canHint = gameMode === 'single' && !hasAns && !usedHints.has(cat) && !isLoad;
+              const canHint = gameMode === 'single' && !usedHints.has(cat) && !isLoad;
               return (
                 <CategoryRow
                   key={cat}
