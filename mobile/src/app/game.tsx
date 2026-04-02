@@ -447,6 +447,7 @@ export default function GameScreen() {
         if (!shownNovelties.current.has(catKey)) {
           markNoveltyShown(catKey);
           noveltyShowing.current = true;
+          adPauseStart.current = Date.now(); // pause timer while novelty is showing
           // Hide the letter reveal — novelty takes full priority; the letter is
           // already shown in the header. Reveal may have started before AsyncStorage
           // resolved, so we explicitly clear it here.
@@ -482,6 +483,7 @@ export default function GameScreen() {
           };
           const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
           noveltyShowing.current = true;
+          adPauseStart.current = Date.now(); // pause timer while novelty is showing
           setShowReveal(false);
           setNoveltyPopup({ type: 'constraint', title: info.title, message: info.message, constraintType: cType });
         }
@@ -786,9 +788,8 @@ export default function GameScreen() {
       // Skip entries that are only the pre-filled letter (covers 1-letter and 2-letter combos)
       if (!raw || raw.length <= letterLen) continue;
       const normalized = raw.toLowerCase().replace(/\s+/g, '');
-      // Treat singular/plural as the same answer (e.g. "lobster" == "lobsters")
+      // Treat singular/plural as the same answer (e.g. "lobster" == "lobsters", "baby" == "babies")
       const key = normalized.endsWith('ies') ? normalized.slice(0, -3) + 'y'
-        : normalized.endsWith('es') ? normalized.slice(0, -2)
         : normalized.endsWith('s') ? normalized.slice(0, -1)
         : normalized;
       if (seen.has(key)) {
@@ -848,6 +849,15 @@ export default function GameScreen() {
     const existing = localAnswers[category]?.trim();
     if (existing && existing.length > session.currentLetter.length) return;
     setPendingHint({ category, index: i });
+  };
+
+  const resumeTimerAfterNovelty = () => {
+    if (adPauseStart.current !== null) {
+      adPauseOffset.current += Date.now() - adPauseStart.current;
+      adPauseStart.current = null;
+    }
+    noveltyShowing.current = false;
+    setShowReveal(false);
   };
 
   const executeHint = async (category: CategoryType, i: number) => {
@@ -1535,7 +1545,7 @@ export default function GameScreen() {
             return (
               <Modal visible={true} transparent animationType="none">
                 <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
-                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+                  <Pressable style={StyleSheet.absoluteFill} onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
                   <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                     <LinearGradient colors={[bgGradStart, '#0a0f1e']} style={{ borderRadius: 28, overflow: 'hidden', borderWidth: 2, borderColor: borderColor + '80' }}>
                       <LinearGradient colors={[btnGradA, btnGradB]} style={{ height: 5 }} />
@@ -1558,7 +1568,7 @@ export default function GameScreen() {
                           <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 26 }}>{noveltyPopup.message}</Text>
                         </Animated.View>
                         <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
-                          <Pressable onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
+                          <Pressable onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }} style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}>
                             <LinearGradient colors={[btnGradA, btnGradB]} style={{ borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
                               <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>{isCat ? "Let's Go! →" : 'Got It!'}</Text>
                             </LinearGradient>
@@ -2072,7 +2082,7 @@ export default function GameScreen() {
           <Modal visible={true} transparent animationType="none">
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
-              <Pressable style={StyleSheet.absoluteFill} onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
 
               <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
                 <LinearGradient
@@ -2130,7 +2140,7 @@ export default function GameScreen() {
                     {/* CTA button */}
                     <Animated.View entering={FadeInDown.duration(260).delay(200)} style={{ width: '100%' }}>
                       <Pressable
-                        onPress={() => { noveltyShowing.current = false; setShowReveal(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
+                        onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNoveltyPopup(null); }}
                         style={({ pressed }) => ({ width: '100%', opacity: pressed ? 0.82 : 1 })}
                       >
                         <LinearGradient
