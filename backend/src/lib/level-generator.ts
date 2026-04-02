@@ -1376,12 +1376,20 @@ export function generateLevel(levelNumber: number): LevelData {
     const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
     categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
     // Guarantee milestone category is included at its introduction level.
-    // After forcing it in, re-enforce mutual exclusion so we don't end up with both
-    // food_dishes+fruits_vegetables (L16) or countries+places (L21) simultaneously.
+    // When the milestone wasn't in the slice, replace the last element with it, then
+    // deterministically remove its mutual-exclusion partner (if present).
+    // We do NOT re-call enforceMutualExclusion here because that function uses
+    // rng.next() < 0.5 and could randomly drop the milestone we just added.
     const thisMilestone = CATEGORY_MILESTONES.find(m => m.level === levelNumber);
     if (thisMilestone && !categories.includes(thisMilestone.category) && valid.includes(thisMilestone.category)) {
-      categories = [...categories.slice(0, categories.length - 1), thisMilestone.category];
-      categories = enforceMutualExclusion(categories, rng);
+      let newCats = [...categories.slice(0, categories.length - 1), thisMilestone.category];
+      for (const [catA, catB] of MUTUALLY_EXCLUSIVE_PAIRS) {
+        const partner = catA === thisMilestone.category ? catB : catB === thisMilestone.category ? catA : null;
+        if (partner && newCats.includes(partner)) {
+          newCats = newCats.filter(c => c !== partner);
+        }
+      }
+      categories = newCats;
     }
   } else {
     // L101+ default: all available (filtered by impossible combos)
