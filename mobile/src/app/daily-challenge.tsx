@@ -915,6 +915,44 @@ export default function DailyChallengeScreen() {
 
               {/* Actions */}
               <Animated.View entering={FadeInUp.duration(500).delay(800)} style={{ paddingBottom: insets.bottom + 16 }}>
+                {/* All-time Stats */}
+                {(result || history.length > 0) && (() => {
+                  const allEntries = [
+                    ...(result ? [{ score: result.totalScore, correct: result.answers.filter(a => a.isValid).length }] : []),
+                    ...history.map(h => ({ score: h.score, correct: h.correct })),
+                  ];
+                  const bestScore = Math.max(...allEntries.map(e => e.score));
+                  const totalDays = allEntries.length;
+                  const avgScore = Math.round(allEntries.reduce((s, e) => s + e.score, 0) / totalDays);
+                  const perfectRounds = allEntries.filter(e => e.correct === 6).length;
+                  return (
+                    <Animated.View entering={FadeInUp.duration(400).delay(1100)} style={{ marginBottom: 14 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <Trophy size={15} color="#fbbf24" strokeWidth={2.5} />
+                        <Text style={{ color: '#fbbf24', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 }}>My Stats</Text>
+                        <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(251,191,36,0.15)' }} />
+                      </View>
+                      <View style={{
+                        flexDirection: 'row', backgroundColor: 'rgba(251,191,36,0.07)',
+                        borderRadius: 16, padding: 14, borderWidth: 1,
+                        borderColor: 'rgba(251,191,36,0.2)', gap: 0,
+                      }}>
+                        {[
+                          { label: 'Best', value: String(bestScore), icon: '🏆' },
+                          { label: 'Avg', value: String(avgScore), icon: '📊' },
+                          { label: 'Days', value: String(totalDays), icon: '📅' },
+                          { label: 'Perfect', value: String(perfectRounds), icon: '✨' },
+                        ].map((stat, idx, arr) => (
+                          <View key={stat.label} style={{ flex: 1, alignItems: 'center', borderRightWidth: idx < arr.length - 1 ? 1 : 0, borderRightColor: 'rgba(251,191,36,0.15)' }}>
+                            <Text style={{ fontSize: 16 }}>{stat.icon}</Text>
+                            <Text style={{ color: '#fde68a', fontSize: 20, fontWeight: '900', lineHeight: 26, marginTop: 2 }}>{stat.value}</Text>
+                            <Text style={{ color: 'rgba(251,191,36,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 1 }}>{stat.label}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </Animated.View>
+                  );
+                })()}
                 <Pressable onPress={handleShare} style={{ marginBottom: 10 }} className="active:scale-95">
                   <LinearGradient
                     colors={['#3A8A3A', '#4ADE80']}
