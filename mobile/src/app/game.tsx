@@ -782,19 +782,24 @@ export default function GameScreen() {
 
   const allAnswersFilled = session?.settings.selectedCategories.every((cat, i) => {
     const a = localAnswers[cat]?.trim();
-    if (!a || a.length <= 1) return false;
-    return a.toLowerCase().startsWith(getLetterForCategory(i).toLowerCase());
+    const ltr = getLetterForCategory(i);
+    // Must have typed at least one character beyond the pre-filled letter
+    if (!a || a.length <= ltr.length) return false;
+    return a.toLowerCase().startsWith(ltr.toLowerCase());
   });
 
-  // Duplicate answer detection — normalize to lowercase no-space for comparison
+  // Duplicate answer detection — only compares real answers (longer than the starting letter)
   const duplicateAnswerCategories = useMemo((): Set<CategoryType> => {
     if (!session) return new Set();
     const cats = session.settings.selectedCategories;
+    const letterLen = session.currentLetter?.length ?? 1;
     const seen = new Map<string, CategoryType>();
     const dupes = new Set<CategoryType>();
-    for (const cat of cats) {
+    for (let i = 0; i < cats.length; i++) {
+      const cat = cats[i]!;
       const raw = localAnswers[cat]?.trim() || '';
-      if (!raw || raw.length <= 1) continue;
+      // Skip entries that are only the pre-filled letter (covers 1-letter and 2-letter combos)
+      if (!raw || raw.length <= letterLen) continue;
       const key = raw.toLowerCase().replace(/\s+/g, '');
       if (seen.has(key)) {
         dupes.add(cat);
@@ -804,9 +809,11 @@ export default function GameScreen() {
       }
     }
     return dupes;
-  }, [localAnswers, session?.settings.selectedCategories]);
+  }, [localAnswers, session?.settings.selectedCategories, session?.currentLetter]);
 
   const hasDuplicateAnswers = duplicateAnswerCategories.size > 0;
+  // Only show the duplicate visual after a submit attempt — not while the user is typing
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Bounce stamp when all filled
   const prevFilledRef = useRef(false);
@@ -1053,8 +1060,10 @@ export default function GameScreen() {
     if (!allAnswersFilled) return;
     if (hasDuplicateAnswers) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return; // UI highlights the duplicates — user must fix before submitting
+      setSubmitAttempted(true); // reveal orange banners now that user tried to submit
+      return;
     }
+    setSubmitAttempted(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Sounds.roundEnd();
     if (isLevelMode) {
@@ -1249,7 +1258,7 @@ export default function GameScreen() {
                 const canHint = !hasAnswer && !usedHints.has(cat) && !isLoad;
                 const mc = modernCategoryColors[cat] || { bg: '#12305a', border: '#6366f1', accent: '#a5b4fc' };
                 const isNewCat = cat === newCategoryForLevel;
-                const isDupe = duplicateAnswerCategories.has(cat);
+                const isDupe = submitAttempted && duplicateAnswerCategories.has(cat);
 
                 return (
                   <Animated.View
@@ -1337,6 +1346,7 @@ export default function GameScreen() {
                           if (roundInputDisabled) return;
                           const upper = t.toUpperCase();
                           if (!upper.startsWith(letter.toUpperCase())) return;
+                          setSubmitAttempted(false);
                           updateLocalAnswer(cat, upper);
                         }}
                         autoCapitalize="characters"
@@ -1361,7 +1371,7 @@ export default function GameScreen() {
                 Fill all categories to submit
               </Text>
             )}
-            {hasDuplicateAnswers && (
+            {submitAttempted && hasDuplicateAnswers && (
               <Text style={{ color: '#f97316', textAlign: 'center', fontSize: 12, fontWeight: '700', marginBottom: 8 }}>
                 Duplicate answers — each category must be unique
               </Text>
@@ -1748,7 +1758,7 @@ export default function GameScreen() {
                   key={cat}
                   category={cat} index={i} answer={answer} letter={letter}
                   fontsLoaded={!!fontsLoaded}
-                  onChangeText={t => updateLocalAnswer(cat, t)}
+                  onChangeText={t => { setSubmitAttempted(false); updateLocalAnswer(cat, t); }}
                   usedHint={usedHints.has(cat)}
                   canUseHint={canHint}
                   isLoadingHint={isLoad}
