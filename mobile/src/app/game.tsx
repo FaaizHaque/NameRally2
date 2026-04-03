@@ -439,18 +439,21 @@ export default function GameScreen() {
   useEffect(() => {
     if (gameMode !== 'single' || !currentLevel || currentLevel.level === 1) return;
 
+    // Category milestone levels — popup only fires at the exact level where
+    // the category is first introduced, not on every level that contains it.
+    const CATEGORY_MILESTONE_LEVELS: Partial<Record<string, number>> = {
+      thing: 2, food_dishes: 5, sports_games: 11, fruits_vegetables: 16,
+      countries: 21, brands: 31, celebrities: 41, professions: 51, health_issues: 61,
+    };
+
     const runCheck = () => {
       if (!currentLevel) return;
-      // Check for a new category in this level
+      // Show category novelty only at the exact milestone level for that category
       for (const cat of currentLevel.categories) {
-        const catKey = `novelty_cat_${cat}`;
-        if (!shownNovelties.current.has(catKey)) {
-          markNoveltyShown(catKey);
+        const milestoneLevel = CATEGORY_MILESTONE_LEVELS[cat];
+        if (milestoneLevel && currentLevel.level === milestoneLevel) {
           noveltyShowing.current = true;
           adPauseStart.current = Date.now(); // pause timer while novelty is showing
-          // Hide the letter reveal — novelty takes full priority; the letter is
-          // already shown in the header. Reveal may have started before AsyncStorage
-          // resolved, so we explicitly clear it here.
           setShowReveal(false);
           setNewCategoryForLevel(cat as CategoryType);
           setNoveltyPopup({
@@ -462,7 +465,7 @@ export default function GameScreen() {
           return;
         }
       }
-      // Check for a new constraint
+      // Check for a new constraint — session-level ref so it only shows once per session
       if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
         const cType = currentLevel.constraint.type;
         const constraintKey = `novelty_constraint_${cType}`;
@@ -490,8 +493,6 @@ export default function GameScreen() {
       }
     };
 
-    // Mark starter categories as seen so they never trigger a popup
-    ['names', 'places', 'animal'].forEach((c) => shownNovelties.current.add(`novelty_cat_${c}`));
     runCheck();
   }, [currentLevel?.level]);
 
