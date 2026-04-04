@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Keyboard,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
@@ -417,9 +417,6 @@ export default function GameScreen() {
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
   // Track which category is newly introduced this level (for highlight + sort-to-bottom)
   const [newCategoryForLevel, setNewCategoryForLevel] = useState<CategoryType | null>(null);
-  // Tracks novelties shown in this session only — resets on component mount so
-  // retrying / replaying a level always shows the popup again.
-  const shownNovelties = useRef<Set<string>>(new Set());
   // While novelty popup is visible, block the reveal overlay from auto-dismissing
   const noveltyShowing = useRef(false);
   // Pulse ring animation for novelty popup icon
@@ -429,70 +426,61 @@ export default function GameScreen() {
     opacity: (2 - noveltyPulse.value),
   }));
 
-  const markNoveltyShown = (key: string) => {
-    shownNovelties.current.add(key);
-  };
-
   // Check the current level for first-time novelties (new category or new rule).
   // Only for SP, skip level 1 (names/places/animal are always known).
   // Shows popup on top of the reveal overlay — dismissing it also skips the reveal.
   useEffect(() => {
     if (gameMode !== 'single' || !currentLevel || currentLevel.level === 1) return;
 
-    const runCheck = () => {
-      if (!currentLevel) return;
-      // Check for a new category in this level
-      for (const cat of currentLevel.categories) {
-        const catKey = `novelty_cat_${cat}`;
-        if (!shownNovelties.current.has(catKey)) {
-          markNoveltyShown(catKey);
-          noveltyShowing.current = true;
-          adPauseStart.current = Date.now(); // pause timer while novelty is showing
-          // Hide the letter reveal — novelty takes full priority; the letter is
-          // already shown in the header. Reveal may have started before AsyncStorage
-          // resolved, so we explicitly clear it here.
-          setShowReveal(false);
-          setNewCategoryForLevel(cat as CategoryType);
-          setNoveltyPopup({
-            type: 'category',
-            title: 'New Category Unlocked!',
-            message: `${getCategoryName(cat as CategoryType)} joins the rally for the first time!`,
-            category: cat as CategoryType,
-          });
-          return;
-        }
-      }
-      // Check for a new constraint
-      if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
-        const cType = currentLevel.constraint.type;
-        const constraintKey = `novelty_constraint_${cType}`;
-        if (!shownNovelties.current.has(constraintKey)) {
-          markNoveltyShown(constraintKey);
-          const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
-            min_word_length:   { title: 'New Rule: Long Words',      message: 'Answers must be 4+ letters long' },
-            max_word_length:   { title: 'New Rule: Short Words',     message: 'Answers must be short — keep it brief!' },
-            ends_with_letter:  { title: 'New Rule: Ending Letter',   message: 'Each answer must end with a specific letter' },
-            double_letters:    { title: 'New Rule: Double Letters',  message: 'Answers must contain double letters (ee, ll, ss…)' },
-            contains_vowel:    { title: 'New Rule: Contains Vowel',  message: 'Answers must contain a specific vowel letter' },
-            odd_length:        { title: 'New Rule: Odd Letters',     message: 'Answers must have an odd number of letters (3, 5, 7…)' },
-            no_repeat_letters: { title: 'New Rule: No Repeats',      message: 'No letter can appear more than once in your answer' },
-            no_common_words:   { title: 'New Rule: No Common Words', message: 'Avoid obvious, common answers — get creative!' },
-            combo:             { title: 'New Rule: Multi-Constraint',message: 'Multiple rules apply at the same time' },
-            survival:          { title: 'New Rule: Survival Mode',   message: 'One invalid answer ends the level instantly' },
-            time_pressure:     { title: 'New Rule: Time Pressure',   message: 'The clock is tighter — think fast!' },
-          };
-          const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
-          noveltyShowing.current = true;
-          adPauseStart.current = Date.now(); // pause timer while novelty is showing
-          setShowReveal(false);
-          setNoveltyPopup({ type: 'constraint', title: info.title, message: info.message, constraintType: cType });
-        }
-      }
+    // Deterministic milestone levels — popup fires only at the exact level
+    // where each category/constraint is first introduced. This avoids any
+    // session-state tracking that could reset on remount and show the popup
+    // on every level that happens to contain that category/constraint.
+    const CATEGORY_MILESTONE_LEVELS: Partial<Record<string, number>> = {
+      thing: 2, food_dishes: 5, sports_games: 11, fruits_vegetables: 16,
+      countries: 21, brands: 31, celebrities: 41, professions: 51, health_issues: 61,
+    };
+    const CONSTRAINT_MILESTONE_LEVELS: Partial<Record<string, number>> = {
+      min_word_length: 6, max_word_length: 11, double_letters: 25,
+      ends_with_letter: 30, combo: 74,
     };
 
-    // Mark starter categories as seen so they never trigger a popup
-    ['names', 'places', 'animal'].forEach((c) => shownNovelties.current.add(`novelty_cat_${c}`));
-    runCheck();
+    // Category check — takes priority, returns early
+    for (const cat of currentLevel.categories) {
+      const milestoneLevel = CATEGORY_MILESTONE_LEVELS[cat];
+      if (milestoneLevel && currentLevel.level === milestoneLevel) {
+        noveltyShowing.current = true;
+        adPauseStart.current = Date.now();
+        setShowReveal(false);
+        setNewCategoryForLevel(cat as CategoryType);
+        setNoveltyPopup({
+          type: 'category',
+          title: 'New Category Unlocked!',
+          message: `${getCategoryName(cat as CategoryType)} joins the rally for the first time!`,
+          category: cat as CategoryType,
+        });
+        return;
+      }
+    }
+    // Constraint check — only at exact first-introduction level
+    if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
+      const cType = currentLevel.constraint.type;
+      const constraintMilestone = CONSTRAINT_MILESTONE_LEVELS[cType];
+      if (constraintMilestone && currentLevel.level === constraintMilestone) {
+        const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
+          min_word_length:   { title: 'New Rule: Long Words',      message: 'Answers must be 4+ letters long' },
+          max_word_length:   { title: 'New Rule: Short Words',     message: 'Answers must be short — keep it brief!' },
+          ends_with_letter:  { title: 'New Rule: Ending Letter',   message: 'Each answer must end with a specific letter' },
+          double_letters:    { title: 'New Rule: Double Letters',  message: 'Answers must contain double letters (ee, ll, ss…)' },
+          combo:             { title: 'New Rule: Multi-Constraint',message: 'Multiple rules apply at the same time' },
+        };
+        const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
+        noveltyShowing.current = true;
+        adPauseStart.current = Date.now();
+        setShowReveal(false);
+        setNoveltyPopup({ type: 'constraint', title: info.title, message: info.message, constraintType: cType });
+      }
+    }
   }, [currentLevel?.level]);
 
   // Track keyboard to control STOP button visibility
@@ -835,12 +823,13 @@ export default function GameScreen() {
     prevStatusRef.current = session?.status;
   }, [session?.status]);
 
-  // Stop background music when leaving the game screen
-  useEffect(() => {
-    return () => {
-      Sounds.stopBackground();
-    };
-  }, []);
+  // Stop background music when screen loses focus (screens stay mounted in the stack,
+  // so unmount cleanup alone is not enough — this fires on every blur/focus transition)
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => { Sounds.stopBackground(); };
+    }, [])
+  );
 
   const stampStyle = useAnimatedStyle(() => ({ transform: [{ scale: stampBounce.value }, { rotate: '-1deg' }] }));
 

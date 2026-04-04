@@ -301,7 +301,7 @@ function getForcedLettersInRange(from: number, to: number): Set<string> {
 }
 
 function getWindowExcludedLetters(currentLevel: number): Set<string> {
-  const WINDOW = 25;
+  const WINDOW = 20;
 
   // letter assigned at each level (forced or RNG-picked)
   const letterMap = new Map<number, string>();
@@ -833,8 +833,8 @@ function getMaxComboCount(level: number): number {
 // ============================================
 
 function getLetterDifficultyPool(level: number): Array<'easy' | 'normal' | 'hard'> {
-  // Levels 1-100: easy letters only (no impossible-combo restrictions) unless explicitly forced
-  if (level <= 100) return ['easy'];
+  // Levels 1-100: easy + normal letters (22 unique letters > WINDOW=20, prevents exhaustion)
+  if (level <= 100) return ['easy', 'normal'];
   if (level <= 150) return ['easy', 'normal', 'normal'];
   if (level <= 250) return ['normal', 'normal', 'hard'];
   if (level <= 350) return ['normal', 'hard', 'hard'];
