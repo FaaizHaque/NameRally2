@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Keyboard,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
@@ -823,12 +823,13 @@ export default function GameScreen() {
     prevStatusRef.current = session?.status;
   }, [session?.status]);
 
-  // Stop background music when leaving the game screen
-  useEffect(() => {
-    return () => {
-      Sounds.stopBackground();
-    };
-  }, []);
+  // Stop background music when screen loses focus (screens stay mounted in the stack,
+  // so unmount cleanup alone is not enough — this fires on every blur/focus transition)
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => { Sounds.stopBackground(); };
+    }, [])
+  );
 
   const stampStyle = useAnimatedStyle(() => ({ transform: [{ scale: stampBounce.value }, { rotate: '-1deg' }] }));
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeIn,
@@ -187,6 +187,14 @@ export default function HomeScreen() {
     );
     return () => { Sounds.stopBackground(); };
   }, []);
+
+  // Restart home music when navigating back to this screen (screens stay mounted in the stack)
+  useFocusEffect(
+    React.useCallback(() => {
+      Sounds.startBackground('home');
+      return () => { Sounds.stopBackground(); };
+    }, [])
+  );
 
   useEffect(() => {
     if (!currentUser) setShowInput(true);
