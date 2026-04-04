@@ -850,8 +850,6 @@ export default function GameScreen() {
 
   const handleUseHint = (category: CategoryType, i: number) => {
     if (!session || usedHints.has(category) || loadingHints.has(category)) return;
-    const existing = localAnswers[category]?.trim();
-    if (existing && existing.length > session.currentLetter.length) return;
     setPendingHint({ category, index: i });
   };
 
