@@ -350,7 +350,7 @@ export default function DailyChallengeScreen() {
           return {
             category,
             letter: challenge.letter,
-            answer: '',
+            answer: answer || '',  // retain whatever was typed, even if incomplete
             isValid: false,
             score: 0,
             timeMs: timeTaken,

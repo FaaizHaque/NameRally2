@@ -162,7 +162,7 @@ export default function HomeScreen() {
     // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
     ExpoSplashScreen.hideAsync();
     initSounds().then(() => {
-      Sounds.startBackground('home');
+      Sounds.startBackground('lobby_mp');
     });
     loadUser();
     loadLevelProgress();
@@ -191,7 +191,7 @@ export default function HomeScreen() {
   // Restart home music when navigating back to this screen (screens stay mounted in the stack)
   useFocusEffect(
     React.useCallback(() => {
-      Sounds.startBackground('home');
+      Sounds.startBackground('lobby_mp');
       return () => { Sounds.stopBackground(); };
     }, [])
   );
