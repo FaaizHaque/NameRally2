@@ -254,8 +254,6 @@ const ENDS_WITH_RESTRICTED: Record<string, CategoryType[]> = {
   O: ['thing', 'health_issues', 'sports_games', 'professions'],
 };
 
-// (warmup sequence removed — seeded RNG handles all non-override letters)
-
 // Two-letter combo levels and their letters
 const TWO_LETTER_LEVELS: Record<number, string> = {
   10: 'CH',
@@ -272,86 +270,72 @@ const TWO_LETTER_LEVELS: Record<number, string> = {
 };
 
 // ============================================
-// SLIDING-WINDOW LETTER NON-REPETITION
-// A letter used at level N cannot appear again until level N+20 at the earliest.
-// This is enforced by excluding all letters used in the previous 20 levels.
+// PRE-COMPUTED LETTER ASSIGNMENTS FOR LEVELS 1-100
+//
+// Simple approach: cycle through the 22-letter pool in a shuffled order,
+// respecting forced letters at specific levels, guaranteeing no adjacent duplicates.
+// Replaces the broken sliding-window RNG system entirely for levels 1-100.
 // ============================================
 
 /**
- * Returns the set of letters that must be excluded from level `currentLevel`'s
- * selection because they were used within the last 20 levels.
- *
- * Builds a letter map from level 1 forward so each level's exclusion set is
- * computed with the same sliding-window logic that was active when it was generated,
- * keeping the simulation consistent with actual play.
+ * Pre-computes a letter for every non-forced, non-two-letter level from 1 to 100.
+ * Forced/two-letter levels are handled by their existing checks in generateLevel
+ * and are only referenced here to ensure adjacency constraints are respected.
  */
-/** Returns the set of forced letters (forceLetter / forceLetterOptions[0] / TWO_LETTER_LEVELS)
- *  that appear in levels [from, to] inclusive. Used to pre-exclude future forced letters
- *  so RNG picks never choose a letter that a later forced level will use. */
-function getForcedLettersInRange(from: number, to: number): Set<string> {
-  const out = new Set<string>();
-  for (let lvl = from; lvl <= to; lvl++) {
-    const twoLetter = TWO_LETTER_LEVELS[lvl];
-    if (twoLetter) { out.add(twoLetter); continue; }
-    const ovr = LEVEL_OVERRIDES[lvl];
-    if (ovr?.forceLetter) out.add(ovr.forceLetter);
-    else if (ovr?.forceLetterOptions) out.add(ovr.forceLetterOptions[0]!);
-  }
-  return out;
-}
+const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
+  // All 22 playable letters for levels 1-100
+  const pool = ['S', 'M', 'C', 'T', 'P', 'R', 'D', 'N', 'G', 'H', 'I', 'V', 'E', 'O', 'U', 'W', 'F', 'A', 'B', 'L', 'K', 'J'];
 
-function getWindowExcludedLetters(currentLevel: number): Set<string> {
-  const WINDOW = 20;
+  // Known fixed letters (forced or two-letter) — used only for adjacency checking
+  const fixedMap: Record<number, string> = {
+    8: 'L', 10: 'CH', 13: 'B', 14: 'Z', 15: 'SH', 17: 'Q',
+    19: 'BA', 23: 'CO', 29: 'MA', 33: 'SO', 38: 'LA', 44: 'TA',
+    48: 'LI', 53: 'FA', 60: 'PA', 63: 'RA', 66: 'Y', 67: 'A',
+    72: 'J', 76: 'HA', 82: 'K', 86: 'WA', 95: 'PR', 96: 'F',
+  };
 
-  // letter assigned at each level (forced or RNG-picked)
-  const letterMap = new Map<number, string>();
+  // Full map we'll build up (starts with fixed letters)
+  const fullMap: Record<number, string> = { ...fixedMap };
 
-  for (let lvl = 1; lvl < currentLevel; lvl++) {
-    const twoLetter = TWO_LETTER_LEVELS[lvl];
-    if (twoLetter) {
-      letterMap.set(lvl, twoLetter);
-      continue;
-    }
-    const ovr = LEVEL_OVERRIDES[lvl];
-    if (ovr?.forceLetter) {
-      letterMap.set(lvl, ovr.forceLetter);
-      continue;
-    }
-    if (ovr?.forceLetterOptions) {
-      // Track primary option for window exclusion so future levels avoid repeating it
-      letterMap.set(lvl, ovr.forceLetterOptions[0]!);
-      continue;
-    }
-    // RNG-picked level: exclude letters from the past WINDOW levels AND forced letters
-    // in the next WINDOW-1 levels, so we don't pre-empt a letter a forced level will use.
-    const excludedForLvl = new Set<string>();
-    // Past window
-    for (let prev = Math.max(1, lvl - WINDOW); prev < lvl; prev++) {
-      const l = letterMap.get(prev);
-      if (l) excludedForLvl.add(l);
-    }
-    // Future forced letters within the same window radius
-    for (const l of getForcedLettersInRange(lvl + 1, lvl + WINDOW - 1)) {
-      excludedForLvl.add(l);
-    }
-    const rng = new SeededRandom(lvl * 12345);
-    const available = getAvailableCategories(lvl);
-    const sel = selectLetter(lvl, rng, available, excludedForLvl);
-    letterMap.set(lvl, sel.letter);
+  // Free levels — those without a fixed assignment
+  const freeLevels: number[] = [];
+  for (let l = 1; l <= 100; l++) {
+    if (!fixedMap[l]) freeLevels.push(l);
   }
 
-  // Collect exclusions for currentLevel: past window letters + future forced letters
-  const excluded = new Set<string>();
-  const windowStart = Math.max(1, currentLevel - WINDOW);
-  for (let prev = windowStart; prev < currentLevel; prev++) {
-    const l = letterMap.get(prev);
-    if (l) excluded.add(l);
+  // Build a long shuffled cycle of the pool with a fixed seed (deterministic, not game RNG)
+  const rng = new SeededRandom(99999);
+  let cycle: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    cycle = cycle.concat(rng.shuffle([...pool]));
   }
-  for (const l of getForcedLettersInRange(currentLevel + 1, currentLevel + WINDOW - 1)) {
-    excluded.add(l);
+
+  // Assign letters in level order, skipping letters that match adjacent levels
+  let idx = 0;
+  for (const lvl of freeLevels) {
+    const prev = fullMap[lvl - 1];
+    const next = fullMap[lvl + 1];
+
+    let picked = '';
+    for (let tries = 0; tries < cycle.length; tries++) {
+      const candidate = cycle[(idx + tries) % cycle.length]!;
+      if (candidate !== prev && candidate !== next) {
+        picked = candidate;
+        idx += tries + 1;
+        break;
+      }
+    }
+
+    fullMap[lvl] = picked || 'S';
   }
-  return excluded;
-}
+
+  // Return only free-level assignments
+  const result: Record<number, string> = {};
+  for (const lvl of freeLevels) {
+    result[lvl] = fullMap[lvl]!;
+  }
+  return result;
+})();
 
 // ============================================
 // LEVEL OVERRIDES — explicit config for levels 1-100
@@ -1320,9 +1304,6 @@ export function generateLevel(levelNumber: number): LevelData {
   const override = LEVEL_OVERRIDES[levelNumber];
   const twoLetterCombo = TWO_LETTER_LEVELS[levelNumber];
 
-  // Compute letters used in the last 20 levels (sliding-window non-repeat constraint)
-  const blockExcludedLetters = getWindowExcludedLetters(levelNumber);
-
   // ─── LETTER ───────────────────────────────────────────────────────────────
   let letter: string;
   let letterType: LevelData['letterType'];
@@ -1339,8 +1320,12 @@ export function generateLevel(levelNumber: number): LevelData {
     letterOptions = override.forceLetterOptions;
     letter = override.forceLetterOptions[0]!; // primary letter for validation/display
     letterType = letter.length > 1 ? 'two_letter' : 'normal';
+  } else if (levelNumber <= 100) {
+    // Use pre-computed assignment — guaranteed no adjacent duplicates
+    letter = LEVEL_LETTER_ASSIGNMENTS[levelNumber] ?? 'S';
+    letterType = LETTER_POOLS.easy.includes(letter) ? 'easy' : 'normal';
   } else {
-    const sel = selectLetter(levelNumber, rng, availableCategories, blockExcludedLetters);
+    const sel = selectLetter(levelNumber, rng, availableCategories, new Set());
     letter = sel.letter;
     letterType = sel.type;
   }
