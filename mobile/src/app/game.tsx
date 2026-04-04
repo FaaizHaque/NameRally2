@@ -419,6 +419,10 @@ export default function GameScreen() {
   const [newCategoryForLevel, setNewCategoryForLevel] = useState<CategoryType | null>(null);
   // While novelty popup is visible, block the reveal overlay from auto-dismissing
   const noveltyShowing = useRef(false);
+  // Idempotency guard — tracks the last level for which the popup was shown.
+  // Prevents the popup re-appearing if the effect fires more than once for the same level
+  // (e.g. when currentLevel object reference changes but .level stays the same).
+  const lastNoveltyShownForLevel = useRef<number>(-1);
   // Pulse ring animation for novelty popup icon
   const noveltyPulse = useSharedValue(1);
   const noveltyPulseStyle = useAnimatedStyle(() => ({
@@ -431,11 +435,10 @@ export default function GameScreen() {
   // Shows popup on top of the reveal overlay — dismissing it also skips the reveal.
   useEffect(() => {
     if (gameMode !== 'single' || !currentLevel || currentLevel.level === 1) return;
+    // Idempotency: never show the popup more than once for the same level,
+    // even if this effect fires multiple times (object reference change, StrictMode, etc.)
+    if (lastNoveltyShownForLevel.current === currentLevel.level) return;
 
-    // Deterministic milestone levels — popup fires only at the exact level
-    // where each category/constraint is first introduced. This avoids any
-    // session-state tracking that could reset on remount and show the popup
-    // on every level that happens to contain that category/constraint.
     const CATEGORY_MILESTONE_LEVELS: Partial<Record<string, number>> = {
       thing: 2, food_dishes: 5, sports_games: 11, fruits_vegetables: 16,
       countries: 21, brands: 31, celebrities: 41, professions: 51, health_issues: 61,
@@ -449,6 +452,7 @@ export default function GameScreen() {
     for (const cat of currentLevel.categories) {
       const milestoneLevel = CATEGORY_MILESTONE_LEVELS[cat];
       if (milestoneLevel && currentLevel.level === milestoneLevel) {
+        lastNoveltyShownForLevel.current = currentLevel.level;
         noveltyShowing.current = true;
         adPauseStart.current = Date.now();
         setShowReveal(false);
@@ -467,6 +471,7 @@ export default function GameScreen() {
       const cType = currentLevel.constraint.type;
       const constraintMilestone = CONSTRAINT_MILESTONE_LEVELS[cType];
       if (constraintMilestone && currentLevel.level === constraintMilestone) {
+        lastNoveltyShownForLevel.current = currentLevel.level;
         const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
           min_word_length:   { title: 'New Rule: Long Words',      message: 'Answers must be 4+ letters long' },
           max_word_length:   { title: 'New Rule: Short Words',     message: 'Answers must be short — keep it brief!' },
@@ -827,7 +832,17 @@ export default function GameScreen() {
   // so unmount cleanup alone is not enough — this fires on every blur/focus transition)
   useFocusEffect(
     React.useCallback(() => {
-      return () => { Sounds.stopBackground(); };
+      return () => {
+        Sounds.stopBackground();
+        // Dismiss any open popups so they don't flash during the exit navigation animation
+        setNoveltyPopup(null);
+        noveltyShowing.current = false;
+        setShowReveal(false);
+        if (adPauseStart.current !== null) {
+          adPauseOffset.current += Date.now() - adPauseStart.current;
+          adPauseStart.current = null;
+        }
+      };
     }, [])
   );
 
