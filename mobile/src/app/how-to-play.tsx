@@ -272,7 +272,7 @@ function BasicsContent() {
           Start with Names, Places, and Animals. Unlock more as you level up:
         </Text>
         <View className="flex-row flex-wrap gap-2">
-          {['Things', 'Fruits & Veg', 'Sports & Games', 'Brands', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Celebrities'].map((cat) => (
+          {['Things', 'Fruits & Veg', 'Sports & Games', 'Brands', 'Food & Dishes', 'Countries', 'Health Issues', 'Professions', 'Famous People'].map((cat) => (
             <View key={cat} className="bg-white/10 px-3 py-1.5 rounded-full">
               <Text className="text-white/80 text-sm">{cat}</Text>
             </View>
@@ -297,7 +297,7 @@ function CategoriesContent() {
     { name: 'Countries', emoji: '🌍', color: '#3BA99C', description: 'Any sovereign country in the world.' },
     { name: 'Health Issues', emoji: '🏥', color: '#9B6ED8', description: 'Medical conditions, illnesses, or symptoms.' },
     { name: 'Professions', emoji: '💼', color: '#6EC4B8', description: 'Any job or occupation.' },
-    { name: 'Celebrities', emoji: '⭐', color: '#D4A84B', description: 'A real historical person — world leader, scientist, social activist, sportsman, music artist, or explorer.' },
+    { name: 'Famous People', emoji: '⭐', color: '#D4A84B', description: 'A real historical person — world leader, scientist, social activist, sportsman, music artist, or explorer.' },
   ];
 
   return (
@@ -413,7 +413,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Things (L2) · Fruits & Veg (L4) · Countries (L6) · Professions (L8) · Sports (L11) · Food (L14) · Brands (L17) · Health (L20) · Celebrities (L24)
+                Things (L2) · Fruits & Veg (L4) · Countries (L6) · Professions (L8) · Sports (L11) · Food (L14) · Brands (L17) · Health (L20) · Famous People (L24)
               </Text>
             </View>
           </View>

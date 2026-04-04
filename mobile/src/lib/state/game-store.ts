@@ -85,7 +85,7 @@ export const AVAILABLE_CATEGORIES: Category[] = [
   { id: 'countries', name: 'Countries', icon: 'globe' },
   { id: 'professions', name: 'Professions', icon: 'briefcase' },
   { id: 'food_dishes', name: 'Food & Dishes', icon: 'utensils' },
-  { id: 'celebrities', name: 'Celebrities', icon: 'landmark' },
+  { id: 'celebrities', name: 'Famous People', icon: 'landmark' },
 ];
 
 export interface Player {

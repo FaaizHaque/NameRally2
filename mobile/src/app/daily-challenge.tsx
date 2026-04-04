@@ -97,7 +97,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   countries: 'Countries',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  celebrities: 'Celebrities',
+  celebrities: 'Famous People',
   fruits_vegetables: 'Fruits & Vegetables',
 };
 
