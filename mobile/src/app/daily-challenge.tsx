@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, Modal, ActivityIndicator, Share, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
@@ -229,6 +229,13 @@ export default function DailyChallengeScreen() {
     // Stop background music when leaving daily challenge screen
     return () => { Sounds.stopBackground(); };
   }, []);
+
+  // Dismiss intro modal on screen blur so it never flashes during navigation
+  useFocusEffect(
+    useCallback(() => {
+      return () => { setShowDcIntro(false); };
+    }, [])
+  );
 
   // Game timer — 60-second countdown; auto-submits at 0
   useEffect(() => {
@@ -998,17 +1005,26 @@ export default function DailyChallengeScreen() {
       <Modal visible={showDcIntro} transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
           <View style={{
-            backgroundColor: '#0D2A0D', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360,
+            backgroundColor: '#0D2A0D', borderRadius: 24, padding: 26, width: '100%', maxWidth: 360,
             borderWidth: 1.5, borderColor: 'rgba(0,200,64,0.4)',
           }}>
-            <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
               Daily Challenge 📅
             </Text>
-            <Text style={{ color: 'rgba(0,200,64,0.8)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
-              One attempt per day — no retries.{'\n\n'}
-              Everyone gets the same letter and categories. Fill all 6 fields and submit to lock in your score.{'\n\n'}
-              Your rank appears on the global leaderboard instantly.
-            </Text>
+            <View style={{ gap: 10, marginBottom: 24 }}>
+              {[
+                'One attempt per day',
+                'Same letter and categories for everyone',
+                'Fill all 6 fields and submit',
+                'Your score and rank lock in immediately',
+                'Check the global leaderboard to see where you stand',
+              ].map((line, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#00C840', marginTop: 7 }} />
+                  <Text style={{ color: 'rgba(0,200,64,0.85)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
+                </View>
+              ))}
+            </View>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -1017,10 +1033,8 @@ export default function DailyChallengeScreen() {
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
-              <View style={{
-                backgroundColor: '#00C840', borderRadius: 14, paddingVertical: 14, alignItems: 'center',
-              }}>
-                <Text style={{ color: '#071510', fontSize: 16, fontWeight: '900' }}>Let's go!</Text>
+              <View style={{ backgroundColor: '#00C840', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                <Text style={{ color: '#071510', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
               </View>
             </Pressable>
           </View>

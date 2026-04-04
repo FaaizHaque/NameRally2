@@ -175,6 +175,7 @@ interface GameState {
 
   startGame: () => Promise<void>;
   updateLocalAnswer: (category: CategoryType, answer: string) => void;
+  clearLocalAnswers: () => void;
   submitAnswers: () => Promise<void>;
   requestStop: () => Promise<void>;
   nextRound: () => Promise<void>;
@@ -940,6 +941,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     } catch (error) {
       console.log('[GameStore] Error starting game:', error);
     }
+  },
+
+  clearLocalAnswers: () => {
+    set({ localAnswers: {} as Record<CategoryType, string> });
   },
 
   updateLocalAnswer: (category, answer) => {

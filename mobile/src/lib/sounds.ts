@@ -98,7 +98,7 @@ const BG_VOLUME: Record<BackgroundType, number> = {
 };
 
 const BG_SOURCE: Record<BackgroundType, number> = {
-  home:            S.BG_HOME,
+  home:            S.BG_LOBBY_MP,   // bg_home.mp3 replaced — using arcade track until new file provided
   game:            S.BG_GAME,
   lobby_mp:        S.BG_LOBBY_MP,
   game_mp:         S.BG_GAME_MP,

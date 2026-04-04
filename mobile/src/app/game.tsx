@@ -365,7 +365,8 @@ export default function GameScreen() {
   const localAnswers      = useGameStore(s => s.localAnswers);
   const timeRemaining     = useGameStore(s => s.timeRemaining);
   const currentUser       = useGameStore(s => s.currentUser);
-  const updateLocalAnswer = useGameStore(s => s.updateLocalAnswer);
+  const updateLocalAnswer  = useGameStore(s => s.updateLocalAnswer);
+  const clearLocalAnswers  = useGameStore(s => s.clearLocalAnswers);
   const setTimeRemaining  = useGameStore(s => s.setTimeRemaining);
   const requestStop       = useGameStore(s => s.requestStop);
   const submitAnswers     = useGameStore(s => s.submitAnswers);
@@ -850,8 +851,6 @@ export default function GameScreen() {
 
   const handleUseHint = (category: CategoryType, i: number) => {
     if (!session || usedHints.has(category) || loadingHints.has(category)) return;
-    const existing = localAnswers[category]?.trim();
-    if (existing && existing.length > session.currentLetter.length) return;
     setPendingHint({ category, index: i });
   };
 
@@ -934,9 +933,10 @@ export default function GameScreen() {
   useEffect(() => {
     if (!session || (session?.status !== 'round_results' && session?.status !== 'final_results')) return;
     [timerRef, stopCountdownRef, pollingRef].forEach(r => { if (r.current) clearInterval(r.current); });
-    // Hide the reveal overlay immediately to prevent flash during navigation
     setShowReveal(false);
-    // Use setTimeout to ensure navigation happens after state settles
+    // Wipe answers immediately so they can't flash during the navigation animation.
+    // final-results reads from session.players[].currentRoundAnswers, not localAnswers.
+    clearLocalAnswers();
     const navTimer = setTimeout(() => {
       router.replace(isLevelMode ? '/final-results' : '/round-results');
     }, 100);
