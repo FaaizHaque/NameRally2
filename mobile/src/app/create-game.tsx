@@ -87,7 +87,7 @@ const LEVEL_CATEGORY_NAMES: Record<LevelCategoryType, string> = {
   countries: 'Countries',
   professions: 'Professions',
   food_dishes: 'Food & Dishes',
-  celebrities: 'Celebrities',
+  celebrities: 'Famous People',
   fruits_vegetables: 'Fruits & Vegetables',
 };
 
