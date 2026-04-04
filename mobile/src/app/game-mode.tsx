@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,6 +24,7 @@ export default function GameModeScreen() {
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [showSpIntro, setShowSpIntro] = useState(false);
+  const [showMpIntro, setShowMpIntro] = useState(false);
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -43,6 +44,13 @@ export default function GameModeScreen() {
     );
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
+
+  // Dismiss any open intro modals on blur so they never flash during navigation
+  useFocusEffect(
+    useCallback(() => {
+      return () => { setShowSpIntro(false); setShowMpIntro(false); };
+    }, [])
+  );
 
   const startGame = useCallback(async () => {
     setGameMode('single');
@@ -74,9 +82,14 @@ export default function GameModeScreen() {
     startGame();
   }, [isStartingGame, levelLoaded, startGame]);
 
-  const handleMultiplayer = () => {
+  const handleMultiplayer = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.navigate();
+    const shown = await AsyncStorage.getItem('npat_mp_intro_shown');
+    if (!shown) {
+      setShowMpIntro(true);
+      return;
+    }
     setGameMode('multiplayer');
     router.push('/multiplayer-options');
   };
@@ -429,21 +442,30 @@ export default function GameModeScreen() {
 
       {/* Single Player first-time intro */}
       <Modal visible={showSpIntro} transparent animationType="fade" onRequestClose={() => {}}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
-            backgroundColor: '#1f2d50', borderRadius: 20, padding: 24,
+            backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
             borderWidth: 2, borderColor: 'rgba(120,170,255,0.4)',
             shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.4, shadowRadius: 24,
             elevation: 20, width: '100%',
           }}>
-            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
               Single Player 🎮
             </Text>
-            <Text style={{ color: 'rgba(160,200,255,0.85)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 }}>
-              A letter is revealed each round — type words for every category before time runs out.{'\n\n'}
-              Valid answer = 10 pts · 10+ letters = +2 bonus{'\n'}
-              Score enough to unlock the next level!
-            </Text>
+            <View style={{ gap: 10, marginBottom: 24 }}>
+              {[
+                'A letter drops each round',
+                'Type a word for every category before time runs out',
+                '10 pts for a valid answer',
+                '+2 bonus for words over 10 letters',
+                'Score enough to unlock the next level',
+              ].map((line, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#60a5fa', marginTop: 7 }} />
+                  <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
+                </View>
+              ))}
+            </View>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -453,11 +475,52 @@ export default function GameModeScreen() {
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
-              <View style={{
-                backgroundColor: '#4090e8', borderRadius: 14, paddingVertical: 14,
-                alignItems: 'center',
-              }}>
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Got it — let's play!</Text>
+              <View style={{ backgroundColor: '#4090e8', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Multiplayer first-time intro */}
+      <Modal visible={showMpIntro} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+          <View style={{
+            backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
+            borderWidth: 2, borderColor: 'rgba(252,211,77,0.4)',
+            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.4, shadowRadius: 24,
+            elevation: 20, width: '100%',
+          }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
+              Multiplayer 🎲
+            </Text>
+            <View style={{ gap: 10, marginBottom: 24 }}>
+              {[
+                'Same letter and categories for everyone',
+                'Unique answers score full points',
+                'Shared answers split the points',
+                'Hit STOP when done — others get 5 more seconds',
+                'Use the game code to rejoin if you disconnect',
+              ].map((line, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FCD34D', marginTop: 7 }} />
+                  <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
+                </View>
+              ))}
+            </View>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                AsyncStorage.setItem('npat_mp_intro_shown', '1');
+                setShowMpIntro(false);
+                setGameMode('multiplayer');
+                router.push('/multiplayer-options');
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <View style={{ backgroundColor: '#b45309', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
               </View>
             </Pressable>
           </View>
