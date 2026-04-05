@@ -708,8 +708,8 @@ export default function RoundResultsScreen() {
                 entering={FadeInUp.duration(500)}
                 style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: insets.bottom + 16, paddingTop: 12, backgroundColor: SKETCH_COLORS.paper, borderTopWidth: 2, borderTopColor: SKETCH_COLORS.paperLine }}
               >
-                <View style={{ backgroundColor: SKETCH_COLORS.paperDark, borderRadius: 12, padding: 16, borderWidth: 1.5, borderColor: SKETCH_COLORS.paperLine }}>
-                  <Text style={{ color: SKETCH_COLORS.inkFaint, textAlign: 'center', fontStyle: 'italic', fontSize: 13 }}>
+                <View style={{ backgroundColor: '#1a3a6e', borderRadius: 12, padding: 16, borderWidth: 1.5, borderColor: '#2a5aaa' }}>
+                  <Text style={{ color: '#90c0ff', textAlign: 'center', fontWeight: '700', fontSize: 16 }}>
                     {isLastRound
                       ? 'Waiting for host to show final results...'
                       : 'Waiting for host to start next round...'}
