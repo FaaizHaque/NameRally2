@@ -1696,8 +1696,8 @@ export default function GameScreen() {
           )}
           {session.stopRequested && (
             <Animated.View entering={ZoomIn.duration(300)} style={s.stopBanner}>
-              <AlertTriangle size={15} color="#8B4000" strokeWidth={2.5} />
-              <Text style={[s.stopBannerTxt, { fontWeight: '800' }]}>STOP! Ending in {stopCountdown}s</Text>
+              <AlertTriangle size={18} color="#FFFFFF" strokeWidth={2.5} />
+              <Text style={[s.stopBannerTxt, { fontWeight: '900' }]}>STOP! Ending in {stopCountdown}s</Text>
             </Animated.View>
           )}
 
@@ -2356,15 +2356,15 @@ const s = StyleSheet.create({
   constraintTxt: { color: '#5040A0', fontSize: 15, flex: 1, fontWeight: '600', letterSpacing: 0.1 },
 
   stopBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     marginHorizontal: 14, marginTop: 8,
-    backgroundColor: '#FEF3DC',
-    paddingHorizontal: 14, paddingVertical: 9,
-    borderRadius: 10, borderWidth: 1, borderColor: '#D4A030',
-    shadowColor: '#C08020', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 4,
+    backgroundColor: '#C41818',
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 10, borderWidth: 1.5, borderColor: '#901010',
+    shadowColor: '#C41818', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 8,
     zIndex: 2,
   },
-  stopBannerTxt: { color: '#7A4A00', fontSize: 16, letterSpacing: 0.2 },
+  stopBannerTxt: { color: '#FFFFFF', fontSize: 19, letterSpacing: 0.5 },
 
   // ── Leaderboard ──
   lbWrap: { marginHorizontal: 14, marginTop: 8, zIndex: 2 },
