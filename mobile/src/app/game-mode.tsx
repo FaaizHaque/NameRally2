@@ -441,7 +441,7 @@ export default function GameModeScreen() {
       </LinearGradient>
 
       {/* Single Player first-time intro */}
-      <Modal visible={showSpIntro} transparent animationType="fade" onRequestClose={() => {}}>
+      {showSpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
@@ -449,23 +449,12 @@ export default function GameModeScreen() {
             shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.4, shadowRadius: 24,
             elevation: 20, width: '100%',
           }}>
-            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Single Player 🎮
             </Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
-              {[
-                'A letter drops each round',
-                'Type a word for every category before time runs out',
-                '10 pts for a valid answer',
-                '+2 bonus for words over 10 letters',
-                'Score enough to unlock the next level',
-              ].map((line, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#60a5fa', marginTop: 7 }} />
-                  <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
-                </View>
-              ))}
-            </View>
+            <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
+              A letter drops — fill every category with words starting with it before time runs out. Score enough to unlock the next level.
+            </Text>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -481,10 +470,10 @@ export default function GameModeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>
+      </Modal>}
 
       {/* Multiplayer first-time intro */}
-      <Modal visible={showMpIntro} transparent animationType="fade" onRequestClose={() => {}}>
+      {showMpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
@@ -492,23 +481,12 @@ export default function GameModeScreen() {
             shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.4, shadowRadius: 24,
             elevation: 20, width: '100%',
           }}>
-            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Multiplayer 🎲
             </Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
-              {[
-                'Same letter and categories for everyone',
-                'Unique answers score full points',
-                'Shared answers split the points',
-                'Hit STOP when done — others get 5 more seconds',
-                'Use the game code to rejoin if you disconnect',
-              ].map((line, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FCD34D', marginTop: 7 }} />
-                  <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
-                </View>
-              ))}
-            </View>
+            <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
+              Same letter for everyone. Fill categories fast and hit STOP — unique answers score more, shared ones split points.
+            </Text>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -525,7 +503,7 @@ export default function GameModeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>
+      </Modal>}
     </View>
   );
 }

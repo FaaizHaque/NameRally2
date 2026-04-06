@@ -206,18 +206,23 @@ export default function DailyChallengeScreen() {
           return;
         }
 
-        // Start the game immediately
+        // Prepare answers
         const initialAnswers: Record<CategoryType, string> = {} as Record<CategoryType, string>;
         challengeData.categories.forEach((category) => {
           initialAnswers[category] = challengeData.letter;
         });
         setAnswers(initialAnswers);
-        setGameStartTime(Date.now());
-        setPhase('playing');
-        Sounds.startBackground('daily_challenge');
-        AsyncStorage.getItem('npat_dc_intro_shown').then((val) => {
-          if (!val) setShowDcIntro(true);
-        });
+
+        // Show intro BEFORE starting game if first time
+        const introShown = await AsyncStorage.getItem('npat_dc_intro_shown');
+        if (!introShown) {
+          setShowDcIntro(true);
+          // Game starts when user dismisses intro (see Modal dismiss handler)
+        } else {
+          setGameStartTime(Date.now());
+          setPhase('playing');
+          Sounds.startBackground('daily_challenge');
+        }
       } catch (err) {
         console.error('Error loading challenge:', err);
       }
@@ -1002,34 +1007,26 @@ export default function DailyChallengeScreen() {
   return (
     <View className="flex-1">
       {/* Daily Challenge first-time intro */}
-      <Modal visible={showDcIntro} transparent animationType="fade" onRequestClose={() => {}}>
+      {showDcIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
           <View style={{
             backgroundColor: '#0D2A0D', borderRadius: 24, padding: 26, width: '100%', maxWidth: 360,
             borderWidth: 1.5, borderColor: 'rgba(0,200,64,0.4)',
           }}>
-            <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 18 }}>
+            <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Daily Challenge 📅
             </Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
-              {[
-                'One attempt per day',
-                'Same letter and categories for everyone',
-                'Fill all 6 fields and submit',
-                'Your score and rank lock in immediately',
-                'Check the global leaderboard to see where you stand',
-              ].map((line, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#00C840', marginTop: 7 }} />
-                  <Text style={{ color: 'rgba(0,200,64,0.85)', fontSize: 14, lineHeight: 20, flex: 1 }}>{line}</Text>
-                </View>
-              ))}
-            </View>
+            <Text style={{ color: 'rgba(0,200,64,0.85)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
+              One shot per day. Same letter for everyone — fill all categories and lock in your score on the global leaderboard.
+            </Text>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 AsyncStorage.setItem('npat_dc_intro_shown', '1');
                 setShowDcIntro(false);
+                setGameStartTime(Date.now());
+                setPhase('playing');
+                Sounds.startBackground('daily_challenge');
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
@@ -1039,7 +1036,7 @@ export default function DailyChallengeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>
+      </Modal>}
 
       {/* Exit Modal */}
       <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>

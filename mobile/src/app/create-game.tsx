@@ -124,9 +124,9 @@ export default function CreateGameScreen() {
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
 
-  // Chill background while setting up — lobby_mp plays here, arcade kicks in when people join
+  // No background music on the setup/create screen — lobby_mp plays in the waiting lobby
   useEffect(() => {
-    Sounds.startBackground('lobby_mp');
+    Sounds.stopBackground();
     return () => { Sounds.stopBackground(); };
   }, []);
 
