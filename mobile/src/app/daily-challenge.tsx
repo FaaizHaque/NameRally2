@@ -142,6 +142,7 @@ export default function DailyChallengeScreen() {
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(DAILY_CHALLENGE_TIME_LIMIT_S);
   const timesUpRef = useRef(false);
+  const handleSubmitRef = useRef<() => void>(() => {});
 
   // Animation values
   const trophyScale = useSharedValue(0);
@@ -256,8 +257,8 @@ export default function DailyChallengeScreen() {
         timesUpRef.current = true;
         if (timerRef.current) clearInterval(timerRef.current);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        // Auto-submit whatever has been filled
-        handleSubmit();
+        // Use ref to get latest handleSubmit with current answers (avoids stale closure)
+        handleSubmitRef.current();
       }
     }, 1000);
 
@@ -485,6 +486,8 @@ export default function DailyChallengeScreen() {
       setIsSubmitting(false);
     }
   };
+  // Keep ref updated so the timer always calls the latest version (fixes stale closure)
+  handleSubmitRef.current = handleSubmit;
 
   const fetchLeaderboard = async (date: string) => {
     setLeaderboardLoading(true);
