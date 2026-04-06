@@ -382,7 +382,7 @@ export default function GameScreen() {
   const isLoading         = useGameStore(s => s.isLoading);
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
-  const HINT_COST = 5;
+  const HINT_COST = 7;
 
   // Memoize sorted leaderboard to avoid re-sorting on every render
   const sortedPlayers = useMemo(
