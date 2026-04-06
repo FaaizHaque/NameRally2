@@ -33,8 +33,8 @@ export default function HowToPlayScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('basics');
 
   useFocusEffect(useCallback(() => {
-    Sounds.startBackground('home', 0.16); // 50% of normal home volume (0.32)
-    return () => { Sounds.unduckBackground(); };
+    const t = setTimeout(() => Sounds.startBackground('home', 0.16), 150);
+    return () => { clearTimeout(t); Sounds.unduckBackground(); };
   }, []));
 
   const handleBack = () => {

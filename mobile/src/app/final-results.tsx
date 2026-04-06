@@ -349,7 +349,7 @@ export default function FinalResultsScreen() {
                             </Text>
                             {hasBonus && (
                               <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: '#f59e0b' }}>
-                                <Zap size={9} color="#fcd34d" fill="#fcd34d" strokeWidth={2} />
+                                <Sparkles size={9} color="#fcd34d" fill="#fcd34d" strokeWidth={2} />
                                 <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
                               </View>
                             )}
