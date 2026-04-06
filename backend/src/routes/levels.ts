@@ -98,4 +98,20 @@ levelsRouter.get('/summary/:levelNumber', (c) => {
   }
 });
 
+/**
+ * GET /api/levels/debug/letters
+ * Returns the letter for each level 1-20 — useful for verifying Railway has the latest code
+ */
+levelsRouter.get('/debug/letters', (c) => {
+  const result: Record<string, string> = {};
+  for (let i = 1; i <= 20; i++) {
+    try {
+      result[`L${i}`] = generateLevel(i).letter;
+    } catch {
+      result[`L${i}`] = 'ERROR';
+    }
+  }
+  return c.json({ letters: result, note: 'L7 should be W, L8 should be L' });
+});
+
 export { levelsRouter };
