@@ -54,8 +54,8 @@ export default function DifficultySelectScreen() {
   const highScores = useGameStore((s) => s.highScores);
 
   useFocusEffect(useCallback(() => {
-    const t = setTimeout(() => Sounds.startBackground('home', 0.16), 150);
-    return () => { clearTimeout(t); Sounds.unduckBackground(); };
+    Sounds.duckBackground(0.16);
+    return () => { Sounds.unduckBackground(); };
   }, []));
 
   const handleSelectDifficulty = (difficulty: DifficultyLevel) => {

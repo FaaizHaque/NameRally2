@@ -45,9 +45,11 @@ export default function GameModeScreen() {
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
-  // Dismiss any open intro modals on blur so they never flash during navigation
+  // Reset intro modals on focus gain and blur so they never flash during navigation
   useFocusEffect(
     useCallback(() => {
+      setShowSpIntro(false);
+      setShowMpIntro(false);
       return () => { setShowSpIntro(false); setShowMpIntro(false); };
     }, [])
   );
@@ -485,7 +487,7 @@ export default function GameModeScreen() {
               Multiplayer 🎲
             </Text>
             <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              Same letter for everyone. Fill categories fast and hit STOP — unique answers score more, shared ones split points.
+              Everyone gets the same letter. Fill your categories, hit STOP when done, and see how your answers stack up. Unique answers score more than shared ones.
             </Text>
             <Pressable
               onPress={() => {

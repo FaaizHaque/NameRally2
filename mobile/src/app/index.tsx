@@ -192,7 +192,7 @@ export default function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       Sounds.startBackground('home');
-      return () => { Sounds.stopBackground(); };
+      // Don't stop on blur — how-to-play/select screens duck in place, game screens switch tracks themselves
     }, [])
   );
 
