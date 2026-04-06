@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { ChevronLeft, Zap, Flame, Skull, Clock, Brain, Trophy } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useGameStore, DifficultyLevel } from '@/lib/state/game-store';
+import { Sounds } from '@/lib/sounds';
 
 
 interface DifficultyOption {
@@ -50,6 +52,11 @@ export default function DifficultySelectScreen() {
   const insets = useSafeAreaInsets();
   const setDifficulty = useGameStore((s) => s.setDifficulty);
   const highScores = useGameStore((s) => s.highScores);
+
+  useFocusEffect(useCallback(() => {
+    Sounds.duckBackground();
+    return () => { Sounds.unduckBackground(); };
+  }, []));
 
   const handleSelectDifficulty = (difficulty: DifficultyLevel) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

@@ -179,6 +179,18 @@ export const Sounds = {
     try { await bgMusic.playAsync(); } catch { /* non-critical */ }
   },
 
+  // Reduce background music volume (e.g. when overlaying a modal/info screen)
+  duckBackground: async (volume: number = 0.08) => {
+    if (!bgMusic) return;
+    try { await bgMusic.setVolumeAsync(volume); } catch { /* non-critical */ }
+  },
+
+  // Restore background music to its normal volume
+  unduckBackground: async () => {
+    if (!bgMusic || !bgMusicType) return;
+    try { await bgMusic.setVolumeAsync(BG_VOLUME[bgMusicType]); } catch { /* non-critical */ }
+  },
+
   isSoundEnabled: () => soundEnabled,
   setSoundEnabled: (enabled: boolean) => setSoundEnabled(enabled),
 };

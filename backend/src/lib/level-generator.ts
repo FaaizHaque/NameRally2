@@ -288,6 +288,7 @@ const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
 
   // Known fixed letters (forced or two-letter) — used only for adjacency checking
   const fixedMap: Record<number, string> = {
+    1: 'S', 2: 'M', 3: 'T', 4: 'C', 5: 'P', 6: 'R', 7: 'D',
     8: 'L', 10: 'CH', 13: 'B', 14: 'Z', 15: 'SH', 17: 'Q',
     19: 'BA', 23: 'CO', 29: 'MA', 33: 'SO', 38: 'LA', 44: 'TA',
     48: 'LI', 53: 'FA', 60: 'PA', 63: 'RA', 66: 'Y', 67: 'A',
@@ -368,14 +369,14 @@ interface LevelOverride {
 const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L1-4: starter cats, no constraint ─────────────────────────────────────
   // L1 = 3 cats (names, places, animal), L2 = 4 cats (+thing)
-  1: { specificCategories: ['names', 'places', 'animal'] },
-  2: { specificCategories: ['names', 'places', 'animal', 'thing'] },
-  3: { categoryCount: 4 },
-  4: { categoryCount: 4 },
+  1: { forceLetter: 'S', specificCategories: ['names', 'places', 'animal'] },
+  2: { forceLetter: 'M', specificCategories: ['names', 'places', 'animal', 'thing'] },
+  3: { forceLetter: 'T', categoryCount: 4 },
+  4: { forceLetter: 'C', categoryCount: 4 },
   // ── L5-10: +Food&Dishes (5 cats), CH combo at 10 ──────────────────────────
-  5:  { categoryCount: 5 },
-  6:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
-  7:  { categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  5:  { forceLetter: 'P', categoryCount: 5 },
+  6:  { forceLetter: 'R', categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
+  7:  { forceLetter: 'D', categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   8:  { forceLetter: 'L', categoryCount: 5, constraintType: 'min_word_length', constraintValue: 4 },
   9:  { categoryCount: 5 },
   // L10 → TWO_LETTER_LEVELS = 'CH'

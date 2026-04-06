@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Sounds } from '@/lib/sounds';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import {
   ChevronLeft,
@@ -29,6 +31,11 @@ export default function HowToPlayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>('basics');
+
+  useFocusEffect(useCallback(() => {
+    Sounds.duckBackground();
+    return () => { Sounds.unduckBackground(); };
+  }, []));
 
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
