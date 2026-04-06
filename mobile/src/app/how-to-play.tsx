@@ -33,7 +33,7 @@ export default function HowToPlayScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('basics');
 
   useFocusEffect(useCallback(() => {
-    Sounds.duckBackground();
+    Sounds.startBackground('home', 0.16); // 50% of normal home volume (0.32)
     return () => { Sounds.unduckBackground(); };
   }, []));
 

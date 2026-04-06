@@ -130,10 +130,15 @@ export const Sounds = {
   letterLock:     () => playSound(S.LETTER_LOCK, 0.25),
 
   // ─── Background music ────────────────────────────────────────────────────────
-  startBackground: async (type: BackgroundType = 'game') => {
+  startBackground: async (type: BackgroundType = 'game', initialVolume?: number) => {
     if (!soundEnabled) return;
-    // Already playing the right track — do nothing
-    if (bgMusic && bgMusicType === type) return;
+    // Already playing the right track — just adjust volume if requested
+    if (bgMusic && bgMusicType === type) {
+      if (initialVolume !== undefined) {
+        try { await bgMusic.setVolumeAsync(initialVolume); } catch { /* non-critical */ }
+      }
+      return;
+    }
     // Stop whatever is currently playing first
     if (bgMusic) {
       const old = bgMusic;
@@ -147,7 +152,7 @@ export const Sounds = {
       await ensureAudioMode();
       const { sound } = await Audio.Sound.createAsync(
         BG_SOURCE[type],
-        { shouldPlay: true, volume: BG_VOLUME[type], isLooping: true }
+        { shouldPlay: true, volume: initialVolume ?? BG_VOLUME[type], isLooping: true }
       );
       bgMusic = sound;
       bgMusicType = type;
