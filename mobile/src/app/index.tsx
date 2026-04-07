@@ -369,7 +369,6 @@ export default function HomeScreen() {
                       maxLength={20}
                       returnKeyType="done"
                       onSubmitEditing={handleCreateAccount}
-                      autoFocus
                     />
                   </View>
                   <Text style={{

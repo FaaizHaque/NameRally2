@@ -207,19 +207,15 @@ export default function DailyChallengeScreen() {
           return;
         }
 
-        // Prepare answers
-        const initialAnswers: Record<CategoryType, string> = {} as Record<CategoryType, string>;
-        challengeData.categories.forEach((category) => {
-          initialAnswers[category] = challengeData.letter;
-        });
-        setAnswers(initialAnswers);
-
-        // Show intro BEFORE starting game if first time
+        // Check if first time — show intro before starting timer
         const introShown = await AsyncStorage.getItem('npat_dc_intro_shown');
         if (!introShown) {
+          setAnswers(initialAnswers);
+          setPhase('playing'); // show game UI so modal can render on top
+          // gameStartTime stays null — timer won't start until intro dismissed
           setShowDcIntro(true);
-          // Game starts when user dismisses intro (see Modal dismiss handler)
         } else {
+          setAnswers(initialAnswers);
           setGameStartTime(Date.now());
           setPhase('playing');
           Sounds.startBackground('daily_challenge');
