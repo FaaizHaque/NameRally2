@@ -703,7 +703,7 @@ export default function GameScreen() {
       // Auto-dismiss after a brief pause so the picker sees the confirm screen
       shuffleTimeoutRef.current = setTimeout(() => {
         revealOpacity.value = withTiming(0, { duration: 350 });
-        setTimeout(() => setShowReveal(false), 350);
+        shuffleTimeoutRef.current = setTimeout(() => setShowReveal(false), 350);
       }, 1500);
       return () => { if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current); };
     }
@@ -723,14 +723,14 @@ export default function GameScreen() {
         if (gameMode === 'single') {
           shuffleTimeoutRef.current = setTimeout(() => {
             revealOpacity.value = withTiming(0, { duration: 350 });
-            setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 350);
+            shuffleTimeoutRef.current = setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 350);
           }, 800);
         } else {
           // Multiplayer non-pickers: auto-dismiss after 2.5s — no manual button needed,
           // everyone dismisses at roughly the same time
           shuffleTimeoutRef.current = setTimeout(() => {
             revealOpacity.value = withTiming(0, { duration: 350 });
-            setTimeout(() => setShowReveal(false), 350);
+            shuffleTimeoutRef.current = setTimeout(() => setShowReveal(false), 350);
           }, 2500);
         }
         return;

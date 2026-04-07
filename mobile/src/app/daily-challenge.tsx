@@ -101,7 +101,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   fruits_vegetables: 'Fruits & Vegetables',
 };
 
-type GamePhase = 'loading' | 'playing' | 'results' | 'already_completed';
+type GamePhase = 'loading' | 'error' | 'playing' | 'results' | 'already_completed';
 
 export default function DailyChallengeScreen() {
   const router = useRouter();
@@ -111,6 +111,7 @@ export default function DailyChallengeScreen() {
   const currentUser = useGameStore((s) => s.currentUser);
 
   const [phase, setPhase] = useState<GamePhase>('loading');
+  const [retryCount, setRetryCount] = useState(0);
   const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
   const [result, setResult] = useState<DailyChallengeResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -222,6 +223,7 @@ export default function DailyChallengeScreen() {
         }
       } catch (err) {
         console.error('Error loading challenge:', err);
+        setPhase('error');
       }
     };
 
@@ -230,7 +232,9 @@ export default function DailyChallengeScreen() {
 
     // Stop background music when leaving daily challenge screen
     return () => { Sounds.stopBackground(); };
-  }, []);
+  // retryCount triggers a fresh load on retry
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryCount]);
 
   // Dismiss intro modal on screen blur so it never flashes during navigation
   useFocusEffect(
@@ -618,6 +622,31 @@ export default function DailyChallengeScreen() {
         >
           <ActivityIndicator size="large" color="#4ADE80" />
           <Text style={{ color: 'rgba(74,222,128,0.6)', marginTop: 16 }}>Loading today's challenge...</Text>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  if (phase === 'error') {
+    return (
+      <View className="flex-1">
+        <LinearGradient
+          colors={['#0D1F0D', '#1C3A1C', '#0D1F0D']}
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}
+        >
+          <Text style={{ fontSize: 36, marginBottom: 16 }}>📡</Text>
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 8 }}>
+            Couldn't load today's challenge
+          </Text>
+          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginBottom: 32 }}>
+            Check your connection and try again.
+          </Text>
+          <Pressable
+            onPress={() => { setPhase('loading'); setRetryCount(c => c + 1); }}
+            style={{ backgroundColor: '#00C840', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
+          >
+            <Text style={{ color: '#071510', fontSize: 16, fontWeight: '900' }}>Retry</Text>
+          </Pressable>
         </LinearGradient>
       </View>
     );
