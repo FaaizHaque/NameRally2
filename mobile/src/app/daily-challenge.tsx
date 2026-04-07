@@ -208,6 +208,12 @@ export default function DailyChallengeScreen() {
           return;
         }
 
+        // Build initial answers (just the letter prefix for each category)
+        const initialAnswers: Record<CategoryType, string> = {} as Record<CategoryType, string>;
+        challengeData.categories.forEach((category) => {
+          initialAnswers[category] = challengeData.letter;
+        });
+
         // Check if first time — show intro before starting timer
         const introShown = await AsyncStorage.getItem('npat_dc_intro_shown');
         if (!introShown) {
