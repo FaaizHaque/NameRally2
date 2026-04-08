@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useIsFocused } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +23,7 @@ export default function GameModeScreen() {
   const setSession = useGameStore((s) => s.setSession);
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
+  const isFocused = useIsFocused();
   const [showSpIntro, setShowSpIntro] = useState(false);
   const [showMpIntro, setShowMpIntro] = useState(false);
 
@@ -443,7 +444,7 @@ export default function GameModeScreen() {
       </LinearGradient>
 
       {/* Single Player first-time intro */}
-      {showSpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+      {isFocused && showSpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
@@ -475,7 +476,7 @@ export default function GameModeScreen() {
       </Modal>}
 
       {/* Multiplayer first-time intro */}
-      {showMpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+      {isFocused && showMpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
