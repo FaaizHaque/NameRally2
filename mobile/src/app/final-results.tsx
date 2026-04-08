@@ -152,7 +152,7 @@ export default function FinalResultsScreen() {
   const latestRound = session.roundResults[session.roundResults.length - 1];
   const sortedPlayers = [...session.players].sort((a, b) => b.totalScore - a.totalScore);
   const winner = sortedPlayers[0];
-  const isCurrentUserWinner = winner.visibleId === currentUser.id;
+  const isCurrentUserWinner = winner?.visibleId === currentUser.id;
 
   const handlePlayAgain = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
