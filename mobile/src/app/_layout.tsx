@@ -18,9 +18,16 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+// Override the canvas background so the navigation surface is never pure black
+// during slide transitions. DarkTheme defaults to #000 which flashes through.
+const AppTheme = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: '#1a2030' },
+};
+
 function RootLayoutNav() {
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={AppTheme}>
       <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: '#1a2030' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="game-mode" />
