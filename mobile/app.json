@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.haquegames.napt",
-      "buildNumber": "24",
+      "buildNumber": "99",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
         "NSCalendarsUsageDescription": "NameRally needs access to your calendar.",
