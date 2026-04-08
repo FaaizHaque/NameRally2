@@ -722,9 +722,9 @@ export default function GameScreen() {
         setRevealDone(true);
         if (gameMode === 'single') {
           shuffleTimeoutRef.current = setTimeout(() => {
-            revealOpacity.value = withTiming(0, { duration: 350 });
-            shuffleTimeoutRef.current = setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 350);
-          }, 800);
+            revealOpacity.value = withTiming(0, { duration: 250 });
+            shuffleTimeoutRef.current = setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 250);
+          }, 300);
         } else {
           // Multiplayer non-pickers: auto-dismiss after 2.5s — no manual button needed,
           // everyone dismisses at roughly the same time
@@ -1439,9 +1439,12 @@ export default function GameScreen() {
               <Pressable
                 style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
                 onPress={() => {
-                  if (!revealDone) return;
-                  revealOpacity.value = withTiming(0, { duration: 250 });
-                  setTimeout(() => setShowReveal(false), 250);
+                  // Allow tapping at any time to skip the shuffle and start immediately
+                  if (shuffleTimeoutRef.current) clearTimeout(shuffleTimeoutRef.current);
+                  setShuffleLetter(session.currentLetter);
+                  setRevealDone(true);
+                  revealOpacity.value = withTiming(0, { duration: 200 });
+                  setTimeout(() => { if (!noveltyShowing.current) setShowReveal(false); }, 200);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
               >
@@ -1456,11 +1459,11 @@ export default function GameScreen() {
                   }}>
                     <Text style={{ fontSize: 78, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>{shuffleLetter}</Text>
                   </View>
-                  {revealDone && (
-                    <Animated.View entering={FadeInUp.duration(300)}>
-                      <Text style={{ color: 'rgba(144,192,255,0.45)', fontSize: 12, fontWeight: '600', letterSpacing: 1 }}>tap to start</Text>
-                    </Animated.View>
-                  )}
+                  <Animated.View entering={FadeInUp.duration(400)}>
+                    <Text style={{ color: 'rgba(144,192,255,0.45)', fontSize: 12, fontWeight: '600', letterSpacing: 1 }}>
+                      {revealDone ? 'starting...' : 'tap to skip'}
+                    </Text>
+                  </Animated.View>
                 </View>
               </Pressable>
             </Animated.View>

@@ -55,7 +55,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#1a2030' }}>
         <KeyboardProvider>
           <StatusBar style="light" />
           <RootLayoutNav />
