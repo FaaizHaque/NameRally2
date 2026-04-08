@@ -153,9 +153,16 @@ export default function DailyChallengeScreen() {
   useEffect(() => {
     const loadChallenge = async () => {
       try {
-        // Fetch today's challenge
-        const response = await fetch(`${BACKEND_URL}/api/daily-challenge`);
-        if (!response.ok) throw new Error('Failed to fetch challenge');
+        // Fetch today's challenge (10-second timeout so we never hang forever)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10_000);
+        let response: Response;
+        try {
+          response = await fetch(`${BACKEND_URL}/api/daily-challenge`, { signal: controller.signal });
+        } finally {
+          clearTimeout(timeoutId);
+        }
+        if (!response.ok) throw new Error(`Server error ${response.status}`);
 
         const challengeData: DailyChallenge = await response.json();
         setChallenge(challengeData);
