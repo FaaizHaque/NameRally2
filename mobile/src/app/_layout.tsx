@@ -21,7 +21,7 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   return (
     <ThemeProvider value={DarkTheme}>
-      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: '#1a2030' } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="game-mode" />
         <Stack.Screen name="difficulty-select" />
@@ -29,6 +29,7 @@ function RootLayoutNav() {
         <Stack.Screen name="create-game" />
         <Stack.Screen name="join-game" />
         <Stack.Screen name="lobby" />
+        <Stack.Screen name="completed-levels" />
         <Stack.Screen name="game" options={{ gestureEnabled: false }} />
         <Stack.Screen name="round-results" options={{ gestureEnabled: false }} />
         <Stack.Screen name="final-results" options={{ gestureEnabled: false }} />
