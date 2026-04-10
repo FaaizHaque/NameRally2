@@ -59,7 +59,14 @@ export default function GameModeScreen() {
     setGameMode('single');
     setIsStartingGame(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/levels/${levelProgress.unlockedLevel}`);
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), 12000);
+      let response: Response;
+      try {
+        response = await fetch(`${BACKEND_URL}/api/levels/${levelProgress.unlockedLevel}`, { signal: controller.signal });
+      } finally {
+        clearTimeout(fetchTimeout);
+      }
       if (!response.ok) throw new Error('Failed to fetch level');
       const levelData: LevelData = await response.json();
       await startLevelGame(levelData);
@@ -446,17 +453,23 @@ export default function GameModeScreen() {
       {/* Full-screen loading overlay — shown while fetching level data so user
           never sees a dark unresponsive screen between "Let's Play" and game start */}
       {isStartingGame && (
-        <View style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: '#1a2845',
-          alignItems: 'center', justifyContent: 'center',
-          zIndex: 99,
-        }}>
+        <Pressable
+          onPress={() => setIsStartingGame(false)}
+          style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: '#1a2845',
+            alignItems: 'center', justifyContent: 'center',
+            zIndex: 99,
+          }}
+        >
           <ActivityIndicator size="large" color="#90c0ff" />
           <Text style={{ color: '#90c0ff', marginTop: 16, fontSize: 18, fontWeight: '700', letterSpacing: 0.5 }}>
             Loading level…
           </Text>
-        </View>
+          <Text style={{ color: 'rgba(144,192,255,0.4)', marginTop: 32, fontSize: 13 }}>
+            tap to cancel
+          </Text>
+        </Pressable>
       )}
 
       {/* Single Player first-time intro */}
