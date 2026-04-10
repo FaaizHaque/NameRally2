@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeIn,
@@ -193,6 +194,7 @@ export default function HomeScreen() {
     React.useCallback(() => {
       Sounds.startBackground('home');
       // Don't stop on blur — how-to-play/select screens duck in place, game screens switch tracks themselves
+      return () => { setShowHowToPlayModal(false); };
     }, [])
   );
 
@@ -565,16 +567,12 @@ export default function HomeScreen() {
       )}
 
       {/* ── How to Play prompt for new users ── */}
-      <Modal
-        visible={showHowToPlayModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => { /* back button intentionally does nothing — must tap Skip or Start */ }}
-      >
+      {showHowToPlayModal && (
         <View style={{
-          flex: 1, backgroundColor: 'rgba(28,18,10,0.65)',
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(28,18,10,0.65)',
           alignItems: 'center', justifyContent: 'center',
-          paddingHorizontal: 28,
+          paddingHorizontal: 28, zIndex: 50,
         }}>
           <View style={{
             backgroundColor: SKETCH_COLORS.paper,
@@ -646,7 +644,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
