@@ -27,6 +27,9 @@ export default function GameModeScreen() {
   const isFocused = useIsFocused();
   const [showSpIntro, setShowSpIntro] = useState(false);
   const [showMpIntro, setShowMpIntro] = useState(false);
+  // Gate that prevents intro modals rendering until after the focus effect
+  // has confirmed focus and cleared any stale state — eliminates flash on navigation
+  const [hasSettled, setHasSettled] = useState(false);
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -47,18 +50,23 @@ export default function GameModeScreen() {
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
-  // Reset intro modals on focus gain and blur so they never flash during navigation
+  // Reset intro modals on focus gain and blur so they never flash during navigation.
+  // hasSettled becomes true only AFTER this cleanup runs, so modals can't render
+  // with stale state from a previous visit.
   useFocusEffect(
     useCallback(() => {
       setShowSpIntro(false);
       setShowMpIntro(false);
-      return () => { setShowSpIntro(false); setShowMpIntro(false); };
+      setHasSettled(true);
+      return () => { setShowSpIntro(false); setShowMpIntro(false); setHasSettled(false); };
     }, [])
   );
 
   const startGame = useCallback(async () => {
     setGameMode('single');
-    setIsStartingGame(true);
+    // Only show the loading overlay if the fetch is slow — avoids a jarring flash
+    // when Railway responds quickly (< 400 ms)
+    const slowTimer = setTimeout(() => setIsStartingGame(true), 400);
     try {
       const controller = new AbortController();
       const fetchTimeout = setTimeout(() => controller.abort(), 12000);
@@ -77,6 +85,7 @@ export default function GameModeScreen() {
       console.error('Error starting level:', error?.message);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
+      clearTimeout(slowTimer);
       setIsStartingGame(false);
     }
   }, [levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
@@ -474,7 +483,7 @@ export default function GameModeScreen() {
       )}
 
       {/* Single Player first-time intro */}
-      {isFocused && showSpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
+      {hasSettled && isFocused && showSpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
@@ -506,7 +515,7 @@ export default function GameModeScreen() {
       </Modal>}
 
       {/* Multiplayer first-time intro */}
-      {isFocused && showMpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
+      {hasSettled && isFocused && showMpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
