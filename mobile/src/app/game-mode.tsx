@@ -443,6 +443,22 @@ export default function GameModeScreen() {
         </View>
       </LinearGradient>
 
+      {/* Full-screen loading overlay — shown while fetching level data so user
+          never sees a dark unresponsive screen between "Let's Play" and game start */}
+      {isStartingGame && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: '#1a2845',
+          alignItems: 'center', justifyContent: 'center',
+          zIndex: 99,
+        }}>
+          <ActivityIndicator size="large" color="#90c0ff" />
+          <Text style={{ color: '#90c0ff', marginTop: 16, fontSize: 18, fontWeight: '700', letterSpacing: 0.5 }}>
+            Loading level…
+          </Text>
+        </View>
+      )}
+
       {/* Single Player first-time intro */}
       {isFocused && showSpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>

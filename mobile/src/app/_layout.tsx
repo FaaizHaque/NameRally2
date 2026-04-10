@@ -37,7 +37,7 @@ function RootLayoutNav() {
         <Stack.Screen name="join-game" />
         <Stack.Screen name="lobby" />
         <Stack.Screen name="completed-levels" />
-        <Stack.Screen name="game" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="game" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="round-results" options={{ gestureEnabled: false }} />
         <Stack.Screen name="final-results" options={{ gestureEnabled: false }} />
         <Stack.Screen name="daily-challenge" options={{ gestureEnabled: false }} />
