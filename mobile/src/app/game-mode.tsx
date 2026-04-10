@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,12 +24,8 @@ export default function GameModeScreen() {
   const setSession = useGameStore((s) => s.setSession);
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
-  const isFocused = useIsFocused();
   const [showSpIntro, setShowSpIntro] = useState(false);
   const [showMpIntro, setShowMpIntro] = useState(false);
-  // Gate that prevents intro modals rendering until after the focus effect
-  // has confirmed focus and cleared any stale state — eliminates flash on navigation
-  const [hasSettled, setHasSettled] = useState(false);
 
   // Skeleton shimmer animation
   const shimmer = useSharedValue(0);
@@ -50,15 +46,12 @@ export default function GameModeScreen() {
     loadLevelProgress().finally(() => setLevelLoaded(true));
   }, [loadLevelProgress]);
 
-  // Reset intro modals on focus gain and blur so they never flash during navigation.
-  // hasSettled becomes true only AFTER this cleanup runs, so modals can't render
-  // with stale state from a previous visit.
+  // Always clear intro overlays when this screen gains or loses focus
   useFocusEffect(
     useCallback(() => {
       setShowSpIntro(false);
       setShowMpIntro(false);
-      setHasSettled(true);
-      return () => { setShowSpIntro(false); setShowMpIntro(false); setHasSettled(false); };
+      return () => { setShowSpIntro(false); setShowMpIntro(false); };
     }, [])
   );
 
@@ -482,9 +475,10 @@ export default function GameModeScreen() {
         </Pressable>
       )}
 
-      {/* Single Player first-time intro */}
-      {hasSettled && isFocused && showSpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+      {/* Single Player first-time intro — absolute View, NOT Modal, so it can never
+          bleed through to other screens in the navigation stack */}
+      {showSpIntro && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
             borderWidth: 2, borderColor: 'rgba(120,170,255,0.4)',
@@ -512,11 +506,11 @@ export default function GameModeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>}
+      )}
 
-      {/* Multiplayer first-time intro */}
-      {hasSettled && isFocused && showMpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
+      {/* Multiplayer first-time intro — absolute View, NOT Modal */}
+      {showMpIntro && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
             borderWidth: 2, borderColor: 'rgba(252,211,77,0.4)',
@@ -545,7 +539,7 @@ export default function GameModeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>}
+      )}
     </View>
   );
 }
