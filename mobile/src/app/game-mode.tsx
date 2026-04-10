@@ -495,7 +495,7 @@ export default function GameModeScreen() {
               Single Player 🎮
             </Text>
             <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              A letter drops — fill every category with words starting with it before time runs out. Score enough to unlock the next level.
+              A letter drops. Fill every category with a word starting with it before time runs out. Score enough to unlock the next level.
             </Text>
             <Pressable
               onPress={() => {
@@ -527,7 +527,7 @@ export default function GameModeScreen() {
               Multiplayer 🎲
             </Text>
             <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              Everyone gets the same letter. Fill your categories, hit STOP when done, and see how your answers stack up. Unique answers score more than shared ones.
+              Everyone gets the same letter. Fill your categories and hit STOP when done. See how your answers stack up. Unique answers score more than shared ones.
             </Text>
             <Pressable
               onPress={() => {
