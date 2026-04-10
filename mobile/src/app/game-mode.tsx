@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Modal, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
-import { useRouter, useFocusEffect, useIsFocused } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Trophy, Pencil, CalendarDays } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -473,7 +474,7 @@ export default function GameModeScreen() {
       )}
 
       {/* Single Player first-time intro */}
-      {isFocused && showSpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+      {isFocused && showSpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
@@ -505,7 +506,7 @@ export default function GameModeScreen() {
       </Modal>}
 
       {/* Multiplayer first-time intro */}
-      {isFocused && showMpIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
+      {isFocused && showMpIntro && <Modal visible transparent animationType="none" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 }}>
           <View style={{
             backgroundColor: '#1f2d50', borderRadius: 20, padding: 26,
