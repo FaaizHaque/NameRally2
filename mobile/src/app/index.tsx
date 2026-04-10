@@ -631,6 +631,9 @@ export default function HomeScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 AsyncStorage.setItem('npat_tutorial_dismissed', 'true');
                 setShowHowToPlayModal(false);
+                Sounds.stopBackground();
+                Sounds.navigate();
+                router.push('/game-mode');
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 14, alignItems: 'center', marginTop: 6 })}
             >
