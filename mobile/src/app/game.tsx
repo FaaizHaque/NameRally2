@@ -8,12 +8,12 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-  Modal,
   ActivityIndicator,
   StyleSheet,
   Keyboard,
 } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
@@ -839,6 +839,10 @@ export default function GameScreen() {
         setNoveltyPopup(null);
         noveltyShowing.current = false;
         setShowReveal(false);
+        setShowExitModal(false);
+        setShowEndGameModal(false);
+        setPendingHint(null);
+        setShowL1Tutorial(false);
         if (adPauseStart.current !== null) {
           adPauseOffset.current += Date.now() - adPauseStart.current;
           adPauseStart.current = null;
@@ -1405,9 +1409,9 @@ export default function GameScreen() {
             </Pressable>
           </View>
 
-          {/* Exit Modal */}
-          <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Exit overlay */}
+          {showExitModal && (
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
               <Animated.View entering={ZoomIn.duration(280).springify()} style={{
                 width: '85%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
                 borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.3)',
@@ -1428,7 +1432,7 @@ export default function GameScreen() {
                 </View>
               </Animated.View>
             </View>
-          </Modal>
+          )}
 
           {/* Letter Reveal Overlay — fully opaque, blocks game until dismissed */}
           {showReveal && (
@@ -1469,9 +1473,9 @@ export default function GameScreen() {
             </Animated.View>
           )}
 
-          {/* ════ HINT CHOICE MODAL (single player) ════ */}
-          <Modal visible={!!pendingHint} transparent animationType="none" onRequestClose={() => setPendingHint(null)}>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+          {/* ════ HINT CHOICE OVERLAY (single player) ════ */}
+          {!!pendingHint && (
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, zIndex: 50 }}>
               <Animated.View entering={ZoomIn.duration(260).springify()} style={{
                 width: '100%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
                 borderWidth: 1.5, borderColor: 'rgba(252,211,77,0.4)',
@@ -1515,7 +1519,7 @@ export default function GameScreen() {
                 </Pressable>
               </Animated.View>
             </View>
-          </Modal>
+          )}
 
           {/* ════ NOVELTY POPUP (single player) ════ */}
           {noveltyPopup && (() => {
@@ -1550,7 +1554,7 @@ export default function GameScreen() {
             };
             const mainIcon = isCat && cat ? catIconMap[cat] : cd.icon;
             return (
-              <Modal visible={true} transparent animationType="none">
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
                 <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
                   <Pressable style={StyleSheet.absoluteFill} onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
                   <Animated.View entering={ZoomIn.springify().damping(14).stiffness(160)} style={{ width: '100%', maxWidth: 310 }}>
@@ -1585,7 +1589,7 @@ export default function GameScreen() {
                     </LinearGradient>
                   </Animated.View>
                 </Animated.View>
-              </Modal>
+              </View>
             );
           })()}
         </LinearGradient>
@@ -1847,9 +1851,9 @@ export default function GameScreen() {
         </NotebookBackground>
       </KeyboardAvoidingView>
 
-      {/* ════ MODALS ════ */}
-      <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
-        <View style={s.backdrop}>
+      {/* ════ OVERLAYS ════ */}
+      {showExitModal && (
+        <View style={[s.backdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }]}>
           <Animated.View entering={ZoomIn.duration(280).springify()} style={s.modalCard}>
             <View style={s.modalIconWrap}><LogOut size={22} color={P.stopRed} strokeWidth={2.5} /></View>
             <Text style={[s.modalTitle, { fontWeight: '800' }]}>Leave Game?</Text>
@@ -1869,11 +1873,11 @@ export default function GameScreen() {
             )}
           </Animated.View>
         </View>
-      </Modal>
+      )}
 
-      {/* ════ HINT CHOICE MODAL ════ */}
-      <Modal visible={!!pendingHint} transparent animationType="none" onRequestClose={() => setPendingHint(null)}>
-        <View style={s.backdrop}>
+      {/* ════ HINT CHOICE OVERLAY ════ */}
+      {!!pendingHint && (
+        <View style={[s.backdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }]}>
           <Animated.View entering={ZoomIn.duration(260).springify()} style={s.modalCard}>
             <View style={[s.modalIconWrap, { backgroundColor: '#1e2d50', borderColor: '#FCD34D' }]}>
               <Lightbulb size={22} color="#FCD34D" strokeWidth={2} />
@@ -1894,10 +1898,10 @@ export default function GameScreen() {
             </Pressable>
           </Animated.View>
         </View>
-      </Modal>
+      )}
 
-      <Modal visible={showEndGameModal} transparent animationType="fade" onRequestClose={() => setShowEndGameModal(false)}>
-        <View style={s.backdrop}>
+      {showEndGameModal && (
+        <View style={[s.backdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }]}>
           <Animated.View entering={ZoomIn.duration(280).springify()} style={s.modalCard}>
             <View style={[s.modalIconWrap, { backgroundColor: P.amberBg, borderColor: P.amber }]}>
               <Crown size={22} color={P.amber} strokeWidth={2.5} />
@@ -1914,7 +1918,7 @@ export default function GameScreen() {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      )}
 
       {/* ════ LETTER PICKER OVERLAY (multiplayer picking_letter phase) ════ */}
       {gameMode === 'multiplayer' && session?.status === 'picking_letter' && (
@@ -2086,7 +2090,7 @@ export default function GameScreen() {
         const badgeLabel = isCat ? 'NEW CATEGORY' : 'NEW RULE';
 
         return (
-          <Modal visible={true} transparent animationType="none">
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
             <Animated.View entering={FadeIn.duration(180)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 28 }}>
               {/* Tap backdrop to dismiss */}
               <Pressable style={StyleSheet.absoluteFill} onPress={() => { resumeTimerAfterNovelty(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNoveltyPopup(null); }} />
@@ -2164,13 +2168,13 @@ export default function GameScreen() {
                 </LinearGradient>
               </Animated.View>
             </Animated.View>
-          </Modal>
+          </View>
         );
       })()}
 
       {/* ═══ LEVEL 1 TUTORIAL — quick tips for first-timers, skippable ═══ */}
       {showL1Tutorial && (
-        <Modal visible={true} transparent animationType="none">
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
           <Animated.View
             entering={FadeIn.duration(200)}
             style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end', paddingBottom: 48, paddingHorizontal: 20 }}
@@ -2232,7 +2236,7 @@ export default function GameScreen() {
               </LinearGradient>
             </Animated.View>
           </Animated.View>
-        </Modal>
+        </View>
       )}
     </View>
   );

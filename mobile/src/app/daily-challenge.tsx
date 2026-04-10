@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, Modal, ActivityIndicator, Share, Alert } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator, Share, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   FadeInDown,
@@ -249,10 +250,10 @@ export default function DailyChallengeScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount]);
 
-  // Dismiss intro modal on screen blur so it never flashes during navigation
+  // Dismiss overlays on screen blur so they never flash during navigation
   useFocusEffect(
     useCallback(() => {
-      return () => { setShowDcIntro(false); };
+      return () => { setShowDcIntro(false); setShowExitModal(false); };
     }, [])
   );
 
@@ -1048,8 +1049,8 @@ export default function DailyChallengeScreen() {
   return (
     <View className="flex-1">
       {/* Daily Challenge first-time intro */}
-      {showDcIntro && <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
+      {showDcIntro && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, zIndex: 50 }}>
           <View style={{
             backgroundColor: '#0D2A0D', borderRadius: 24, padding: 26, width: '100%', maxWidth: 360,
             borderWidth: 1.5, borderColor: 'rgba(0,200,64,0.4)',
@@ -1077,11 +1078,11 @@ export default function DailyChallengeScreen() {
             </Pressable>
           </View>
         </View>
-      </Modal>}
+      )}
 
-      {/* Exit Modal */}
-      <Modal visible={showExitModal} transparent animationType="fade" onRequestClose={() => setShowExitModal(false)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
+      {/* Exit confirmation overlay */}
+      {showExitModal && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, zIndex: 50 }}>
           <View style={{
             backgroundColor: '#0D2A0D', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360,
             borderWidth: 1.5, borderColor: 'rgba(74,222,128,0.2)',
@@ -1105,7 +1106,7 @@ export default function DailyChallengeScreen() {
             </View>
           </View>
         </View>
-      </Modal>
+      )}
 
       <LinearGradient colors={['#0D1F0D', '#1C3A1C', '#0D2A0D']} style={{ flex: 1 }} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         {/* Subtle top accent line */}
