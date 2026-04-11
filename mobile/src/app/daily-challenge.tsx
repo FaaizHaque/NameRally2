@@ -366,7 +366,9 @@ export default function DailyChallengeScreen() {
     setIsSubmitting(true);
 
     try {
-      const totalTimeMs = gameStartTime ? Date.now() - gameStartTime : 0;
+      const totalTimeMs = gameStartTime
+        ? Math.min(Date.now() - gameStartTime, DAILY_CHALLENGE_TIME_LIMIT_S * 1000)
+        : 0;
 
       // Validate all answers
       const validationPromises = challenge.categories.map(async (category) => {
