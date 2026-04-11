@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds } from '@/lib/sounds';
+import { useGameStore } from '@/lib/state/game-store';
 
 // Rough hand-drawn border effect using nested views
 function SketchBox({
@@ -103,6 +104,15 @@ function SketchBox({
 export default function MultiplayerOptionsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const session = useGameStore((s) => s.session);
+
+  // If there's already an active multiplayer session (user went home without quitting),
+  // send them straight back to the lobby.
+  useEffect(() => {
+    if (session && !session.id.startsWith('local-') && session.status === 'lobby') {
+      router.replace('/lobby');
+    }
+  }, []);
 
   const handleCreateGame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
