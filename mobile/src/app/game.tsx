@@ -975,8 +975,13 @@ export default function GameScreen() {
     if (!session || session.status !== 'playing') return;
     // Skip prefill on letterOptions levels — player picks which option to use
     if (currentLevel?.letterOptions) return;
-    const needsPrefill = session.settings.selectedCategories.every(cat => !localAnswers[cat] || !localAnswers[cat].startsWith(session.currentLetter));
-    if (needsPrefill) session.settings.selectedCategories.forEach(cat => updateLocalAnswer(cat, session.currentLetter));
+    // Prefill each category independently — avoids the all-or-nothing race where one
+    // stale answer blocks every other input from receiving its starting letter.
+    session.settings.selectedCategories.forEach(cat => {
+      if (!localAnswers[cat] || !localAnswers[cat].startsWith(session.currentLetter)) {
+        updateLocalAnswer(cat, session.currentLetter);
+      }
+    });
   }, [session?.currentRound, session?.currentLetter, session?.status]);
 
   useEffect(() => {
