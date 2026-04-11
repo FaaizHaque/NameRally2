@@ -1795,14 +1795,22 @@ export default function GameScreen() {
                 <Pressable
                   onPress={() => Keyboard.dismiss()}
                   style={{
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    backgroundColor: P.paperDark, borderRadius: 10,
-                    paddingVertical: 10, paddingHorizontal: 20,
-                    borderWidth: 1, borderColor: P.amber,
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    backgroundColor: gameMode === 'multiplayer' ? P.stopRed : P.amber,
+                    borderRadius: 14,
+                    paddingVertical: 15, paddingHorizontal: 28,
+                    borderWidth: 2,
+                    borderColor: gameMode === 'multiplayer' ? '#901010' : '#906010',
+                    shadowColor: gameMode === 'multiplayer' ? P.stopRed : P.amber,
+                    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 14,
+                    elevation: 8,
                   }}
                 >
-                  <Check size={16} color={P.amber} strokeWidth={2.5} />
-                  <Text style={{ color: P.amber, fontSize: 14, fontWeight: '800' }}>
+                  {gameMode === 'multiplayer'
+                    ? <Hand size={22} color="#FFF" strokeWidth={2.5} />
+                    : <Check size={22} color="#FFF" strokeWidth={3} />
+                  }
+                  <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
                     {gameMode === 'single' ? 'Done — tap Submit' : 'Done — tap STOP!'}
                   </Text>
                 </Pressable>
