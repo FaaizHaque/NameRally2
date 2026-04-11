@@ -18,6 +18,7 @@ import Animated, {
 import {
   Trophy,
   ChevronRight,
+  ChevronLeft,
   Check,
   X,
   Users,
@@ -477,6 +478,15 @@ export default function RoundResultsScreen() {
     }
   }, [session?.status, session?.currentRound]);
 
+  // Auto-end: if only 1 player remains (everyone else left), nobody can advance
+  useEffect(() => {
+    if (!session || session.status === 'final_results') return;
+    if (session.players.length <= 1) {
+      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
+      router.replace('/final-results');
+    }
+  }, [session?.players.length]);
+
   // Show "View Standings" button after all categories revealed (no auto-transition)
   useEffect(() => {
     if (session && completedCategories >= session.settings.selectedCategories.length && phase === 'answers') {
@@ -536,8 +546,23 @@ export default function RoundResultsScreen() {
           {/* Header */}
           <Animated.View
             entering={FadeInDown.duration(400)}
-            style={{ alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16 }}
+            style={{ paddingVertical: 16, paddingHorizontal: 16 }}
           >
+            {/* Back to answers button — only visible on standings phase */}
+            {phase === 'standings' && (
+              <Pressable
+                onPress={() => { setPhase('answers'); setShowNextButton(false); scrollViewRef.current?.scrollTo({ y: 0, animated: true }); }}
+                style={({ pressed }) => ({
+                  flexDirection: 'row', alignItems: 'center', gap: 4,
+                  alignSelf: 'flex-start', marginBottom: 8,
+                  opacity: pressed ? 0.6 : 1,
+                })}
+              >
+                <ChevronLeft size={16} color={SKETCH_COLORS.inkFaint} strokeWidth={2.5} />
+                <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 13, fontWeight: '700' }}>Answers</Text>
+              </Pressable>
+            )}
+            <View style={{ alignItems: 'center' }}>
             <View style={{
               backgroundColor: SKETCH_COLORS.amberLight,
               paddingHorizontal: 14,
@@ -583,6 +608,7 @@ export default function RoundResultsScreen() {
                   </Text>
                 )}
               </View>
+            </View>
             </View>
           </Animated.View>
 

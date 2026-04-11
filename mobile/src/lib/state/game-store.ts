@@ -815,9 +815,19 @@ export const useGameStore = create<GameState>((set, get) => ({
           await supabase.from('players').delete().eq('id', player.id);
         }
 
-        // If host leaves, delete the game
         if (session.hostId === currentUser.id) {
-          await supabase.from('game_sessions').delete().eq('id', session.id);
+          const remaining = session.players.filter(p => p.visibleId !== currentUser.id);
+          if (remaining.length === 0) {
+            // Last player — delete the session entirely
+            await supabase.from('game_sessions').delete().eq('id', session.id);
+          } else {
+            // Pick a random remaining player as the new host
+            const newHost = remaining[Math.floor(Math.random() * remaining.length)];
+            await Promise.all([
+              supabase.from('game_sessions').update({ host_id: newHost.visibleId }).eq('id', session.id),
+              supabase.from('players').update({ is_host: true }).eq('id', newHost.id),
+            ]);
+          }
         }
       } catch (error) {
         console.log('Error leaving game:', error);
@@ -997,7 +1007,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   requestStop: async () => {
-    const { session, currentUser, localAnswers } = get();
+    const { session, currentUser, localAnswers, timeRemaining } = get();
     if (!session || !currentUser) return;
 
     // Check if all categories are filled
@@ -1010,6 +1020,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Check if this is a local session (single-player level mode)
     const isLocalSession = session.id.startsWith('local-');
 
+    // Cap the stop countdown to the actual time remaining — if the timer only
+    // has 2s left, the "Ending in 5s" banner should show "Ending in 2s", not 5s.
+    const MAX_STOP_COUNTDOWN = 5;
+    const cappedCountdown = Math.min(MAX_STOP_COUNTDOWN, Math.max(1, timeRemaining));
+    const adjustedCountdownStart = Date.now() - (MAX_STOP_COUNTDOWN - cappedCountdown) * 1000;
+
     if (isLocalSession) {
       // For local sessions, update state directly
       await get().submitAnswers();
@@ -1018,7 +1034,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           ...session,
           stopRequested: true,
           stopRequestedBy: currentUser.id,
-          stopCountdownStart: Date.now(),
+          stopCountdownStart: adjustedCountdownStart,
         },
       });
       return;
@@ -1034,7 +1050,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         .update({
           stop_requested: true,
           stop_requested_by: currentUser.id,
-          stop_countdown_start: Date.now(),
+          stop_countdown_start: adjustedCountdownStart,
         })
         .eq('id', session.id);
     } catch (error) {
