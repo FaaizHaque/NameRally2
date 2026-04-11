@@ -1508,6 +1508,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         newSession.letterPickerId = existingSession.letterPickerId || null;
       }
 
+      // Preserve roundResults from existing local state when DB returns empty.
+      // A polling refresh can race ahead of the DB write and return an empty array,
+      // wiping out correct scores that were already displayed.
+      if (newSession.roundResults.length === 0 && (existingSession?.roundResults?.length ?? 0) > 0 && existingSession?.id === sessionId) {
+        newSession.roundResults = existingSession.roundResults;
+      }
+
       set({ session: newSession });
     } catch (error) {
       console.log('Error refreshing session:', error);
