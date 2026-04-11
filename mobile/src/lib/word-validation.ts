@@ -7,6 +7,7 @@ import sportsGamesData from '../data/sports_games.json';
 import fruitsVegetablesData from '../data/fruits_vegetables.json';
 import brandsData from '../data/brands.json';
 import healthIssuesData from '../data/health_issues.json';
+import foodDishesData from '../data/food_dishes.json';
 import {
   validateWordFuzzy,
   getHintsLocally,
@@ -23,8 +24,13 @@ function buildLowercaseSet(data: string[]): Set<string> {
   const s = new Set<string>();
   for (const entry of data) {
     if (entry && entry.trim().length > 0) {
-      const lower = entry.toLowerCase().trim();
+      // Normalize apostrophes: curly ' (U+2018/2019) → straight ' → then strip
+      // This ensures "Parkinson's" matches whether iOS types ' or '
+      const lower = entry.toLowerCase().trim().replace(/['\u2018\u2019\u201A\u201B\u2032\u2035`´]/g, '');
       s.add(lower);
+      // Also store the straight-apostrophe form for direct match
+      const withStraightApostrophe = entry.toLowerCase().trim().replace(/[\u2018\u2019\u201A\u201B\u2032\u2035`´]/g, "'");
+      if (withStraightApostrophe !== lower) s.add(withStraightApostrophe);
       // Accent-free variant: "beyoncé" -> "beyonce"
       const noAccents = stripAccents(lower);
       if (noAccents !== lower) s.add(noAccents);
@@ -53,6 +59,7 @@ const SPORTS_GAMES_SET = buildLowercaseSet(sportsGamesData as string[]);
 const FRUITS_VEGETABLES_SET = buildLowercaseSet(fruitsVegetablesData as string[]);
 const BRANDS_SET = buildLowercaseSet(brandsData as string[]);
 const HEALTH_ISSUES_SET = buildLowercaseSet(healthIssuesData as string[]);
+const FOOD_DISHES_SET = buildLowercaseSet(foodDishesData as string[]);
 
 // Helper function to get singular form of a word (for plural validation)
 const getSingularForm = (word: string): string | null => {
@@ -860,7 +867,7 @@ export const findCloseMatch = (
     // Advanced categories - use online validation only (no local sets)
     countries: new Set<string>(),
     professions: new Set<string>(),
-    food_dishes: new Set<string>(),
+    food_dishes: FOOD_DISHES_SET,
     celebrities: new Set<string>(),
   };
 
@@ -1429,7 +1436,8 @@ export const validateWithFallback = async (
   letterOptions?: string[]
 ): Promise<{ isValid: boolean; source: 'supabase' | 'local' | 'online' | 'none' }> => {
   // Basic validation (starts with letter, min length)
-  const trimmed = answer.trim().toLowerCase();
+  // Normalize apostrophes: iOS smart quotes (', ') → strip, so "Parkinson's" and "Parkinson's" both become "parkinsons"
+  const trimmed = answer.trim().toLowerCase().replace(/['\u2018\u2019\u201A\u201B\u2032\u2035`´]/g, '');
 
   const validLetters = letterOptions && letterOptions.length > 0 ? letterOptions : [letter];
   const startsWithLetter = validLetters.some((opt) => trimmed.startsWith(opt.toLowerCase()));
@@ -1493,7 +1501,7 @@ export const validateWithFallback = async (
     brands: BRANDS_SET,
     health_issues: HEALTH_ISSUES_SET,
     fruits_vegetables: FRUITS_VEGETABLES_SET,
-    // Advanced categories use online validation only
+    food_dishes: FOOD_DISHES_SET,
   };
 
   const localSet = localSets[category];
