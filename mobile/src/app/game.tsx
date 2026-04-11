@@ -865,6 +865,7 @@ export default function GameScreen() {
     }
     noveltyShowing.current = false;
     setShowReveal(false);
+    setNewCategoryForLevel(null);
   };
 
   const executeHint = async (category: CategoryType, i: number) => {

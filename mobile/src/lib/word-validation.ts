@@ -946,9 +946,9 @@ export const isStrictValidAnswer = (
       if (allVariants.some(v => WORLD_NAMES_SET.has(v))) {
         return true;
       }
-      // Accept multi-word names where all parts are in the database (e.g., "John Peter")
+      // Accept "First Last" if the first name is known (last name can be anything)
       const nameParts = trimmedAnswer.split(' ');
-      if (nameParts.length >= 2 && nameParts.every(part => WORLD_NAMES_SET.has(part))) {
+      if (nameParts.length >= 2 && WORLD_NAMES_SET.has(nameParts[0])) {
         return true;
       }
       break;
@@ -1029,9 +1029,9 @@ export const hasSpellingPenalty = (
       break;
     case 'names': {
       if (penaltyVariants.some(v => WORLD_NAMES_SET.has(v))) return false;
-      // No penalty for valid multi-word names (e.g., "John Peter")
+      // No penalty for valid multi-word names (e.g., "Travis Scott")
       const parts = trimmedAnswer.split(' ');
-      if (parts.length >= 2 && parts.every(part => WORLD_NAMES_SET.has(part))) return false;
+      if (parts.length >= 2 && WORLD_NAMES_SET.has(parts[0])) return false;
       break;
     }
     case 'animal':
@@ -1525,6 +1525,14 @@ export const validateWithFallback = async (
     for (const entry of localSet) {
       if (entry.replace(/[\s-]+/g, '') === noSpaceAnswer) {
         console.log(`[Validation] "${answer}" - accepted from local database (normalized match: ${entry})`);
+        return { isValid: true, source: 'local' };
+      }
+    }
+    // For names: accept "First Last" where the first name is in the database
+    if (category === 'names') {
+      const nameParts = normalizedAnswer.split(' ');
+      if (nameParts.length >= 2 && localSet.has(nameParts[0])) {
+        console.log(`[Validation] "${answer}" - accepted from local database (first-name match: ${nameParts[0]})`);
         return { isValid: true, source: 'local' };
       }
     }

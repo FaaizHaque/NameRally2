@@ -513,6 +513,15 @@ export async function validateWordFuzzy(
     return { found: true, matchedWord };
   }
 
+  // For names: accept "First Last" if the first name alone is a known name
+  // e.g. "Travis Scott", "Jay-Z Rivera", "Kim Kardashian" — first word must be recognised
+  if (category === 'names') {
+    const words = normalizeForComparison(word).split(/\s+/).filter(Boolean);
+    if (words.length >= 2 && set.has(words[0])) {
+      return { found: true, matchedWord: word };
+    }
+  }
+
   return { found: false };
 }
 
