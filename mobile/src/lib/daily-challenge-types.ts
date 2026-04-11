@@ -83,14 +83,14 @@ export function generateShareMessage(result: DailyChallengeResult, challenge: Da
   // Create result grid (emoji-based)
   const grid = result.answers.map(a => a.isValid ? '✅' : '❌').join('');
 
-  return `NameRally Daily Challenge — ${result.date}
+  return `NAPT Daily Challenge — ${result.date}
 
 ${grid}
 Letter: ${challenge.letter}
 Score: ${result.totalScore} pts · ${correctCount}/6 correct
 Time: ${timeStr}
 
-Can you beat my score? Download NameRally on the App Store:
+Can you beat my score? Download NAPT on the App Store:
 https://apps.apple.com/app/namerally`;
 }
 

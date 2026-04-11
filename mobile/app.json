@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NameRally",
+    "name": "NAPT",
     "slug": "namerally",
     "scheme": "namerally",
     "version": "1.0.0",
@@ -16,10 +16,11 @@
       "bundleIdentifier": "com.haquegames.napt",
       "buildNumber": "101",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "NameRally uses the microphone for audio features.",
-        "NSCalendarsUsageDescription": "NameRally needs access to your calendar.",
-        "NSCalendarsFullAccessUsageDescription": "NameRally needs full calendar access.",
-        "NSRemindersUsageDescription": "NameRally needs access to reminders.",
+        "CFBundleDisplayName": "NAPT",
+        "NSMicrophoneUsageDescription": "NAPT uses the microphone for audio features.",
+        "NSCalendarsUsageDescription": "NAPT needs access to your calendar.",
+        "NSCalendarsFullAccessUsageDescription": "NAPT needs full calendar access.",
+        "NSRemindersUsageDescription": "NAPT needs access to reminders.",
         "UIBackgroundModes": ["audio"]
       }
     },
@@ -40,7 +41,7 @@
       [
         "expo-av",
         {
-          "microphonePermission": "NameRally uses the microphone for audio features."
+          "microphonePermission": "NAPT uses the microphone for audio features."
         }
       ],
       [
