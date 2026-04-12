@@ -317,9 +317,12 @@ export default function DailyChallengeScreen() {
   const handleAnswerChange = (category: CategoryType, text: string) => {
     if (!challenge) return;
 
-    const upper = text.toUpperCase();
-    // Prevent removing or overwriting the starting letter
-    if (!upper.startsWith(challenge.letter.toUpperCase())) return;
+    let upper = text.toUpperCase();
+    // If user selected-all and typed a replacement, prepend the required letter
+    // instead of blocking the input entirely.
+    if (!upper.startsWith(challenge.letter.toUpperCase())) {
+      upper = challenge.letter.toUpperCase() + upper;
+    }
 
     // Start timing when user starts typing (beyond just the letter)
     if (upper.length > challenge.letter.length && !categoryStartTimes[category]) {

@@ -302,8 +302,12 @@ const CategoryRow = React.memo(({
               value={answer}
               onChangeText={t => {
                 if (inputDisabled) return;
-                const upper = t.toUpperCase();
-                if (!upper.startsWith(letter.toUpperCase())) return;
+                let upper = t.toUpperCase();
+                // If user selected-all and typed a replacement, the new text won't start
+                // with the required letter — prepend it instead of blocking the input.
+                if (!upper.startsWith(letter.toUpperCase())) {
+                  upper = letter.toUpperCase() + upper;
+                }
                 onChangeText(upper);
                 const now = Date.now();
                 if (now - lastTypeSoundAt.current > 80) {
