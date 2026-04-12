@@ -383,6 +383,7 @@ export default function GameScreen() {
   const currentLevel      = useGameStore(s => s.currentLevel);
   const levelProgress     = useGameStore(s => s.levelProgress);
   const spendStars        = useGameStore(s => s.spendStars);
+  const startLevelGame    = useGameStore(s => s.startLevelGame);
   const isLoading         = useGameStore(s => s.isLoading);
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
@@ -1099,6 +1100,13 @@ export default function GameScreen() {
     router.replace('/');
   };
 
+  const handleReplayLevel = async () => {
+    if (!currentLevel) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowExitModal(false);
+    await startLevelGame(currentLevel);
+  };
+
   const handleEndGame = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setShowEndGameModal(false);
@@ -1440,6 +1448,13 @@ export default function GameScreen() {
                   <Pressable onPress={handleExit} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#2d1a1a', borderWidth: 1.5, borderColor: '#ef4444', alignItems: 'center' }}>
                     <Text style={{ color: '#fca5a5', fontWeight: '800', fontSize: 15 }}>Leave</Text>
                   </Pressable>
+                </View>
+                {isLevelMode && (
+                  <Pressable onPress={handleReplayLevel} style={{ marginTop: 10, paddingVertical: 12, borderRadius: 12, backgroundColor: 'rgba(251,191,36,0.12)', borderWidth: 1.5, borderColor: 'rgba(251,191,36,0.5)', alignItems: 'center' }}>
+                    <Text style={{ color: '#fbbf24', fontWeight: '800', fontSize: 15 }}>↺  Replay Level</Text>
+                  </Pressable>
+                )}
+                <View style={{ display: 'none' }}>{/* spacer placeholder */}
                 </View>
               </Animated.View>
             </View>
@@ -1885,6 +1900,11 @@ export default function GameScreen() {
                 <Text style={[s.mBtnLightTxt, { fontWeight: '700' }]}>Leave</Text>
               </Pressable>
             </View>
+            {isLevelMode && (
+              <Pressable onPress={handleReplayLevel} style={[s.mBtnGhost, { borderColor: 'rgba(251,191,36,0.5)', backgroundColor: 'rgba(251,191,36,0.08)' }]}>
+                <Text style={[s.mBtnGhostTxt, { fontWeight: '700', color: '#fbbf24' }]}>↺  Replay Level</Text>
+              </Pressable>
+            )}
             {isHost && !isLevelMode && (
               <Pressable onPress={() => { setShowExitModal(false); setShowEndGameModal(true); }} style={s.mBtnGhost}>
                 <Text style={[s.mBtnGhostTxt, { fontWeight: '700' }]}>End Game for Everyone</Text>
