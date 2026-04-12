@@ -865,7 +865,8 @@ export default function GameScreen() {
     }
     noveltyShowing.current = false;
     setShowReveal(false);
-    setNewCategoryForLevel(null);
+    // Do NOT clear newCategoryForLevel here — the "NEW CATEGORY" badge and sort-to-top
+    // should remain visible for the entire round, not disappear on popup dismiss.
   };
 
   const executeHint = async (category: CategoryType, i: number) => {
