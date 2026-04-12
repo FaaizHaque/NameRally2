@@ -29,19 +29,20 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={AppTheme}>
       <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: '#1a2030' } }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="game-mode" />
-        <Stack.Screen name="difficulty-select" />
-        <Stack.Screen name="multiplayer-options" />
-        <Stack.Screen name="create-game" />
-        <Stack.Screen name="join-game" />
-        <Stack.Screen name="lobby" />
-        <Stack.Screen name="completed-levels" />
-        <Stack.Screen name="game" options={{ gestureEnabled: false, animation: 'fade' }} />
-        <Stack.Screen name="round-results" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="final-results" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="daily-challenge" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="how-to-play" />
+        <Stack.Screen name="index" options={{ contentStyle: { backgroundColor: '#F5EDD8' } }} />
+        {/* fade from cream index → dark screens eliminates background flash */}
+        <Stack.Screen name="game-mode" options={{ animation: 'fade', contentStyle: { backgroundColor: '#1a2540' } }} />
+        <Stack.Screen name="difficulty-select" options={{ contentStyle: { backgroundColor: '#1a2540' } }} />
+        <Stack.Screen name="multiplayer-options" options={{ contentStyle: { backgroundColor: '#1a2540' } }} />
+        <Stack.Screen name="create-game" options={{ contentStyle: { backgroundColor: '#1a2030' } }} />
+        <Stack.Screen name="join-game" options={{ contentStyle: { backgroundColor: '#1a2030' } }} />
+        <Stack.Screen name="lobby" options={{ contentStyle: { backgroundColor: '#1a2030' } }} />
+        <Stack.Screen name="completed-levels" options={{ contentStyle: { backgroundColor: '#1a2030' } }} />
+        <Stack.Screen name="game" options={{ gestureEnabled: false, animation: 'fade', contentStyle: { backgroundColor: '#142d58' } }} />
+        <Stack.Screen name="round-results" options={{ gestureEnabled: false, contentStyle: { backgroundColor: '#142d58' } }} />
+        <Stack.Screen name="final-results" options={{ gestureEnabled: false, contentStyle: { backgroundColor: '#142d58' } }} />
+        <Stack.Screen name="daily-challenge" options={{ gestureEnabled: false, contentStyle: { backgroundColor: '#0a1628' } }} />
+        <Stack.Screen name="how-to-play" options={{ contentStyle: { backgroundColor: '#1a2030' } }} />
       </Stack>
     </ThemeProvider>
   );

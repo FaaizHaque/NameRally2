@@ -1430,32 +1430,27 @@ export default function GameScreen() {
 
           {/* Exit overlay */}
           {showExitModal && (
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-              <Animated.View entering={ZoomIn.duration(280).springify()} style={{
-                width: '85%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
-                borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.3)',
-                shadowColor: '#4090e8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 20,
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,15,35,0.82)', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+              <Animated.View entering={FadeInDown.duration(220).springify()} style={{
+                width: '82%', backgroundColor: '#0c1a35', borderRadius: 24, padding: 28,
+                borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+                shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 32,
               }}>
-                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: '#2d1a1a', borderWidth: 1.5, borderColor: '#ef4444', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 12 }}>
-                  <LogOut size={22} color="#ef4444" strokeWidth={2.5} />
-                </View>
-                <Text style={{ color: '#e0e7ff', fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>Leave Game?</Text>
-                <Text style={{ color: 'rgba(144,192,255,0.7)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>Your progress is saved.</Text>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <Pressable onPress={() => setShowExitModal(false)} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1a3a6e', borderWidth: 1.5, borderColor: 'rgba(80,160,255,0.6)', alignItems: 'center' }}>
-                    <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Stay</Text>
+                <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 4 }}>Leave Game?</Text>
+                <Text style={{ color: 'rgba(180,200,255,0.55)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>Your progress is saved.</Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: isLevelMode ? 10 : 0 }}>
+                  <Pressable onPress={() => setShowExitModal(false)} style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center' }}>
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Stay</Text>
                   </Pressable>
-                  <Pressable onPress={handleExit} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#2d1a1a', borderWidth: 1.5, borderColor: '#ef4444', alignItems: 'center' }}>
-                    <Text style={{ color: '#fca5a5', fontWeight: '800', fontSize: 15 }}>Leave</Text>
+                  <Pressable onPress={handleExit} style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: '#ef4444', alignItems: 'center' }}>
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Leave</Text>
                   </Pressable>
                 </View>
                 {isLevelMode && (
-                  <Pressable onPress={handleReplayLevel} style={{ marginTop: 10, paddingVertical: 12, borderRadius: 12, backgroundColor: 'rgba(251,191,36,0.12)', borderWidth: 1.5, borderColor: 'rgba(251,191,36,0.5)', alignItems: 'center' }}>
-                    <Text style={{ color: '#fbbf24', fontWeight: '800', fontSize: 15 }}>↺  Replay Level</Text>
+                  <Pressable onPress={handleReplayLevel} style={{ paddingVertical: 15, borderRadius: 14, backgroundColor: 'rgba(251,191,36,0.15)', borderWidth: 1, borderColor: 'rgba(251,191,36,0.3)', alignItems: 'center' }}>
+                    <Text style={{ color: '#fbbf24', fontWeight: '700', fontSize: 16 }}>↺  Replay Level</Text>
                   </Pressable>
                 )}
-                <View style={{ display: 'none' }}>{/* spacer placeholder */}
-                </View>
               </Animated.View>
             </View>
           )}
@@ -1501,47 +1496,39 @@ export default function GameScreen() {
 
           {/* ════ HINT CHOICE OVERLAY (single player) ════ */}
           {!!pendingHint && (
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, zIndex: 50 }}>
-              <Animated.View entering={ZoomIn.duration(260).springify()} style={{
-                width: '100%', backgroundColor: '#0e2040', borderRadius: 20, padding: 24,
-                borderWidth: 1.5, borderColor: 'rgba(252,211,77,0.4)',
-                shadowColor: '#FCD34D', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.2, shadowRadius: 20,
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,15,35,0.82)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
+              <Animated.View entering={FadeInDown.duration(220).springify()} style={{
+                width: '100%', backgroundColor: '#0c1a35', borderRadius: 24, padding: 28,
+                borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+                shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 32,
               }}>
-                <View style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 1.5, borderColor: '#FCD34D', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 14 }}>
-                  <Lightbulb size={24} color="#FCD34D" strokeWidth={2} />
-                </View>
-                <Text style={{ color: '#e0e7ff', fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 6 }}>Get a Hint</Text>
-                {/* Star balance */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 4 }}>
+                <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 4 }}>Get a Hint</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 20 }}>
                   <Star size={13} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
-                  <Text style={{ color: '#FCD34D', fontSize: 13, fontWeight: '700' }}>
-                    You have {levelProgress.totalStars} star{levelProgress.totalStars !== 1 ? 's' : ''}
+                  <Text style={{ color: 'rgba(180,200,255,0.55)', fontSize: 14 }}>
+                    You have <Text style={{ color: '#FCD34D', fontWeight: '700' }}>{levelProgress.totalStars}</Text> star{levelProgress.totalStars !== 1 ? 's' : ''}
                   </Text>
                 </View>
-                {levelProgress.totalStars < HINT_COST ? (
-                  <Text style={{ color: '#f87171', fontSize: 13, fontWeight: '700', textAlign: 'center', marginBottom: 16 }}>
-                    Need {HINT_COST - levelProgress.totalStars} more star{HINT_COST - levelProgress.totalStars !== 1 ? 's' : ''} — watch the ad instead!
-                  </Text>
-                ) : (
-                  <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 13, textAlign: 'center', marginBottom: 16 }}>
-                    Spend {HINT_COST} stars or watch a free ad.
+                {levelProgress.totalStars < HINT_COST && (
+                  <Text style={{ color: '#f87171', fontSize: 13, textAlign: 'center', marginBottom: 16, marginTop: -12 }}>
+                    Need {HINT_COST - levelProgress.totalStars} more — watch the ad instead.
                   </Text>
                 )}
                 <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
-                  <Pressable onPress={() => setPendingHint(null)} style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1a3a6e', alignItems: 'center' }}>
-                    <Text style={{ color: '#90c0ff', fontWeight: '800', fontSize: 15 }}>Cancel</Text>
+                  <Pressable onPress={() => setPendingHint(null)} style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center' }}>
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Cancel</Text>
                   </Pressable>
                   <Pressable
                     onPress={handleHintViaStars}
                     disabled={levelProgress.totalStars < HINT_COST}
-                    style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#1e2d50', borderWidth: 2, borderColor: levelProgress.totalStars >= HINT_COST ? '#FCD34D' : 'rgba(252,211,77,0.25)', opacity: levelProgress.totalStars >= HINT_COST ? 1 : 0.45, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+                    style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: levelProgress.totalStars >= HINT_COST ? '#FCD34D' : 'rgba(252,211,77,0.12)', opacity: levelProgress.totalStars >= HINT_COST ? 1 : 0.5, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 }}
                   >
-                    <Star size={14} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
-                    <Text style={{ color: '#FCD34D', fontWeight: '900', fontSize: 15 }}>{HINT_COST}★</Text>
+                    <Star size={14} color={levelProgress.totalStars >= HINT_COST ? '#000' : '#FCD34D'} fill={levelProgress.totalStars >= HINT_COST ? '#000' : '#FCD34D'} strokeWidth={1} />
+                    <Text style={{ color: levelProgress.totalStars >= HINT_COST ? '#000' : '#FCD34D', fontWeight: '700', fontSize: 16 }}>{HINT_COST} stars</Text>
                   </Pressable>
                 </View>
-                <Pressable onPress={handleHintViaAd} style={{ backgroundColor: '#10b981', borderRadius: 12, paddingVertical: 14, alignItems: 'center' }}>
-                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Watch Ad — Free</Text>
+                <Pressable onPress={handleHintViaAd} style={{ backgroundColor: '#10b981', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Watch Ad — Free</Text>
                 </Pressable>
               </Animated.View>
             </View>
