@@ -678,6 +678,16 @@ function isEndLetterViable(
 }
 
 // ============================================
+// DOUBLE-LETTERS + LETTER+CATEGORY CROSS-RESTRICTIONS
+// Letters where a specific category has no common answers with double letters.
+// Key: startLetter → categories that are impossible under double_letters constraint
+// ============================================
+const DOUBLE_LETTERS_CATEGORY_BLOCKED: Record<string, CategoryType[]> = {
+  // Only Oman starts with O — it has no double letters, making this combo impossible
+  O: ['countries'],
+};
+
+// ============================================
 // CONSTRAINT PLAYABILITY CHECKS
 // ============================================
 
@@ -699,6 +709,9 @@ function isConstraintPlayable(
   if (constraintType === 'double_letters') {
     const hardLetters = ['Q', 'X', 'Z', 'J', 'Y', 'K', 'V', 'U'];
     if (hardLetters.includes(letter)) return false;
+    // Category-specific blocks: some letters have no valid answers in certain categories
+    const catBlocked = DOUBLE_LETTERS_CATEGORY_BLOCKED[letter];
+    if (catBlocked && catBlocked.includes(category)) return false;
   }
 
   return true;
@@ -1352,13 +1365,24 @@ export function generateLevel(levelNumber: number): LevelData {
   } else if (override?.useEasyCategories) {
     const easyPool = getEasyCategoriesForLevel(levelNumber);
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
-    const validEasy = easyPool.filter((c) => !impossible.includes(c));
+    const cType = override.constraintType;
+    const validEasy = easyPool.filter((c) => {
+      if (impossible.includes(c)) return false;
+      // Also exclude categories that are impossible given the constraint + letter combo
+      if (cType && letter.length === 1 && !isConstraintPlayable(letter, c, cType)) return false;
+      return true;
+    });
     const exclusionPool = enforceMutualExclusion(rng.shuffle(validEasy), rng);
     const count = Math.min(override.easyCount ?? override.categoryCount ?? exclusionPool.length, exclusionPool.length);
     categories = exclusionPool.slice(0, count);
   } else if (override?.categoryCount !== undefined) {
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
-    const valid = availableCategories.filter((c) => !impossible.includes(c));
+    const cType = override.constraintType;
+    const valid = availableCategories.filter((c) => {
+      if (impossible.includes(c)) return false;
+      if (cType && letter.length === 1 && !isConstraintPlayable(letter, c, cType)) return false;
+      return true;
+    });
     const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
     categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
     // Guarantee milestone category is included at its introduction level.

@@ -271,7 +271,7 @@ export default function FinalResultsScreen() {
                 color: levelPassed ? '#ffffff' : '#fca5a5',
                 fontSize: 34, fontWeight: '900', marginTop: 16, letterSpacing: -0.5,
               }}>
-                {levelPassed ? 'Level Complete!' : 'Level Failed'}
+                {levelPassed ? `Level ${currentLevel?.level} Complete!` : 'Level Failed'}
               </Text>
 
               {revealStage < 1 && (
