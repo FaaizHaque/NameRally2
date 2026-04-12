@@ -446,23 +446,26 @@ export default function DailyChallengeScreen() {
       await AsyncStorage.setItem(`daily_challenge_result_${challenge.date}`, JSON.stringify(newResult));
       await AsyncStorage.setItem(`daily_challenge_data_${challenge.date}`, JSON.stringify(challenge));
 
-      // Submit to global Supabase leaderboard (non-blocking, best effort, only if logged in)
+      // Submit to global Supabase leaderboard — awaited so the score is in DB before we fetch
       if (currentUser) {
         const correctCount = validatedAnswers.filter(a => a.isValid).length;
-        supabase
-          .from('daily_challenge_scores')
-          .upsert(
-            {
-              challenge_date: challenge.date,
-              username,
-              total_score: totalScore,
-              total_time_ms: totalTimeMs,
-              correct_count: correctCount,
-              completed_at: Date.now(),
-            },
-            { onConflict: 'challenge_date,username' }
-          )
-          .then(() => { /* ignore errors — leaderboard is best-effort */ });
+        try {
+          await supabase
+            .from('daily_challenge_scores')
+            .upsert(
+              {
+                challenge_date: challenge.date,
+                username,
+                total_score: totalScore,
+                total_time_ms: totalTimeMs,
+                correct_count: correctCount,
+                completed_at: Date.now(),
+              },
+              { onConflict: 'challenge_date,username' }
+            );
+        } catch {
+          // Best-effort — leaderboard may not show current score if this fails
+        }
       }
 
       setResult(newResult);
