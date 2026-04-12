@@ -515,7 +515,7 @@ export const WORD_DATABASE: Record<string, Record<string, string[]>> = {
     E: ['EA', 'eBay', 'Emirates', 'Epson', 'ESPN', 'Estee Lauder', 'Etsy', 'Expedia', 'ExxonMobil'],
     F: ['Facebook', 'FedEx', 'Fendi', 'Ferrari', 'Fila', 'Firefox', 'Ford', 'Forever 21', 'Fossil', 'Fox'],
     G: ['Gap', 'Gatorade', 'General Electric', 'General Motors', 'Gillette', 'Giorgio Armani', 'Givenchy', 'GM', 'Goldman Sachs', 'Google', 'Goodyear', 'GoPro', 'Gucci', 'Guess'],
-    H: ['H&M', 'Haagen-Dazs', 'Hasbro', 'HBO', 'Heineken', 'Heinz', 'Hello Kitty', 'Hennessy', 'Hershey', 'Hertz', 'Hewlett Packard', 'Hilton', 'Honda', 'HP', 'HSBC', 'Huawei', 'Hulu', 'Hyundai'],
+    H: ['H&M', 'Haagen-Dazs', 'Hard Rock', 'Haribo', 'Harley Davidson', 'Hasbro', 'HBO', 'Heineken', 'Heinz', 'Hello Kitty', 'Hennessy', 'Hershey', 'Hertz', 'Hewlett Packard', 'Hilton', 'Honda', 'HP', 'HSBC', 'Huawei', 'Hulu', 'Hyundai'],
     I: ['IBM', 'IKEA', 'Instagram', 'Intel', 'Intuit'],
     J: ['Jaguar', 'JBL', 'JCPenney', 'JD', 'JD Sports', 'Jeep', 'Jif', 'Jimmy Choo', 'Jiffy', 'John Deere', 'Johnson & Johnson', 'Jollibee', 'Jordan', 'Jose Cuervo', 'JPMorgan', 'JVC'],
     K: ['Kate Spade', 'Kellogg', 'KFC', 'Kia', 'Kleenex', 'Kodak', 'Kraft', 'Kroger'],

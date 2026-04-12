@@ -683,8 +683,25 @@ function isEndLetterViable(
 // Key: startLetter → categories that are impossible under double_letters constraint
 // ============================================
 const DOUBLE_LETTERS_CATEGORY_BLOCKED: Record<string, CategoryType[]> = {
-  // Only Oman starts with O — it has no double letters, making this combo impossible
-  O: ['countries'],
+  // Countries with double letters exist for: A (Andorra), C (Cameroon), G (Guinea-Bissau),
+  // M (Morocco), P (Philippines), R (Russia), S (Seychelles), W (none, no countries exist).
+  // All other letters have no well-known countries with consecutive repeated letters.
+  B: ['countries'],  // Bahamas, Belgium, Brazil — none have double letters
+  D: ['countries'],  // Denmark, Djibouti, Dominican Republic — none
+  E: ['countries'],  // Ecuador, Egypt, Estonia — none
+  F: ['countries'],  // Fiji, Finland, France — none
+  H: ['countries'],  // Haiti, Honduras, Hungary — none
+  I: ['countries'],  // Iceland, India, Indonesia — none
+  J: ['countries'],  // Jamaica, Japan, Jordan — none
+  K: ['countries'],  // Kazakhstan, Kenya, Kuwait — none
+  L: ['countries'],  // Laos, Latvia, Lebanon, Luxembourg — none
+  N: ['countries'],  // Namibia, Nepal, Netherlands, Nigeria — none
+  O: ['countries'],  // Only Oman — no double letters possible
+  T: ['countries'],  // Tanzania, Thailand, Turkey, Tuvalu — none
+  U: ['countries'],  // Uganda, Ukraine, Uruguay, Uzbekistan — none
+  V: ['countries'],  // Vanuatu, Venezuela, Vietnam — none
+  Y: ['countries'],  // Only Yemen — no double letters
+  Z: ['countries'],  // Zambia, Zimbabwe — none
 };
 
 // ============================================
