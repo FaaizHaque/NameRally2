@@ -1254,7 +1254,7 @@ export default function GameScreen() {
             }}>
               <AlertTriangle size={16} color="#ef4444" strokeWidth={2.5} />
               <Text style={{ color: '#fca5a5', fontSize: 16, fontWeight: '800' }}>
-                {stopCountdown > 0 ? `Ending in ${stopCountdown}s...` : 'Saving answers...'}
+                {stopCountdown > 0 ? `Ending in ${stopCountdown}s...` : `Round ending...`}
               </Text>
             </Animated.View>
           )}
@@ -1421,7 +1421,7 @@ export default function GameScreen() {
                   ? <>
                       <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
                       <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 17, fontWeight: '800' }}>
-                        {stopCountdown > 0 ? `${stopCountdown}s` : 'Saving...'}
+                        {stopCountdown > 0 ? `${stopCountdown}s` : `Ending...`}
                       </Text>
                     </>
                   : <>
@@ -1725,7 +1725,7 @@ export default function GameScreen() {
             <Animated.View entering={ZoomIn.duration(300)} style={s.stopBanner}>
               <AlertTriangle size={18} color="#FFFFFF" strokeWidth={2.5} />
               <Text style={[s.stopBannerTxt, { fontWeight: '900' }]}>
-                {stopCountdown > 0 ? `STOP! Ending in ${stopCountdown}s` : 'Saving answers...'}
+                {stopCountdown > 0 ? `STOP! Ending in ${stopCountdown}s` : `Round ending...`}
               </Text>
             </Animated.View>
           )}
