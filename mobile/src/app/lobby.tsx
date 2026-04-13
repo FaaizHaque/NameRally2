@@ -90,6 +90,7 @@ export default function LobbyScreen() {
   const startGame = useGameStore((s) => s.startGame);
   const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
   const refreshSession = useGameStore((s) => s.refreshSession);
+  const setSession = useGameStore((s) => s.setSession);
 
   // Poll for updates as fallback
   useEffect(() => {
@@ -142,9 +143,10 @@ export default function LobbyScreen() {
     await startGame();
   };
 
-  // Leave lobby — navigate away (unmount handles modal cleanup)
+  // Leave lobby — clear session so multiplayer-options doesn't bounce back
   const handleLeaveLobby = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSession(null);
     router.replace('/multiplayer-options');
   };
 
