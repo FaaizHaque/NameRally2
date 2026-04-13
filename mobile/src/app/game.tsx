@@ -451,7 +451,7 @@ export default function GameScreen() {
     };
     const CONSTRAINT_MILESTONE_LEVELS: Partial<Record<string, number>> = {
       min_word_length: 6, max_word_length: 11, double_letters: 25,
-      ends_with_letter: 30, repeated_letter: 21, combo: 74,
+      ends_with_letter: 30, repeated_letter: 20, combo: 74,
     };
 
     // Category check — takes priority, returns early
