@@ -34,9 +34,9 @@ export interface LevelConstraint {
     | 'min_word_length'
     | 'no_repeat_letters'
     | 'time_pressure'
-    | 'survival'
     | 'ends_with_letter'
     | 'double_letters'
+    | 'repeated_letter'
     | 'max_word_length'
     | 'contains_vowel'
     | 'odd_length'
@@ -623,7 +623,7 @@ function getConstraintTypeForLevel(level: number): LevelConstraint['type'] {
   if (level < 30)  return 'max_word_length';
   if (level < 40)  return 'contains_vowel';
   if (level < 50)  return 'no_repeat_letters';
-  if (level < 60)  return 'survival';
+  if (level < 60)  return 'repeated_letter';
   if (level < 70)  return 'odd_length';
   if (level < 80)  return 'double_letters';
   if (level < 90)  return 'ends_with_letter';
@@ -1059,8 +1059,8 @@ function createSingleConstraint(
     case 'time_pressure':
       return { type: 'time_pressure', description: 'Think fast! Reduced time' };
 
-    case 'survival':
-      return { type: 'survival', description: 'One invalid answer = level failed!' };
+    case 'repeated_letter':
+      return { type: 'repeated_letter', description: 'Word must contain a repeated letter (e.g. paper, level, total)' };
 
     case 'ends_with_letter': {
       // Pick an endLetter that doesn't form an impossible combo with the start letter
@@ -1119,7 +1119,7 @@ function selectConstraint(
   if (
     constraintType !== 'none' &&
     constraintType !== 'combo' &&
-    constraintType !== 'survival' &&
+    constraintType !== 'repeated_letter' &&
     !isPlayableForAll(letter, categories, constraintType, lettersPerCategory)
   ) {
     constraintType = 'none';
@@ -1213,7 +1213,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [45, 60],
     categoryCountRange: [10, 12],
     letterDifficulties: ['easy', 'normal'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters', 'survival', 'odd_length', 'double_letters', 'ends_with_letter', 'combo'],
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'contains_vowel', 'no_repeat_letters', 'repeated_letter', 'odd_length', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
     survivalModeChance: 0,
     bonusMultiplierRange: [1.1, 1.2],
@@ -1249,7 +1249,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [68, 82],
     categoryCountRange: [10, 10],
     letterDifficulties: ['normal', 'hard'],
-    constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure'],
+    constraintPool: ['none', 'min_word_length', 'max_word_length', 'no_repeat_letters', 'repeated_letter', 'time_pressure'],
     allowComboConstraints: false,
     survivalModeChance: 0.15,
     bonusMultiplierRange: [1.4, 1.6],
@@ -1268,7 +1268,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [78, 90],
     categoryCountRange: [12, 12],
     letterDifficulties: ['hard', 'normal'],
-    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters'],
+    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'repeated_letter', 'time_pressure', 'double_letters'],
     allowComboConstraints: false,
     survivalModeChance: 0.3,
     bonusMultiplierRange: [1.6, 1.8],
@@ -1287,7 +1287,7 @@ const DIFFICULTY_BANDS: DifficultyBand[] = [
     passScoreRange: [88, 95],
     categoryCountRange: [12, 12],
     letterDifficulties: ['hard'],
-    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'survival', 'time_pressure', 'double_letters', 'ends_with_letter', 'combo'],
+    constraintPool: ['min_word_length', 'max_word_length', 'no_repeat_letters', 'repeated_letter', 'time_pressure', 'double_letters', 'ends_with_letter', 'combo'],
     allowComboConstraints: true,
     survivalModeChance: 0.45,
     bonusMultiplierRange: [1.8, 2.0],
@@ -1498,9 +1498,8 @@ export function generateLevel(levelNumber: number): LevelData {
   const passScorePercent = getPassScorePercent(levelNumber, categories.length);
   const minScoreToPass = Math.ceil((maxPossibleScore * passScorePercent) / 100);
 
-  // --- Survival ---
-  const isSurvivalMode =
-    constraint.type === 'survival' || rng.next() < getSurvivalChance(levelNumber);
+  // --- Survival (probabilistic only for levels 100+, survival constraint type removed) ---
+  const isSurvivalMode = rng.next() < getSurvivalChance(levelNumber);
 
   // --- Bonus ---
   const bonusMultiplier = getBonusMultiplier(levelNumber);

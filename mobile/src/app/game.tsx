@@ -1192,7 +1192,7 @@ export default function GameScreen() {
                 shadowColor: '#4090e8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
               }}>
                 <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
-                  {session.currentLetter}
+                  {currentLevel?.isMultiLetterMode ? '★' : session.currentLetter}
                 </Text>
               </View>
             </View>

@@ -1597,7 +1597,7 @@ export const validateWithFallback = async (
  * Constraint validation interface
  */
 export interface LevelConstraintCheck {
-  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'survival' | 'ends_with_letter' | 'double_letters' | 'max_word_length' | 'contains_vowel' | 'odd_length' | 'combo';
+  type: 'none' | 'no_common_words' | 'min_word_length' | 'no_repeat_letters' | 'time_pressure' | 'ends_with_letter' | 'double_letters' | 'repeated_letter' | 'max_word_length' | 'contains_vowel' | 'odd_length' | 'combo';
   value?: number;
   endLetter?: string;
   comboConstraints?: Array<{ type: string; value?: number; endLetter?: string }>;
@@ -1611,7 +1611,7 @@ export const validateConstraint = (
   answer: string,
   constraint: LevelConstraintCheck | null | undefined
 ): { passes: boolean; reason?: string } => {
-  if (!constraint || constraint.type === 'none' || constraint.type === 'time_pressure' || constraint.type === 'survival') {
+  if (!constraint || constraint.type === 'none' || constraint.type === 'time_pressure') {
     // These constraints don't affect individual word validation
     return { passes: true };
   }
@@ -1692,6 +1692,20 @@ export const validateConstraint = (
         };
       }
       break;
+
+    case 'repeated_letter': {
+      const lowerRep = lettersOnly.toLowerCase();
+      const freq: Record<string, number> = {};
+      for (const ch of lowerRep) freq[ch] = (freq[ch] || 0) + 1;
+      const hasRepeated = Object.values(freq).some(n => n >= 2);
+      if (!hasRepeated) {
+        return {
+          passes: false,
+          reason: 'Must contain a repeated letter (e.g. paper, level, total)',
+        };
+      }
+      break;
+    }
 
     case 'contains_vowel': {
       const requiredVowel = constraint.endLetter?.toLowerCase();
