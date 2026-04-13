@@ -449,28 +449,28 @@ export default function LobbyScreen() {
       {showLeaveModal && (
         <View style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(5,15,35,0.82)',
+          backgroundColor: 'rgba(0,0,0,0.55)',
           alignItems: 'center', justifyContent: 'center',
           zIndex: 50,
         }}>
           <Animated.View entering={FadeInDown.duration(220).springify()} style={{
-            width: '82%', backgroundColor: '#0c1a35', borderRadius: 24, padding: 28,
-            borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 32,
+            width: '82%', backgroundColor: P.paper, borderRadius: 24, padding: 28,
+            borderWidth: 2, borderColor: P.paperDeep,
+            shadowColor: P.ink, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 16,
           }}>
-            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 4 }}>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: P.inkMed, textAlign: 'center', marginBottom: 4 }}>
               Leave Lobby?
             </Text>
-            <Text style={{ color: 'rgba(180,200,255,0.55)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, color: P.inkFaint, textAlign: 'center', marginBottom: 24 }}>
               Are you sure you want to quit?
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <Pressable
                 onPress={() => setShowLeaveModal(false)}
-                style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center' }}
+                style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: P.paperDark, alignItems: 'center', borderWidth: 1.5, borderColor: P.paperLine + '60' }}
               >
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Stay</Text>
+                <Text style={{ color: P.inkMed, fontWeight: '700', fontSize: 16 }}>Stay</Text>
               </Pressable>
               <Pressable
                 onPress={handleLeaveLobby}
