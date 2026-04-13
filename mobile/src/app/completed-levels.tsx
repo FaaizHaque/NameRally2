@@ -23,7 +23,7 @@ export default function CompletedLevelsScreen() {
   const levelProgress = useGameStore((s) => s.levelProgress);
   const setGameMode = useGameStore((s) => s.setGameMode);
   const startLevelGame = useGameStore((s) => s.startLevelGame);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingLevel, setLoadingLevel] = useState<number | null>(null);
 
   // Get list of completed level numbers
   const completedLevels = SHOW_ALL_LEVELS
@@ -40,10 +40,10 @@ export default function CompletedLevelsScreen() {
   };
 
   const handleLevelPress = useCallback(async (levelNum: number) => {
-    if (isLoading) return;
+    if (loadingLevel !== null) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
-    setIsLoading(true);
+    setLoadingLevel(levelNum);
     try {
       const response = await fetch(`${BACKEND_URL}/api/levels/${levelNum}`);
       if (!response.ok) throw new Error('Failed to fetch level');
@@ -57,14 +57,15 @@ export default function CompletedLevelsScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Error', 'Failed to load level. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoadingLevel(null);
     }
-  }, [isLoading, setGameMode, startLevelGame, router]);
+  }, [loadingLevel, setGameMode, startLevelGame, router]);
 
   const renderLevelCard = ({ item: levelNum }: { item: number }) => {
     const score = levelProgress.levelScores[levelNum] || 0;
     const stars = levelProgress.levelStars?.[levelNum] || 0;
     const isPlayed = !!levelProgress.levelScores[levelNum];
+    const isThisLoading = loadingLevel === levelNum;
 
     return (
       <Animated.View
@@ -73,7 +74,7 @@ export default function CompletedLevelsScreen() {
       >
         <TouchableOpacity
           onPress={() => handleLevelPress(levelNum)}
-          disabled={isLoading}
+          disabled={loadingLevel !== null}
           activeOpacity={0.7}
           style={{ flex: 1 }}
         >
@@ -91,10 +92,10 @@ export default function CompletedLevelsScreen() {
               padding: 8,
               justifyContent: 'space-between',
               alignItems: 'center',
-              opacity: isLoading ? 0.6 : 1,
+              opacity: isThisLoading ? 0.6 : 1,
             }}
           >
-            {isLoading ? (
+            {isThisLoading ? (
               <ActivityIndicator color="#90c0ff" size="small" />
             ) : (
               <>
