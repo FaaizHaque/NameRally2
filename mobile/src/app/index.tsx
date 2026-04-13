@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { navGuard } from '@/lib/nav-guard';
 import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
@@ -253,13 +254,13 @@ export default function HomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Sounds.stopBackground();
     Sounds.navigate();
-    router.push('/game-mode');
+    navGuard(() => router.push('/game-mode'));
   };
 
   const handleHowToPlay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Sounds.tap();
-    router.push('/how-to-play');
+    navGuard(() => router.push('/how-to-play'));
   };
 
   const toggleSound = () => {
@@ -609,7 +610,7 @@ export default function HomeScreen() {
                 Sounds.tap();
                 AsyncStorage.setItem('npat_tutorial_dismissed', 'true');
                 setShowHowToPlayModal(false);
-                router.push('/how-to-play');
+                navGuard(() => router.push('/how-to-play'));
               }}
             >
               <View style={{
@@ -633,7 +634,7 @@ export default function HomeScreen() {
                 setShowHowToPlayModal(false);
                 Sounds.stopBackground();
                 Sounds.navigate();
-                router.push('/game-mode');
+                navGuard(() => router.push('/game-mode'));
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingVertical: 14, alignItems: 'center', marginTop: 6 })}
             >

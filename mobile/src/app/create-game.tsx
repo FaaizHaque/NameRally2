@@ -31,6 +31,7 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { navGuard } from '@/lib/nav-guard';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, AVAILABLE_CATEGORIES, CategoryType } from '@/lib/state/game-store';
 import type { LevelCategoryType } from '@/lib/level-types';
@@ -148,6 +149,7 @@ export default function CreateGameScreen() {
   };
 
   const handleCreateGame = async () => {
+    if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       if (isLevelMode && currentLevel) {

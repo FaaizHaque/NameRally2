@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { ChevronLeft, Zap, Flame, Skull, Clock, Brain, Trophy } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { navGuard } from '@/lib/nav-guard';
 import { useGameStore, DifficultyLevel } from '@/lib/state/game-store';
 import { Sounds } from '@/lib/sounds';
 
@@ -61,7 +62,7 @@ export default function DifficultySelectScreen() {
   const handleSelectDifficulty = (difficulty: DifficultyLevel) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setDifficulty(difficulty);
-    router.push('/create-game');
+    navGuard(() => router.push('/create-game'));
   };
 
   return (
