@@ -24,7 +24,6 @@ import {
   Briefcase,
   Utensils,
   Landmark,
-  LogOut,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
@@ -460,18 +459,15 @@ export default function LobbyScreen() {
             borderWidth: 2, borderColor: P.paperDeep,
             shadowColor: P.ink, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 16,
           }}>
-            <Text style={{ fontSize: 19, fontWeight: '900', color: P.inkMed, textAlign: 'center', marginBottom: 6 }}>
+            <Text style={{ fontSize: 19, fontWeight: '900', color: P.inkMed, textAlign: 'center', marginBottom: 8 }}>
               Leave Lobby?
             </Text>
-            <Text style={{ fontSize: 13, color: P.inkFaint, textAlign: 'center', marginBottom: 4, lineHeight: 18 }}>
-              The session stays open. To rejoin, go to Multiplayer and enter:
-            </Text>
-            <Text style={{ fontSize: 22, fontWeight: '900', color: P.amber, textAlign: 'center', letterSpacing: 4, marginBottom: 22 }}>
-              {session.code}
+            <Text style={{ fontSize: 13, color: P.inkFaint, textAlign: 'center', marginBottom: 22, lineHeight: 18 }}>
+              Are you sure you want to quit the lobby?
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              {/* Stay — dismisses modal */}
+              {/* Cancel — dismisses modal */}
               <Pressable
                 onPress={() => setShowLeaveModal(false)}
                 style={({ pressed }) => ({
@@ -481,22 +477,20 @@ export default function LobbyScreen() {
                   borderWidth: 1.5, borderColor: P.paperLine + '60',
                 })}
               >
-                <Text style={{ fontSize: 16, fontWeight: '700', color: P.inkMed }}>Stay</Text>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: P.inkMed }}>Cancel</Text>
               </Pressable>
 
-              {/* Leave — keeps session alive, goes to multiplayer options */}
+              {/* Quit — goes to multiplayer options */}
               <Pressable
                 onPress={handleLeaveLobby}
                 style={({ pressed }) => ({
-                  flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6,
-                  flexDirection: 'row',
-                  backgroundColor: pressed ? P.paperDark : P.amberBg,
+                  flex: 1, alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: pressed ? '#fca5a5' : '#fee2e2',
                   borderRadius: 12, paddingVertical: 15,
-                  borderWidth: 2, borderColor: P.amber,
+                  borderWidth: 2, borderColor: '#ef4444',
                 })}
               >
-                <LogOut size={17} color={P.inkMed} strokeWidth={2.5} />
-                <Text style={{ fontSize: 16, fontWeight: '800', color: P.inkMed }}>Leave</Text>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: '#dc2626' }}>Quit</Text>
               </Pressable>
             </View>
           </View>
