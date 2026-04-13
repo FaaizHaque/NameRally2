@@ -409,7 +409,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L29 → TWO_LETTER_LEVELS = 'MA'
   30: { categoryCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
   // ── L31-40: +Brands (9 cats, 7 max after mutual exclusion), SO at 33, LA at 38 ──
-  31: { categoryCount: 7 },
+  31: { categoryCount: 7, constraintType: 'repeated_letter' },
   32: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
   // L33 → TWO_LETTER_LEVELS = 'SO'
   34: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
@@ -429,7 +429,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L47: 5+ easy cats, min 5 letters (softened — accessible challenge)
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
   48: { forceLetterOptions: ['LI', 'LE'], categoryCount: 6 },
-  49: { categoryCount: 8, constraintType: 'repeated_letter' },
+  49: { categoryCount: 8 },
   50: { categoryCount: 8, timerSecondsPerCategory: 5 },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9 },
