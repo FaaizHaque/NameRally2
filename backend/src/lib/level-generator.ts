@@ -398,7 +398,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L20: "all 7" exception — food&fruits both appear (useFullPool bypasses mutual exclusion)
   20: { useFullPool: true },
   // ── L21-30: +Countries (8 cats, 6 max after mutual exclusion), CO at 23, MA at 29 ─
-  21: { categoryCount: 6 },
+  21: { categoryCount: 6, constraintType: 'repeated_letter' },
   22: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
   // L23 → TWO_LETTER_LEVELS = 'CO'
   24: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
@@ -420,7 +420,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   39: { categoryCount: 7 },
   40: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['N', 'Y'] },
   // ── L41-50: +Celebrities (10 cats, 8 max), TA at 44 ───────────────────────
-  41: { categoryCount: 8 },
+  41: { categoryCount: 8, constraintType: 'repeated_letter' },
   42: { useEasyCategories: true, easyCount: 6, constraintType: 'double_letters' },
   43: { categoryCount: 8, isMultiLetterMode: true },
   // L44 → TWO_LETTER_LEVELS = 'TA'
