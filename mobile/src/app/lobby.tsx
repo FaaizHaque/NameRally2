@@ -142,10 +142,9 @@ export default function LobbyScreen() {
     await startGame();
   };
 
-  // Leave lobby but keep session alive — player can rejoin using the room code
+  // Leave lobby — navigate away (unmount handles modal cleanup)
   const handleLeaveLobby = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setShowLeaveModal(false);
     router.replace('/multiplayer-options');
   };
 
@@ -450,50 +449,37 @@ export default function LobbyScreen() {
       {showLeaveModal && (
         <View style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.55)',
+          backgroundColor: 'rgba(5,15,35,0.82)',
           alignItems: 'center', justifyContent: 'center',
-          paddingHorizontal: 28, zIndex: 50,
+          zIndex: 50,
         }}>
-          <View style={{
-            backgroundColor: P.paper, borderRadius: 18, padding: 24, width: '100%',
-            borderWidth: 2, borderColor: P.paperDeep,
-            shadowColor: P.ink, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 16,
+          <Animated.View entering={FadeInDown.duration(220).springify()} style={{
+            width: '82%', backgroundColor: '#0c1a35', borderRadius: 24, padding: 28,
+            borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 32,
           }}>
-            <Text style={{ fontSize: 19, fontWeight: '900', color: P.inkMed, textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 4 }}>
               Leave Lobby?
             </Text>
-            <Text style={{ fontSize: 13, color: P.inkFaint, textAlign: 'center', marginBottom: 22, lineHeight: 18 }}>
-              Are you sure you want to quit the lobby?
+            <Text style={{ color: 'rgba(180,200,255,0.55)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+              Are you sure you want to quit?
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              {/* Cancel — dismisses modal */}
               <Pressable
                 onPress={() => setShowLeaveModal(false)}
-                style={({ pressed }) => ({
-                  flex: 1, alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: pressed ? P.paperDark : P.paperDark,
-                  borderRadius: 12, paddingVertical: 15,
-                  borderWidth: 1.5, borderColor: P.paperLine + '60',
-                })}
+                style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center' }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '700', color: P.inkMed }}>Cancel</Text>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Stay</Text>
               </Pressable>
-
-              {/* Quit — goes to multiplayer options */}
               <Pressable
                 onPress={handleLeaveLobby}
-                style={({ pressed }) => ({
-                  flex: 1, alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: pressed ? '#fca5a5' : '#fee2e2',
-                  borderRadius: 12, paddingVertical: 15,
-                  borderWidth: 2, borderColor: '#ef4444',
-                })}
+                style={{ flex: 1, paddingVertical: 15, borderRadius: 14, backgroundColor: '#ef4444', alignItems: 'center' }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '800', color: '#dc2626' }}>Quit</Text>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Quit</Text>
               </Pressable>
             </View>
-          </View>
+          </Animated.View>
         </View>
       )}
 
