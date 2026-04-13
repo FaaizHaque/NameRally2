@@ -429,7 +429,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L47: 5+ easy cats, min 5 letters (softened — accessible challenge)
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
   48: { forceLetterOptions: ['LI', 'LE'], categoryCount: 6 },
-  49: { categoryCount: 8 },
+  49: { categoryCount: 8, constraintType: 'repeated_letter' },
   50: { categoryCount: 8, timerSecondsPerCategory: 5 },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9 },
