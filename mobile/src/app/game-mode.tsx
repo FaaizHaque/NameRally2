@@ -531,7 +531,7 @@ export default function GameModeScreen() {
                 AsyncStorage.setItem('npat_mp_intro_shown', '1');
                 setShowMpIntro(false);
                 setGameMode('multiplayer');
-                navGuard(() => router.push('/multiplayer-options'));
+                router.push('/multiplayer-options');
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
