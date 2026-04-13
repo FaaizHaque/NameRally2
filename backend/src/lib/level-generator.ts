@@ -182,6 +182,8 @@ const IMPOSSIBLE_COMBOS: Record<string, CategoryType[]> = {
     'health_issues',
   ],
   Q: ['sports_games', 'professions'],
+  // No sovereign country starts with W (Wales, Western Sahara are not UN member states)
+  W: ['countries'],
 };
 
 // ============================================
