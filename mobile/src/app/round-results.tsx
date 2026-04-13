@@ -478,10 +478,10 @@ export default function RoundResultsScreen() {
     }
   }, [session?.status, session?.currentRound]);
 
-  // Auto-end: if only 1 player remains (everyone else left), nobody can advance
+  // Auto-end: if ALL players left, navigate to final results
   useEffect(() => {
     if (!session || session.status === 'final_results') return;
-    if (session.players.length <= 1) {
+    if (session.players.length === 0) {
       if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
       router.replace('/final-results');
     }

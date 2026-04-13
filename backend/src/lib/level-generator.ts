@@ -1383,15 +1383,30 @@ export function generateLevel(levelNumber: number): LevelData {
     const easyPool = getEasyCategoriesForLevel(levelNumber);
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
     const cType = override.constraintType;
-    const validEasy = easyPool.filter((c) => {
+    const filterFn = (c: CategoryType) => {
       if (impossible.includes(c)) return false;
       // Also exclude categories that are impossible given the constraint + letter combo
       if (cType && letter.length === 1 && !isConstraintPlayable(letter, c, cType)) return false;
       return true;
-    });
+    };
+    const validEasy = easyPool.filter(filterFn);
     const exclusionPool = enforceMutualExclusion(rng.shuffle(validEasy), rng);
-    const count = Math.min(override.easyCount ?? override.categoryCount ?? exclusionPool.length, exclusionPool.length);
-    categories = exclusionPool.slice(0, count);
+    const targetCount = override.easyCount ?? override.categoryCount ?? 4;
+
+    let finalPool = exclusionPool;
+    // If the easy pool (after constraint + mutual-exclusion filtering) is smaller than
+    // needed (e.g. ends_with_letter + letter 'Y' kills most categories), fall back to
+    // the full band pool so the level always gets enough categories.
+    if (exclusionPool.length < targetCount) {
+      const validFull = availableCategories.filter(filterFn);
+      const fullPool = enforceMutualExclusion(rng.shuffle(validFull), rng);
+      if (fullPool.length > exclusionPool.length) {
+        finalPool = fullPool;
+      }
+    }
+
+    const count = Math.min(targetCount, finalPool.length);
+    categories = finalPool.slice(0, count);
   } else if (override?.categoryCount !== undefined) {
     const impossible = letter.length === 1 ? (IMPOSSIBLE_COMBOS[letter] ?? []) : [];
     const cType = override.constraintType;

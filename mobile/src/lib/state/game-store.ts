@@ -1237,28 +1237,30 @@ export const useGameStore = create<GameState>((set, get) => ({
       roundScores[player.visibleId] = playerRoundScore;
       roundAnswerDetails[player.visibleId] = playerAnswerDetails;
 
-      // Update player's total score in database (skip for local sessions)
-      if (!isLocalSession) {
-        await supabase
+    }
+
+    // Update all player scores in parallel + save round result (skip for local sessions)
+    if (!isLocalSession) {
+      const playerUpdates = updatedSession.players.map((player) =>
+        supabase
           .from('players')
           .update({
-            total_score: player.totalScore + playerRoundScore,
+            total_score: player.totalScore + (roundScores[player.visibleId] || 0),
             current_round_answers: {},
             has_submitted: false,
           })
-          .eq('id', player.id);
-      }
-    }
+          .eq('id', player.id)
+      );
 
-    // Save round result (skip for local sessions)
-    if (!isLocalSession) {
-      await supabase.from('round_results').insert({
+      const roundInsert = supabase.from('round_results').insert({
         session_id: updatedSession.id,
         round_number: updatedSession.currentRound,
         letter: updatedSession.currentLetter,
         player_scores: roundScores,
         answers: roundAnswerDetails,
       });
+
+      await Promise.all([...playerUpdates, roundInsert]);
     }
 
     // Check if game is over
@@ -1490,25 +1492,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   refreshSessionById: async (sessionId: string) => {
     try {
-      const { data: sessionData } = await supabase
-        .from('game_sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .single();
+      const [sessionResult, playersResult, roundResultsResult] = await Promise.all([
+        supabase.from('game_sessions').select('*').eq('id', sessionId).single(),
+        supabase.from('players').select('*').eq('session_id', sessionId).order('created_at'),
+        supabase.from('round_results').select('*').eq('session_id', sessionId).order('round_number'),
+      ]);
 
+      const sessionData = sessionResult.data;
       if (!sessionData) return;
 
-      const { data: playersData } = await supabase
-        .from('players')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at');
-
-      const { data: roundResultsData } = await supabase
-        .from('round_results')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('round_number');
+      const playersData = playersResult.data;
+      const roundResultsData = roundResultsResult.data;
 
       const newSession = dbToAppSession(
         sessionData,

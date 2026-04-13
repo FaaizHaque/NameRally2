@@ -954,7 +954,7 @@ export default function GameScreen() {
     try {
       await submitAnswers();
       if (isHost) {
-        if (!isLevelMode) await new Promise(r => setTimeout(r, 1500));
+        if (!isLevelMode) await new Promise(r => setTimeout(r, 2500));
         await endRound();
       }
     } catch (error) {
@@ -1240,7 +1240,9 @@ export default function GameScreen() {
               borderRadius: 8, borderWidth: 2, borderColor: '#ef4444',
             }}>
               <AlertTriangle size={16} color="#ef4444" strokeWidth={2.5} />
-              <Text style={{ color: '#fca5a5', fontSize: 16, fontWeight: '800' }}>Ending in {stopCountdown}s...</Text>
+              <Text style={{ color: '#fca5a5', fontSize: 16, fontWeight: '800' }}>
+                {stopCountdown > 0 ? `Ending in ${stopCountdown}s...` : 'Saving answers...'}
+              </Text>
             </Animated.View>
           )}
 
@@ -1403,7 +1405,12 @@ export default function GameScreen() {
                 }}
               >
                 {session.stopRequested
-                  ? <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                  ? <>
+                      <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                      <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 17, fontWeight: '800' }}>
+                        {stopCountdown > 0 ? `${stopCountdown}s` : 'Saving...'}
+                      </Text>
+                    </>
                   : <>
                       <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
                       <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
@@ -1710,7 +1717,9 @@ export default function GameScreen() {
           {session.stopRequested && (
             <Animated.View entering={ZoomIn.duration(300)} style={s.stopBanner}>
               <AlertTriangle size={18} color="#FFFFFF" strokeWidth={2.5} />
-              <Text style={[s.stopBannerTxt, { fontWeight: '900' }]}>STOP! Ending in {stopCountdown}s</Text>
+              <Text style={[s.stopBannerTxt, { fontWeight: '900' }]}>
+                {stopCountdown > 0 ? `STOP! Ending in ${stopCountdown}s` : 'Saving answers...'}
+              </Text>
             </Animated.View>
           )}
 
