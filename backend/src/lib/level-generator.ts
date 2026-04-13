@@ -398,7 +398,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L19 → TWO_LETTER_LEVELS = 'BA'
   19: { categoryCount: 6 },
   // L20: "all 7" exception — food&fruits both appear (useFullPool bypasses mutual exclusion)
-  20: { useFullPool: true },
+  20: { useFullPool: true, constraintType: 'repeated_letter' },
   // ── L21-30: +Countries (8 cats, 6 max after mutual exclusion), CO at 23, MA at 29 ─
   21: { categoryCount: 6 },
   22: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
@@ -1466,6 +1466,8 @@ export function generateLevel(levelNumber: number): LevelData {
       constraint = { type: 'double_letters', description: 'Words must contain double letters (ee, ll, ss...)' };
     } else if (cType === 'no_repeat_letters') {
       constraint = { type: 'no_repeat_letters', description: 'No letter can repeat in your answer' };
+    } else if (cType === 'repeated_letter') {
+      constraint = { type: 'repeated_letter', description: 'Word must contain a repeated letter (e.g. paper, level, total)' };
     } else if (cType === 'combo' && override.comboConstraints) {
       const combos = override.comboConstraints;
       const descriptions = combos.map((c) => {
