@@ -451,7 +451,7 @@ export default function GameScreen() {
     };
     const CONSTRAINT_MILESTONE_LEVELS: Partial<Record<string, number>> = {
       min_word_length: 6, max_word_length: 11, double_letters: 25,
-      ends_with_letter: 30, combo: 74,
+      ends_with_letter: 30, repeated_letter: 21, combo: 74,
     };
 
     // Category check — takes priority, returns early
@@ -479,11 +479,12 @@ export default function GameScreen() {
       if (constraintMilestone && currentLevel.level === constraintMilestone) {
         lastNoveltyShownForLevel.current = currentLevel.level;
         const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
-          min_word_length:   { title: 'New Rule: Long Words',      message: 'Answers must be 4+ letters long' },
-          max_word_length:   { title: 'New Rule: Short Words',     message: 'Answers must be short — keep it brief!' },
-          ends_with_letter:  { title: 'New Rule: Ending Letter',   message: 'Each answer must end with a specific letter' },
-          double_letters:    { title: 'New Rule: Double Letters',  message: 'Answers must contain double letters (ee, ll, ss…)' },
-          combo:             { title: 'New Rule: Multi-Constraint',message: 'Multiple rules apply at the same time' },
+          min_word_length:   { title: 'New Rule: Long Words',        message: 'Answers must be 4+ letters long' },
+          max_word_length:   { title: 'New Rule: Short Words',       message: 'Answers must be short — keep it brief!' },
+          ends_with_letter:  { title: 'New Rule: Ending Letter',     message: 'Each answer must end with a specific letter' },
+          double_letters:    { title: 'New Rule: Double Letters',    message: 'Answers must contain double letters (ee, ll, ss…)' },
+          repeated_letter:   { title: 'New Rule: Repeated Letter',  message: 'Answers must have any letter appearing twice or more (e.g. paper, level, total)' },
+          combo:             { title: 'New Rule: Multi-Constraint',  message: 'Multiple rules apply at the same time' },
         };
         const info = CONSTRAINT_INFO[cType] ?? { title: 'New Rule!', message: currentLevel.constraint.description };
         noveltyShowing.current = true;
@@ -1546,11 +1547,11 @@ export default function GameScreen() {
               max_word_length:   { icon: <Text style={{ fontSize: 34 }}>✂️</Text>,  color: '#f472b6', gradA: '#db2777', gradB: '#831843' },
               ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
               double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
+              repeated_letter:   { icon: <Text style={{ fontSize: 34 }}>🔁</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
               contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
               odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
               no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
               combo:             { icon: <Text style={{ fontSize: 34 }}>⚡</Text>,  color: '#e879f9', gradA: '#a21caf', gradB: '#4a044e' },
-              survival:          { icon: <Text style={{ fontSize: 34 }}>💀</Text>, color: '#fb7185', gradA: '#e11d48', gradB: '#4c0519' },
               time_pressure:     { icon: <Text style={{ fontSize: 34 }}>⏱️</Text>, color: '#facc15', gradA: '#ca8a04', gradB: '#713f12' },
             };
             const cd = noveltyPopup.constraintType ? (CONSTRAINT_DISPLAY[noveltyPopup.constraintType] ?? CONSTRAINT_DISPLAY.combo!) : CONSTRAINT_DISPLAY.combo!;
@@ -2086,11 +2087,11 @@ export default function GameScreen() {
           max_word_length:   { icon: <Text style={{ fontSize: 34 }}>✂️</Text>,  color: '#f472b6', gradA: '#db2777', gradB: '#831843' },
           ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
           double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
+          repeated_letter:   { icon: <Text style={{ fontSize: 34 }}>🔁</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
           contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
           odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
           no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
           combo:             { icon: <Text style={{ fontSize: 34 }}>⚡</Text>,  color: '#e879f9', gradA: '#a21caf', gradB: '#4a044e' },
-          survival:          { icon: <Text style={{ fontSize: 34 }}>💀</Text>, color: '#fb7185', gradA: '#e11d48', gradB: '#4c0519' },
           time_pressure:     { icon: <Text style={{ fontSize: 34 }}>⏱️</Text>, color: '#facc15', gradA: '#ca8a04', gradB: '#713f12' },
         };
         const cd = noveltyPopup.constraintType ? (CONSTRAINT_DISPLAY[noveltyPopup.constraintType] ?? CONSTRAINT_DISPLAY.combo) : CONSTRAINT_DISPLAY.combo;
