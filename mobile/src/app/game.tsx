@@ -1192,14 +1192,9 @@ export default function GameScreen() {
                 shadowColor: '#4090e8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
               }}>
                 <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
-                  {currentLevel?.isMultiLetterMode ? '\u2605' : session.currentLetter}
+                  {session.currentLetter}
                 </Text>
               </View>
-              {currentLevel?.isMultiLetterMode && (
-                <Text style={{ color: 'rgba(144,192,255,0.5)', fontSize: 11, fontWeight: '600', marginTop: 6 }}>
-                  Wild Round — different letter per category
-                </Text>
-              )}
             </View>
           </View>
 
