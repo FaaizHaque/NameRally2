@@ -42,6 +42,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
+import { navGuard } from '@/lib/nav-guard';
 import { getCategoryName } from '@/lib/word-validation';
 import { supabase } from '@/lib/supabase';
 import { CAT_COLORS } from '@/lib/category-colors';
@@ -478,10 +479,10 @@ export default function RoundResultsScreen() {
     }
   }, [session?.status, session?.currentRound]);
 
-  // Auto-end: if only 1 player remains (everyone else left), nobody can advance
+  // Auto-end: if ALL players left, navigate to final results
   useEffect(() => {
     if (!session || session.status === 'final_results') return;
-    if (session.players.length <= 1) {
+    if (session.players.length === 0) {
       if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
       router.replace('/final-results');
     }
@@ -524,6 +525,7 @@ export default function RoundResultsScreen() {
   const sortedPlayers = [...session.players].sort((a, b) => b.totalScore - a.totalScore);
 
   const handleNextRound = async () => {
+    if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (isLastRound) {
       if (isHost && session) {

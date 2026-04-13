@@ -25,7 +25,6 @@ import {
   Utensils,
   Landmark,
   LogOut,
-  Home,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
@@ -90,7 +89,6 @@ export default function LobbyScreen() {
   const session = useGameStore((s) => s.session);
   const currentUser = useGameStore((s) => s.currentUser);
   const startGame = useGameStore((s) => s.startGame);
-  const leaveGame = useGameStore((s) => s.leaveGame);
   const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
   const refreshSession = useGameStore((s) => s.refreshSession);
 
@@ -145,19 +143,11 @@ export default function LobbyScreen() {
     await startGame();
   };
 
-  // Go home but keep session alive — player can return via Multiplayer button
-  const handleGoHome = () => {
+  // Leave lobby but keep session alive — player can rejoin using the room code
+  const handleLeaveLobby = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowLeaveModal(false);
-    router.replace('/');
-  };
-
-  // Fully quit — removes player (and deletes session if host)
-  const handleQuitGame = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    setShowLeaveModal(false);
-    await leaveGame();
-    router.replace('/');
+    router.replace('/multiplayer-options');
   };
 
   return (
@@ -473,48 +463,42 @@ export default function LobbyScreen() {
             <Text style={{ fontSize: 19, fontWeight: '900', color: P.inkMed, textAlign: 'center', marginBottom: 6 }}>
               Leave Lobby?
             </Text>
-            <Text style={{ fontSize: 13, color: P.inkFaint, textAlign: 'center', marginBottom: 22, lineHeight: 18 }}>
-              The game session stays open — you can rejoin by tapping Multiplayer from home.
+            <Text style={{ fontSize: 13, color: P.inkFaint, textAlign: 'center', marginBottom: 4, lineHeight: 18 }}>
+              The session stays open. To rejoin, go to Multiplayer and enter:
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: '900', color: P.amber, textAlign: 'center', letterSpacing: 4, marginBottom: 22 }}>
+              {session.code}
             </Text>
 
-            {/* Go Home — keeps session */}
-            <Pressable
-              onPress={handleGoHome}
-              style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                backgroundColor: pressed ? P.paperDark : P.amberBg,
-                borderRadius: 12, paddingVertical: 14, marginBottom: 10,
-                borderWidth: 2, borderColor: P.amber,
-              })}
-            >
-              <Home size={18} color={P.inkMed} strokeWidth={2.5} />
-              <Text style={{ fontSize: 16, fontWeight: '800', color: P.inkMed }}>Go Home</Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {/* Stay — dismisses modal */}
+              <Pressable
+                onPress={() => setShowLeaveModal(false)}
+                style={({ pressed }) => ({
+                  flex: 1, alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: pressed ? P.paperDark : P.paperDark,
+                  borderRadius: 12, paddingVertical: 15,
+                  borderWidth: 1.5, borderColor: P.paperLine + '60',
+                })}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '700', color: P.inkMed }}>Stay</Text>
+              </Pressable>
 
-            {/* Quit Game — destroys session */}
-            <Pressable
-              onPress={handleQuitGame}
-              style={({ pressed }) => ({
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                backgroundColor: pressed ? '#fde8e8' : '#fff5f5',
-                borderRadius: 12, paddingVertical: 14, marginBottom: 10,
-                borderWidth: 2, borderColor: '#ef4444',
-              })}
-            >
-              <LogOut size={18} color="#ef4444" strokeWidth={2.5} />
-              <Text style={{ fontSize: 16, fontWeight: '800', color: '#ef4444' }}>Quit Game</Text>
-            </Pressable>
-
-            {/* Cancel */}
-            <Pressable
-              onPress={() => setShowLeaveModal(false)}
-              style={({ pressed }) => ({
-                alignItems: 'center', paddingVertical: 10,
-                opacity: pressed ? 0.6 : 1,
-              })}
-            >
-              <Text style={{ fontSize: 14, color: P.inkFaint, fontWeight: '600' }}>Stay in Lobby</Text>
-            </Pressable>
+              {/* Leave — keeps session alive, goes to multiplayer options */}
+              <Pressable
+                onPress={handleLeaveLobby}
+                style={({ pressed }) => ({
+                  flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6,
+                  flexDirection: 'row',
+                  backgroundColor: pressed ? P.paperDark : P.amberBg,
+                  borderRadius: 12, paddingVertical: 15,
+                  borderWidth: 2, borderColor: P.amber,
+                })}
+              >
+                <LogOut size={17} color={P.inkMed} strokeWidth={2.5} />
+                <Text style={{ fontSize: 16, fontWeight: '800', color: P.inkMed }}>Leave</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       )}

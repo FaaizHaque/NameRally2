@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, LogIn } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { navGuard } from '@/lib/nav-guard';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds } from '@/lib/sounds';
@@ -116,13 +117,13 @@ export default function MultiplayerOptionsScreen() {
 
   const handleCreateGame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/create-game');
+    navGuard(() => router.push('/create-game'));
   };
 
   const handleJoinGame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.join();
-    router.push('/join-game');
+    navGuard(() => router.push('/join-game'));
   };
 
   return (

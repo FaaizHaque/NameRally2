@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { navGuard } from '@/lib/nav-guard';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SKETCH_COLORS } from '@/lib/theme';
@@ -155,6 +156,7 @@ export default function FinalResultsScreen() {
   const isCurrentUserWinner = winner?.visibleId === currentUser.id;
 
   const handlePlayAgain = async () => {
+    if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await leaveGame();
     if (isLevelMode) router.replace('/game-mode');
@@ -162,6 +164,7 @@ export default function FinalResultsScreen() {
   };
 
   const handleGoHome = async () => {
+    if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
     router.replace('/');

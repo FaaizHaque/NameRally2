@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { navGuard } from '@/lib/nav-guard';
 import { View, Text, TouchableOpacity, StatusBar, ActivityIndicator, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
@@ -96,6 +97,7 @@ export default function GameModeScreen() {
   }, [isStartingGame, levelLoaded, startGame]);
 
   const handleMultiplayer = async () => {
+    if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.navigate();
     const shown = await AsyncStorage.getItem('npat_mp_intro_shown');
@@ -111,14 +113,14 @@ export default function GameModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
     Sounds.navigate();
-    router.push('/daily-challenge');
+    navGuard(() => router.push('/daily-challenge'));
   };
 
   const handleCompletedLevels = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
     Sounds.navigate();
-    router.push('/completed-levels');
+    navGuard(() => router.push('/completed-levels'));
   };
 
   const completedCount = Math.max(0, levelProgress.unlockedLevel - 1);
@@ -529,7 +531,7 @@ export default function GameModeScreen() {
                 AsyncStorage.setItem('npat_mp_intro_shown', '1');
                 setShowMpIntro(false);
                 setGameMode('multiplayer');
-                router.push('/multiplayer-options');
+                navGuard(() => router.push('/multiplayer-options'));
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
