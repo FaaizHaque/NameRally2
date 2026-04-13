@@ -791,29 +791,19 @@ function getCategoryCount(level: number, _rng: SeededRandom): number {
 }
 
 /**
- * Pass score percent - smooth gradual increases.
- * Level 1-50: Gradual increase from 50% → 58% (learning and easy constraints)
- * Level 51-150: Gradual increase from 58% → 75% (getting serious)
- * Level 150+: Gradual increase from 75% → 95% (expert level challenge)
+ * Pass score percent — tied to category count, not level number.
+ * More categories unlocked = higher bar required to pass.
+ *
+ * 3–4  cats → 50%   (early game, forgiving)
+ * 5–7  cats → 55%   (mid game)
+ * 8–10 cats → 60%   (late game)
+ * 11–12 cats → 65%  (full pool — meaningful threshold)
  */
-function getPassScorePercent(level: number): number {
-  if (level <= 1) return 50;
-
-  let passPercent: number;
-
-  if (level <= 50) {
-    // 50% → 58% over 50 levels (forgiving at start)
-    passPercent = lerp(50, 58, (level - 1) / 49);
-  } else if (level <= 150) {
-    // 58% → 75% over 100 levels (steady increase)
-    passPercent = lerp(58, 75, (level - 50) / 100);
-  } else {
-    // 75% → 95% over remaining levels (expert squeeze)
-    const progress = Math.min((level - 150) / 250, 1);
-    passPercent = lerp(75, 95, progress);
-  }
-
-  return Math.round(passPercent);
+function getPassScorePercent(_level: number, categoryCount: number): number {
+  if (categoryCount <= 4) return 50;
+  if (categoryCount <= 7) return 55;
+  if (categoryCount <= 10) return 60;
+  return 65;
 }
 
 /**
@@ -1504,8 +1494,8 @@ export function generateLevel(levelNumber: number): LevelData {
   }
 
   // --- Scoring ---
-  const passScorePercent = getPassScorePercent(levelNumber);
   const maxPossibleScore = categories.length * 10;
+  const passScorePercent = getPassScorePercent(levelNumber, categories.length);
   const minScoreToPass = Math.ceil((maxPossibleScore * passScorePercent) / 100);
 
   // --- Survival ---

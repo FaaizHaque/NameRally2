@@ -75,16 +75,26 @@ export interface LevelProgress {
 }
 
 /**
- * Calculate stars based on score percentage
- * 1 star: Pass (meet minimum)
- * 2 stars: Good (75%+ of max)
- * 3 stars: Perfect (90%+ of max)
+ * Calculate stars based on score — thresholds tied to category count.
+ *
+ * catCount 3–4:   2★ = 75%  3★ = 90%
+ * catCount 5–7:   2★ = 78%  3★ = 92%
+ * catCount 8–10:  2★ = 82%  3★ = 95%
+ * catCount 11–12: 2★ = 85%  3★ = 100% (perfect score only)
  */
 export function calculateStars(score: number, maxScore: number, minToPass: number): number {
   if (score < minToPass) return 0;
-  const percentage = (score / maxScore) * 100;
-  if (percentage >= 90) return 3;
-  if (percentage >= 75) return 2;
+  const catCount = maxScore / 10;
+  const pct = (score / maxScore) * 100;
+
+  let two: number, three: number;
+  if (catCount <= 4)       { two = 75; three = 90; }
+  else if (catCount <= 7)  { two = 78; three = 92; }
+  else if (catCount <= 10) { two = 82; three = 95; }
+  else                     { two = 85; three = 100; }
+
+  if (pct >= three) return 3;
+  if (pct >= two)   return 2;
   return 1;
 }
 
