@@ -991,14 +991,12 @@ export default function GameScreen() {
     if (!session || session.status !== 'playing') return;
     // Skip prefill on letterOptions levels — player picks which option to use
     if (currentLevel?.letterOptions) return;
-    // Skip prefill for multi-letter mode — startLevelGame already initialises each
-    // category with its own letter; overwriting with session.currentLetter (the base
-    // letter) would clobber every non-primary category (e.g. all become "W" on L36).
-    if (currentLevel?.isMultiLetterMode) return;
-    // Prefill each category independently — avoids the all-or-nothing race where one
-    // stale answer blocks every other input from receiving its starting letter.
+    // Only pre-fill categories that have no answer yet.
+    // startLevelGame already sets localAnswers for every category (including per-category
+    // letters in multi-letter mode). Overwriting non-empty answers would clobber the
+    // per-category letters assigned by startLevelGame (e.g. "C" → "T" on L27).
     session.settings.selectedCategories.forEach(cat => {
-      if (!localAnswers[cat] || !localAnswers[cat].startsWith(session.currentLetter)) {
+      if (!localAnswers[cat]) {
         updateLocalAnswer(cat, session.currentLetter);
       }
     });
