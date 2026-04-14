@@ -436,7 +436,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9, constraintType: 'repeated_letter' },
   52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6, isMultiLetterMode: true },
-  53: { forceLetterOptions: ['FA', 'FI', 'FO'], categoryCount: 9, constraintType: 'repeated_letter' },
+  53: { forceLetterOptions: ['FA', 'FI', 'FO'], categoryCount: 9 },
   54: { categoryCount: 9, constraintType: 'repeated_letter' },
   55: { useEasyCategories: true, easyCount: 7, constraintType: 'double_letters' },
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
