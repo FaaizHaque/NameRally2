@@ -456,7 +456,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   66: {
     forceLetter: 'Y',
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands'],
-    constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'N'],
+    constraintType: 'max_word_length', constraintValue: 10,
   },
   67: {
     forceLetter: 'A',
