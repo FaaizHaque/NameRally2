@@ -384,7 +384,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L11-15: +Sports&Games (6 cats), SH combo at 15 ────────────────────────
   11: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
   12: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
-  13: { forceLetter: 'B', categoryCount: 6 },
+  13: { forceLetter: 'B', categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
   14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
   15: { categoryCount: 5 },
@@ -420,7 +420,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   39: { categoryCount: 7, constraintType: 'repeated_letter' },
   40: { useEasyCategories: true, easyCount: 6 },
   // ── L41-50: +Celebrities (10 cats, 8 max), TA at 44 ───────────────────────
-  41: { categoryCount: 8 },
+  41: { categoryCount: 8, constraintType: 'double_letters' },
   42: { useEasyCategories: true, easyCount: 6, constraintType: 'double_letters' },
   43: { categoryCount: 8, isMultiLetterMode: true },
   // L44 → TWO_LETTER_LEVELS = 'TA'
@@ -456,6 +456,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   66: {
     forceLetter: 'Y',
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands'],
+    constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'N'],
   },
   67: {
     forceLetter: 'A',
@@ -463,11 +464,11 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     constraintType: 'min_word_length', constraintValue: 7,
   },
   68: { categoryCount: 6 },
-  69: { categoryCount: 6 },
+  69: { categoryCount: 6, constraintType: 'double_letters' },
   // L70: all 12 exception — useFullPool bypasses mutual exclusion
   70: { useFullPool: true },
   // ── L71-80: 7-10 of 12, HA combo at 76, all 12 at 78-80 ──────────────────
-  71: { categoryCount: 7 },
+  71: { categoryCount: 7, constraintType: 'max_word_length', constraintValue: 10 },
   72: {
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
     isMultiLetterMode: true,
@@ -485,7 +486,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   },
   77: { categoryCount: 7, constraintType: 'max_word_length', constraintValue: 10 },
   78: { useFullPool: true },
-  79: { useFullPool: true },
+  79: { useFullPool: true, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
   80: { useFullPool: true },
   // ── L81-90: 8-12 of 12, WA combo at 86, all 12 at 89-90 ──────────────────
   81: { categoryCount: 8, isMultiLetterMode: true },
@@ -493,7 +494,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     forceLetter: 'K',
     specificCategories: ['names', 'places', 'thing', 'animal', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
   },
-  83: { categoryCount: 8 },
+  83: { categoryCount: 8, constraintType: 'double_letters' },
   84: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5 },
   85: { categoryCount: 8 },
   // L86 → TWO_LETTER_LEVELS = 'WA'
@@ -503,7 +504,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   87: { categoryCount: 8 },
   88: { categoryCount: 8, isMultiLetterMode: true },
   89: { useFullPool: true },
-  90: { useFullPool: true },
+  90: { useFullPool: true, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['N', 'T'] },
   // ── L91-100: 10-12 of 12, PR combo at 95, multi-letter at 99-100 ──────────
   91: { categoryCount: 10 },
   92: { categoryCount: 10, constraintType: 'double_letters' },
