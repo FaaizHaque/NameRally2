@@ -1392,9 +1392,10 @@ export function generateLevel(levelNumber: number): LevelData {
         finalPool = fullPool;
       }
     }
-    // Last-resort: if the constraint letter combo leaves 0 categories (e.g. J +
-    // double_letters), drop the constraint and rebuild from the unconstrained pool.
-    if (finalPool.length === 0 && override.constraintType) {
+    // Last-resort: if the constraint letter combo leaves fewer than 3 categories
+    // (e.g. J + double_letters or J + ends_with_letter Y), drop the constraint
+    // and rebuild from the unconstrained pool.
+    if (finalPool.length < 3 && override.constraintType) {
       const noConstraintFn = (c: CategoryType) => !impossible.includes(c);
       const fallbackPool = enforceMutualExclusion(rng.shuffle(availableCategories.filter(noConstraintFn)), rng);
       finalPool = fallbackPool;
@@ -1412,7 +1413,15 @@ export function generateLevel(levelNumber: number): LevelData {
       if (cType && letter.length === 1 && !isConstraintPlayable(letter, c, cType)) return false;
       return true;
     });
-    const pool = enforceMutualExclusion(rng.shuffle(valid), rng);
+    let pool = enforceMutualExclusion(rng.shuffle(valid), rng);
+    // If constraint + letter wipes out most categories, fall back to no constraint
+    if (pool.length < 3 && cType) {
+      const fallback = enforceMutualExclusion(rng.shuffle(availableCategories.filter(c => !impossible.includes(c))), rng);
+      if (fallback.length > pool.length) {
+        pool = fallback;
+        (override as LevelOverride).constraintType = undefined;
+      }
+    }
     categories = pool.slice(0, Math.min(override.categoryCount, pool.length));
     // Guarantee milestone category is included at its introduction level.
     // When the milestone wasn't in the slice, replace the last element with it, then
