@@ -485,7 +485,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   76: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
   },
-  77: { categoryCount: 7 },
+  77: { categoryCount: 7, constraintType: 'max_word_length', constraintValue: 10 },
   78: { useFullPool: true },
   79: { useFullPool: true },
   80: { useFullPool: true },
