@@ -420,7 +420,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   37: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
   // L38 → TWO_LETTER_LEVELS = 'LA'
   39: { categoryCount: 7, constraintType: 'repeated_letter' },
-  40: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['N', 'Y'] },
+  40: { useEasyCategories: true, easyCount: 6 },
   // ── L41-50: +Celebrities (10 cats, 8 max), TA at 44 ───────────────────────
   41: { categoryCount: 8 },
   42: { useEasyCategories: true, easyCount: 6, constraintType: 'double_letters' },
@@ -438,7 +438,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6, isMultiLetterMode: true },
   53: { forceLetterOptions: ['FA', 'FI', 'FO'], categoryCount: 9 },
   54: { categoryCount: 9, constraintType: 'repeated_letter' },
-  55: { useEasyCategories: true, easyCount: 7, constraintType: 'double_letters' },
+  55: { useEasyCategories: true, easyCount: 7 },
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
   57: { categoryCount: 8, isMultiLetterMode: true, constraintType: 'repeated_letter' },
   58: { categoryCount: 8, constraintType: 'repeated_letter' },
