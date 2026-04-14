@@ -432,7 +432,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
   48: { forceLetterOptions: ['LI', 'LE'], categoryCount: 6 },
   49: { categoryCount: 8 },
-  50: { categoryCount: 8, timerSecondsPerCategory: 5, constraintType: 'repeated_letter' },
+  50: { categoryCount: 8, constraintType: 'repeated_letter' },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9, constraintType: 'repeated_letter' },
   52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6, isMultiLetterMode: true },
@@ -442,7 +442,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
   57: { categoryCount: 8, isMultiLetterMode: true, constraintType: 'repeated_letter' },
   58: { categoryCount: 8, constraintType: 'repeated_letter' },
-  59: { categoryCount: 8, timerSecondsPerCategory: 5, constraintType: 'repeated_letter' },
+  59: { categoryCount: 8, constraintType: 'repeated_letter' },
   60: { forceLetterOptions: ['PA', 'PE', 'PO'], categoryCount: 8 },
   // ── L61-70: +Health Issues (12 cats, 10 max), all 12 at 65 & 70 ───────────
   61: { categoryCount: 10 },
@@ -464,7 +464,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
     constraintType: 'min_word_length', constraintValue: 7,
   },
-  68: { categoryCount: 6, timerSecondsPerCategory: 5 },
+  68: { categoryCount: 6 },
   69: { categoryCount: 6 },
   // L70: all 12 exception — useFullPool bypasses mutual exclusion
   70: { useFullPool: true },
@@ -479,14 +479,13 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     categoryCount: 9,
     constraintType: 'combo',
     comboConstraints: [{ type: 'min_word_length', value: 4 }, { type: 'max_word_length', value: 10 }],
-    timerSecondsPerCategory: 6,
   },
   75: { categoryCount: 7, isMultiLetterMode: true },
   // L76 → TWO_LETTER_LEVELS = 'HA'
   76: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
   },
-  77: { categoryCount: 7, timerSecondsPerCategory: 5 },
+  77: { categoryCount: 7 },
   78: { useFullPool: true },
   79: { useFullPool: true },
   80: { useFullPool: true },
@@ -497,7 +496,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     specificCategories: ['names', 'places', 'thing', 'animal', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
   },
   83: { categoryCount: 8 },
-  84: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5, timerSecondsPerCategory: 8 },
+  84: { categoryCount: 8, constraintType: 'min_word_length', constraintValue: 5 },
   85: { categoryCount: 8 },
   // L86 → TWO_LETTER_LEVELS = 'WA'
   86: {
@@ -515,7 +514,6 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L95 → TWO_LETTER_LEVELS = 'PR'
   95: {
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'professions', 'sports_games'],
-    timerSecondsPerCategory: 6,
   },
   96: {
     forceLetter: 'F',
@@ -536,7 +534,6 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     isMultiLetterMode: true,
     constraintType: 'combo',
     comboConstraints: [{ type: 'min_word_length', value: 5 }, { type: 'max_word_length', value: 12 }],
-    timerSecondsPerCategory: 5,
   },
 };
 
@@ -764,12 +761,11 @@ function isPlayableForAll(
 // ============================================
 
 /**
- * Seconds allowed per category — flat 10s per category globally.
- * Total timer = categoryCount × 10.
- * Time-pressure levels use timerSecondsPerCategory override.
+ * Seconds allowed per category — flat 15s per category globally.
+ * Total timer = categoryCount × 15.
  */
 function getSecondsPerCategory(_level: number): number {
-  return 10;
+  return 15;
 }
 
 function getBaseTimerSeconds(level: number, categoryCount: number): number {
