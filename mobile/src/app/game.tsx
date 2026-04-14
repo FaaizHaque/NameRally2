@@ -989,8 +989,6 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (!session || session.status !== 'playing') return;
-    // Skip prefill on letterOptions levels — player picks which option to use
-    if (currentLevel?.letterOptions) return;
     // Only pre-fill categories that have no answer yet.
     // startLevelGame already sets localAnswers for every category (including per-category
     // letters in multi-letter mode). Overwriting non-empty answers would clobber the
@@ -1682,9 +1680,7 @@ export default function GameScreen() {
               {/* Subtle bottom shadow */}
               <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '25%', backgroundColor: 'rgba(140,100,0,0.08)' }} />
               <Text style={[s.stickyLetter, { fontWeight: '900' }]}>
-                {currentLevel?.letterOptions
-                  ? currentLevel.letterOptions.join(' / ')
-                  : session.currentLetter}
+                {session.currentLetter}
               </Text>
             </Animated.View>
           </View>

@@ -1075,7 +1075,6 @@ export const validateAnswer = (
   answer: string,
   letter: string,
   _category: CategoryType,
-  letterOptions?: string[]
 ): { isValid: boolean; reason?: string } => {
   const trimmedAnswer = answer.trim();
 
@@ -1083,12 +1082,9 @@ export const validateAnswer = (
     return { isValid: false, reason: 'Empty answer' };
   }
 
-  const validLetters = letterOptions && letterOptions.length > 0 ? letterOptions : [letter];
-  const startsWithValid = validLetters.some((opt) =>
-    trimmedAnswer.toLowerCase().startsWith(opt.toLowerCase())
-  );
+  const startsWithValid = trimmedAnswer.toLowerCase().startsWith(letter.toLowerCase());
   if (!startsWithValid) {
-    const display = validLetters.join(' / ');
+    const display = letter;
     return { isValid: false, reason: `Must start with "${display}"` };
   }
 
@@ -1433,20 +1429,17 @@ export const validateWithFallback = async (
   answer: string,
   letter: string,
   category: CategoryType,
-  letterOptions?: string[]
 ): Promise<{ isValid: boolean; source: 'supabase' | 'local' | 'online' | 'none' }> => {
   // Basic validation (starts with letter, min length)
   // Normalize apostrophes: iOS smart quotes (', ') → strip, so "Parkinson's" and "Parkinson's" both become "parkinsons"
   const trimmed = answer.trim().toLowerCase().replace(/['\u2018\u2019\u201A\u201B\u2032\u2035`´]/g, '');
 
-  const validLetters = letterOptions && letterOptions.length > 0 ? letterOptions : [letter];
-  const startsWithLetter = validLetters.some((opt) => trimmed.startsWith(opt.toLowerCase()));
+  const startsWithLetter = trimmed.startsWith(letter.toLowerCase());
 
   if (!trimmed || trimmed.length < 2 || !startsWithLetter) {
     return { isValid: false, source: 'none' };
   }
-  // Use the matching letter option as the effective letter for further validation
-  const letterLower = validLetters.find((opt) => trimmed.startsWith(opt.toLowerCase()))?.toLowerCase() ?? letter.toLowerCase();
+  const letterLower = letter.toLowerCase();
 
   // Reject if answer is EXACTLY the letter prefix (user didn't type anything beyond pre-fill)
   // This handles both single letters ("S") and two-letter combos ("LO", "CH", etc.)

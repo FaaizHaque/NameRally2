@@ -1104,11 +1104,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         const answer = player.currentRoundAnswers[cat]?.trim() || '';
         const letterForCategory = getLetterForCategoryIndex(catIndex);
 
-        // For letterOptions levels, accept any of the valid starting combos
-        const levelLetterOptions = currentLevel?.letterOptions;
-        const startsWithValid = levelLetterOptions && levelLetterOptions.length > 0
-          ? levelLetterOptions.some((opt) => answer.toLowerCase().startsWith(opt.toLowerCase()))
-          : answer.toLowerCase().startsWith(letterForCategory.toLowerCase());
+        const startsWithValid = answer.toLowerCase().startsWith(letterForCategory.toLowerCase());
 
         if (answer && startsWithValid) {
           // First check constraint (if in single player mode with level constraint)
@@ -1122,7 +1118,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           }
 
           // Create promise to validate this answer with the correct letter for this category
-          const promise = validateWithFallback(answer, letterForCategory, cat, levelLetterOptions)
+          const promise = validateWithFallback(answer, letterForCategory, cat)
             .then((result) => {
               validationResults.get(player.visibleId)!.set(cat, result);
             })

@@ -62,7 +62,6 @@ export interface LevelData {
   // Letter configuration
   letter: string;
   letterType: 'easy' | 'normal' | 'hard' | 'two_letter';
-  letterOptions?: string[];       // All valid starting combos (e.g. ['FA','FI','FO'])
   lettersPerCategory?: string[];
   isMultiLetterMode?: boolean;
 
@@ -347,7 +346,6 @@ const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
 interface LevelOverride {
   // Letter
   forceLetter?: string;             // exact forced single or two-letter value
-  forceLetterOptions?: string[];    // pick one at random (seeded) — e.g. ['LA','LO']
   // Categories
   categoryCount?: number;           // how many to pick from available pool
   specificCategories?: CategoryType[]; // exact set, bypasses impossible-combo filter
@@ -430,20 +428,20 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   46: { categoryCount: 8, constraintType: 'repeated_letter' },
   // L47: 5+ easy cats, min 5 letters (softened — accessible challenge)
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
-  48: { forceLetterOptions: ['LI', 'LE'], categoryCount: 6 },
+  48: { forceLetter: 'LI', categoryCount: 6 },
   49: { categoryCount: 8, forceLetter: 'M' },
   50: { categoryCount: 8, constraintType: 'repeated_letter' },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9, constraintType: 'repeated_letter' },
   52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6, isMultiLetterMode: true },
-  53: { forceLetterOptions: ['FA', 'FI', 'FO'], categoryCount: 9 },
+  53: { forceLetter: 'FA', categoryCount: 9 },
   54: { categoryCount: 9, constraintType: 'repeated_letter' },
   55: { useEasyCategories: true, easyCount: 7 },
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
   57: { categoryCount: 8, isMultiLetterMode: true, constraintType: 'repeated_letter' },
   58: { categoryCount: 8, constraintType: 'repeated_letter' },
   59: { categoryCount: 8, constraintType: 'repeated_letter' },
-  60: { forceLetterOptions: ['PA', 'PE', 'PO'], categoryCount: 8 },
+  60: { forceLetter: 'PA', categoryCount: 8 },
   // ── L61-70: +Health Issues (12 cats, 10 max), all 12 at 65 & 70 ───────────
   61: { categoryCount: 10 },
   62: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
@@ -1326,7 +1324,6 @@ export function generateLevel(levelNumber: number): LevelData {
   // ─── LETTER ───────────────────────────────────────────────────────────────
   let letter: string;
   let letterType: LevelData['letterType'];
-  let letterOptions: string[] | undefined;
 
   if (twoLetterCombo) {
     letter = twoLetterCombo;
@@ -1334,11 +1331,6 @@ export function generateLevel(levelNumber: number): LevelData {
   } else if (override?.forceLetter) {
     letter = override.forceLetter;
     letterType = override.forceLetter.length > 1 ? 'two_letter' : 'hard';
-  } else if (override?.forceLetterOptions) {
-    // All options are valid — don't pick one, expose all to the player
-    letterOptions = override.forceLetterOptions;
-    letter = override.forceLetterOptions[0]!; // primary letter for validation/display
-    letterType = letter.length > 1 ? 'two_letter' : 'normal';
   } else if (levelNumber <= 100) {
     // Use pre-computed assignment — guaranteed no adjacent duplicates
     letter = LEVEL_LETTER_ASSIGNMENTS[levelNumber] ?? 'S';
@@ -1529,7 +1521,6 @@ export function generateLevel(levelNumber: number): LevelData {
     timerSeconds,
     letter: isMultiLetterMode ? primaryLetter : letter,
     letterType,
-    letterOptions,
     lettersPerCategory: isMultiLetterMode ? lettersPerCategory : undefined,
     isMultiLetterMode: isMultiLetterMode || undefined,
     categories,
@@ -1571,9 +1562,7 @@ export function getLevelSummary(levelNumber: number): string {
   const level = generateLevel(levelNumber);
   const letterDisplay = level.isMultiLetterMode
     ? `Letters: ${level.lettersPerCategory?.join(', ')}`
-    : level.letterOptions
-      ? `Letter options: ${level.letterOptions.join(' / ')}`
-      : `Letter "${level.letter}"`;
+    : `Letter "${level.letter}"`;
 
   return `Level ${level.level} (${level.bandName}): ${letterDisplay} | ${level.categoryCount} categories | ${level.timerSeconds}s | Pass: ${level.minScoreToPass}/${level.maxPossibleScore} (${level.passScorePercent}%)${level.isSurvivalMode ? ' | SURVIVAL' : ''} | ${level.constraint.description}`;
 }
