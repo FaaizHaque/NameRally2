@@ -478,7 +478,7 @@ export default function GameScreen() {
       noveltyShowing.current = true;
       adPauseStart.current = Date.now();
       setShowReveal(false);
-      setNoveltyPopup({ type: 'constraint', title: 'New Mode: Multi-Letter!', message: 'Each category has its own starting letter this round. Check each row carefully!', constraintType: 'multi_letter' });
+      setNoveltyPopup({ type: 'constraint', title: 'Wild Mode!', message: 'Each category has its own starting letter this round. Check each row carefully!', constraintType: 'wild' });
       return;
     }
     // Constraint check — only at exact first-introduction level
@@ -1200,12 +1200,22 @@ export default function GameScreen() {
               </Text>
               <View style={{
                 width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
-                backgroundColor: '#1a3a6e', borderWidth: 2.5, borderColor: 'rgba(80,160,255,0.5)',
-                shadowColor: '#4090e8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
+                backgroundColor: currentLevel?.isMultiLetterMode ? '#0c3060' : '#1a3a6e',
+                borderWidth: 2.5,
+                borderColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : 'rgba(80,160,255,0.5)',
+                shadowColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : '#4090e8',
+                shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
               }}>
-                <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
-                  {currentLevel?.isMultiLetterMode ? '★' : session.currentLetter}
-                </Text>
+                {currentLevel?.isMultiLetterMode ? (
+                  <>
+                    <Text style={{ fontSize: 22, fontWeight: '900', color: '#38bdf8', letterSpacing: 1 }}>★</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#38bdf8', letterSpacing: 2 }}>WILD</Text>
+                  </>
+                ) : (
+                  <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
+                    {session.currentLetter}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
@@ -1559,7 +1569,7 @@ export default function GameScreen() {
               ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
               double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
               repeated_letter:   { icon: <Text style={{ fontSize: 34 }}>🔁</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
-              multi_letter:      { icon: <Text style={{ fontSize: 34 }}>🔀</Text>, color: '#38bdf8', gradA: '#0284c7', gradB: '#0c4a6e' },
+              wild:              { icon: <Text style={{ fontSize: 34 }}>🔀</Text>, color: '#38bdf8', gradA: '#0284c7', gradB: '#0c4a6e' },
               contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
               odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
               no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
