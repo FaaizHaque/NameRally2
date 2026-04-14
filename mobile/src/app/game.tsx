@@ -472,6 +472,15 @@ export default function GameScreen() {
         return;
       }
     }
+    // Multi-letter mode novelty — fires once at first introduction (L27)
+    if (currentLevel.isMultiLetterMode && currentLevel.level === 27) {
+      lastNoveltyShownForLevel.current = currentLevel.level;
+      noveltyShowing.current = true;
+      adPauseStart.current = Date.now();
+      setShowReveal(false);
+      setNoveltyPopup({ type: 'constraint', title: 'New Mode: Multi-Letter!', message: 'Each category has its own starting letter this round. Check each row carefully!', constraintType: 'multi_letter' });
+      return;
+    }
     // Constraint check — only at exact first-introduction level
     if (currentLevel.constraint?.type && currentLevel.constraint.type !== 'none') {
       const cType = currentLevel.constraint.type;
@@ -982,6 +991,10 @@ export default function GameScreen() {
     if (!session || session.status !== 'playing') return;
     // Skip prefill on letterOptions levels — player picks which option to use
     if (currentLevel?.letterOptions) return;
+    // Skip prefill for multi-letter mode — startLevelGame already initialises each
+    // category with its own letter; overwriting with session.currentLetter (the base
+    // letter) would clobber every non-primary category (e.g. all become "W" on L36).
+    if (currentLevel?.isMultiLetterMode) return;
     // Prefill each category independently — avoids the all-or-nothing race where one
     // stale answer blocks every other input from receiving its starting letter.
     session.settings.selectedCategories.forEach(cat => {
@@ -1548,6 +1561,7 @@ export default function GameScreen() {
               ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
               double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
               repeated_letter:   { icon: <Text style={{ fontSize: 34 }}>🔁</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
+              multi_letter:      { icon: <Text style={{ fontSize: 34 }}>🔀</Text>, color: '#38bdf8', gradA: '#0284c7', gradB: '#0c4a6e' },
               contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
               odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
               no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },
@@ -2088,6 +2102,7 @@ export default function GameScreen() {
           ends_with_letter:  { icon: <Text style={{ fontSize: 34 }}>🔚</Text>, color: '#34d399', gradA: '#059669', gradB: '#064e3b' },
           double_letters:    { icon: <Text style={{ fontSize: 34 }}>🔤</Text>, color: '#fbbf24', gradA: '#d97706', gradB: '#78350f' },
           repeated_letter:   { icon: <Text style={{ fontSize: 34 }}>🔁</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
+          multi_letter:      { icon: <Text style={{ fontSize: 34 }}>🔀</Text>, color: '#38bdf8', gradA: '#0284c7', gradB: '#0c4a6e' },
           contains_vowel:    { icon: <Text style={{ fontSize: 34 }}>🅰️</Text>, color: '#60a5fa', gradA: '#2563eb', gradB: '#1e3a8a' },
           odd_length:        { icon: <Text style={{ fontSize: 34 }}>🔢</Text>, color: '#fb923c', gradA: '#ea580c', gradB: '#7c2d12' },
           no_repeat_letters: { icon: <Text style={{ fontSize: 34 }}>🚫</Text>, color: '#f87171', gradA: '#dc2626', gradB: '#7f1d1d' },

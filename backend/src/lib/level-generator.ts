@@ -416,7 +416,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L33 → TWO_LETTER_LEVELS = 'SO'
   34: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
   35: { categoryCount: 7, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['L', 'T'] },
-  36: { categoryCount: 7, isMultiLetterMode: true },
+  36: { categoryCount: 7 },
   37: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
   // L38 → TWO_LETTER_LEVELS = 'LA'
   39: { categoryCount: 7, constraintType: 'repeated_letter' },
@@ -1391,6 +1391,15 @@ export function generateLevel(levelNumber: number): LevelData {
       if (fullPool.length > exclusionPool.length) {
         finalPool = fullPool;
       }
+    }
+    // Last-resort: if the constraint letter combo leaves 0 categories (e.g. J +
+    // double_letters), drop the constraint and rebuild from the unconstrained pool.
+    if (finalPool.length === 0 && override.constraintType) {
+      const noConstraintFn = (c: CategoryType) => !impossible.includes(c);
+      const fallbackPool = enforceMutualExclusion(rng.shuffle(availableCategories.filter(noConstraintFn)), rng);
+      finalPool = fallbackPool;
+      // Mark the constraint as dropped so the constraint-assignment step later also clears it
+      (override as LevelOverride).constraintType = undefined;
     }
 
     const count = Math.min(targetCount, finalPool.length);
