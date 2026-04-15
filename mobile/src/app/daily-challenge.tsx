@@ -511,6 +511,7 @@ export default function DailyChallengeScreen() {
         .from('daily_challenge_scores')
         .select('username, total_score, total_time_ms, correct_count, completed_at')
         .eq('challenge_date', date)
+        .order('correct_count', { ascending: false })
         .order('total_time_ms', { ascending: true })
         .limit(20);
 
@@ -533,7 +534,7 @@ export default function DailyChallengeScreen() {
               .from('daily_challenge_scores')
               .select('*', { count: 'exact', head: true })
               .eq('challenge_date', date)
-              .lt('total_time_ms', myRow?.total_time_ms ?? 0),
+              .or(`correct_count.gt.${myRow?.correct_count ?? 0},and(correct_count.eq.${myRow?.correct_count ?? 0},total_time_ms.lt.${myRow?.total_time_ms ?? 0})`),
           ]);
           if (myRow) {
             setMyLeaderboardEntry({ ...(myRow as DbDailyChallengeScore), rank: (count ?? 20) + 1 });
@@ -838,6 +839,8 @@ export default function DailyChallengeScreen() {
                         const isMe = entry.username === currentUser?.username;
                         const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
                         const timeSec = (entry.total_time_ms / 1000).toFixed(1);
+                        const correct = entry.correct_count ?? 0;
+                        const isPerfect = correct === 6;
                         return (
                           <View
                             key={`${entry.username}-${idx}`}
@@ -860,7 +863,13 @@ export default function DailyChallengeScreen() {
                             >
                               {entry.username}{isMe ? ' (you)' : ''}
                             </Text>
-                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '800' }}>{timeSec}s</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <Text style={{
+                                fontSize: 12, fontWeight: '800',
+                                color: isPerfect ? '#4ADE80' : 'rgba(74,222,128,0.5)',
+                              }}>{correct}/6</Text>
+                              <Text style={{ color: 'rgba(74,222,128,0.6)', fontSize: 12, fontWeight: '700' }}>{timeSec}s</Text>
+                            </View>
                           </View>
                         );
                       })}
@@ -884,9 +893,15 @@ export default function DailyChallengeScreen() {
                             <Text style={{ flex: 1, color: '#4ADE80', fontSize: 13, fontWeight: '900', marginLeft: 6 }} numberOfLines={1}>
                               {myLeaderboardEntry.username} (you)
                             </Text>
-                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '800' }}>
-                              {(myLeaderboardEntry.total_time_ms / 1000).toFixed(1)}s
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <Text style={{
+                                fontSize: 12, fontWeight: '800',
+                                color: (myLeaderboardEntry.correct_count ?? 0) === 6 ? '#4ADE80' : 'rgba(74,222,128,0.5)',
+                              }}>{myLeaderboardEntry.correct_count ?? 0}/6</Text>
+                              <Text style={{ color: 'rgba(74,222,128,0.6)', fontSize: 12, fontWeight: '700' }}>
+                                {(myLeaderboardEntry.total_time_ms / 1000).toFixed(1)}s
+                              </Text>
+                            </View>
                           </View>
                         </>
                       )}
