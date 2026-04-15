@@ -1064,9 +1064,9 @@ export default function DailyChallengeScreen() {
             </Text>
             <View style={{ marginBottom: 24, gap: 6 }}>
               {[
-                'A special mode to further challenge your wits.',
-                'Each day a new challenge with 6 random categories.',
-                'Finish quickly to top today\'s leaderboard.',
+                'A special mode to further challenge your wits',
+                'Each day a new challenge with 6 random categories',
+                'Finish quickly to top today\'s leaderboard',
               ].map((line, i) => (
                 <Text key={i} style={{ color: 'rgba(0,200,64,0.85)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
                   {line}

@@ -58,67 +58,6 @@ async function loadDcStats(): Promise<DcStats> {
   return { played, bestTimeMs };
 }
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
-
-function StatCard({
-  icon, title, accentColor, rows,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  accentColor: string;
-  rows: Array<{ label: string; value: string; big?: boolean }>;
-}) {
-  return (
-    <View style={{
-      flex: 1,
-      backgroundColor: SKETCH_COLORS.paper,
-      borderRadius: 14,
-      borderWidth: 1.5,
-      borderColor: accentColor + '55',
-      borderTopWidth: 3,
-      borderTopColor: accentColor,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
-      shadowColor: SKETCH_COLORS.ink,
-      shadowOffset: { width: 1, height: 2 },
-      shadowOpacity: 0.08, shadowRadius: 0,
-    }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 }}>
-        {icon}
-        <Text style={{
-          fontSize: 10, fontWeight: '700',
-          color: accentColor,
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
-          flexShrink: 1,
-        }} numberOfLines={1}>{title}</Text>
-      </View>
-      {rows.map((row, i) => (
-        <View key={i} style={{ marginBottom: i < rows.length - 1 ? 6 : 0 }}>
-          {row.big ? (
-            <Text style={{
-              fontSize: 28, fontWeight: '900',
-              color: SKETCH_COLORS.ink,
-              lineHeight: 30,
-            }}>{row.value}</Text>
-          ) : (
-            <Text style={{
-              fontSize: 13, fontWeight: '700',
-              color: SKETCH_COLORS.inkLight,
-            }}>{row.value}</Text>
-          )}
-          {row.label ? (
-            <Text style={{
-              fontSize: 10, color: SKETCH_COLORS.inkFaint,
-              fontWeight: '600', letterSpacing: 0.3,
-            }}>{row.label}</Text>
-          ) : null}
-        </View>
-      ))}
-    </View>
-  );
-}
-
 // ─── Emoji picker ─────────────────────────────────────────────────────────────
 
 function EmojiPickerModal({
@@ -201,6 +140,48 @@ function EmojiPickerModal({
   );
 }
 
+// ─── Stats row ────────────────────────────────────────────────────────────────
+
+function StatsRow({
+  icon, label, accentColor, left, right, last,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  accentColor: string;
+  left: string;
+  right: string;
+  last?: boolean;
+}) {
+  return (
+    <View style={{
+      flexDirection: 'row', alignItems: 'center',
+      paddingVertical: 14, paddingHorizontal: 16,
+      borderBottomWidth: last ? 0 : 1,
+      borderBottomColor: SKETCH_COLORS.paperLine + '30',
+    }}>
+      <View style={{
+        width: 34, height: 34, borderRadius: 10,
+        backgroundColor: accentColor + '18',
+        alignItems: 'center', justifyContent: 'center',
+        marginRight: 12,
+      }}>
+        {icon}
+      </View>
+      <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: SKETCH_COLORS.ink }}>
+        {label}
+      </Text>
+      <View style={{ alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 18, fontWeight: '900', color: SKETCH_COLORS.ink, lineHeight: 22 }}>
+          {left}
+        </Text>
+        <Text style={{ fontSize: 11, fontWeight: '600', color: SKETCH_COLORS.inkFaint, marginTop: 1 }}>
+          {right}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Stats sheet modal ────────────────────────────────────────────────────────
 
 function StatsSheet({
@@ -230,7 +211,7 @@ function StatsSheet({
             style={{
               backgroundColor: SKETCH_COLORS.paperDark,
               borderTopLeftRadius: 28, borderTopRightRadius: 28,
-              paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40,
+              paddingTop: 14, paddingBottom: 40,
               borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1,
               borderColor: SKETCH_COLORS.paperLine + '40',
             }}
@@ -239,11 +220,11 @@ function StatsSheet({
             <View style={{
               width: 40, height: 4, borderRadius: 2,
               backgroundColor: SKETCH_COLORS.inkFaint + '50',
-              alignSelf: 'center', marginBottom: 20,
+              alignSelf: 'center', marginBottom: 18,
             }} />
 
             {/* Avatar + change button */}
-            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            <View style={{ alignItems: 'center', marginBottom: 22 }}>
               <View style={{
                 width: 72, height: 72, borderRadius: 36,
                 backgroundColor: SKETCH_COLORS.paper,
@@ -259,58 +240,51 @@ function StatsSheet({
               <Pressable
                 onPress={onChangeAvatar}
                 style={({ pressed }) => ({
-                  flexDirection: 'row', alignItems: 'center', gap: 5,
+                  flexDirection: 'row',
+                  flexWrap: 'nowrap',
+                  alignItems: 'center',
                   paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
                   backgroundColor: pressed ? SKETCH_COLORS.paperLine + '30' : SKETCH_COLORS.paper,
                   borderWidth: 1, borderColor: SKETCH_COLORS.amber + '60',
                 })}
               >
                 <Pencil size={12} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: SKETCH_COLORS.amber }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: SKETCH_COLORS.amber, marginLeft: 5 }}>
                   Change Avatar
                 </Text>
               </Pressable>
             </View>
 
-            {/* Stats label */}
-            <Text style={{
-              fontSize: 11, fontWeight: '800', color: SKETCH_COLORS.inkFaint,
-              letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center',
-              marginBottom: 14,
-            }}>Your Stats</Text>
-
-            {/* Stat cards — 3-column row */}
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <StatCard
-                icon={<Trophy size={11} color="#D09010" strokeWidth={2.5} />}
-                title="Single"
+            {/* Stats rows */}
+            <View style={{
+              marginHorizontal: 20,
+              backgroundColor: SKETCH_COLORS.paper,
+              borderRadius: 16,
+              borderWidth: 1.5,
+              borderColor: SKETCH_COLORS.paperLine + '40',
+              overflow: 'hidden',
+            }}>
+              <StatsRow
+                icon={<Trophy size={16} color="#D09010" strokeWidth={2.5} />}
+                label="Single Player"
                 accentColor="#D09010"
-                rows={[
-                  { label: 'level', value: `${spLevel}`, big: true },
-                  { label: '', value: `⭐ ${spStars}` },
-                  { label: '', value: `${spPoints} pts` },
-                ]}
+                left={`Level ${spLevel}`}
+                right={`⭐ ${spStars}  ·  ${spPoints} pts`}
               />
-              <StatCard
-                icon={<Users size={11} color="#205880" strokeWidth={2.5} />}
-                title="Multi"
+              <StatsRow
+                icon={<Users size={16} color="#205880" strokeWidth={2.5} />}
+                label="Multiplayer"
                 accentColor="#205880"
-                rows={[
-                  { label: 'played', value: `${mpStats.gamesPlayed}`, big: true },
-                  { label: 'won', value: `${mpStats.gamesWon} 🏆` },
-                ]}
+                left={`${mpStats.gamesPlayed} played`}
+                right={`${mpStats.gamesWon} won 🏆`}
               />
-              <StatCard
-                icon={<CalendarDays size={11} color="#2A6640" strokeWidth={2.5} />}
-                title="Daily"
+              <StatsRow
+                icon={<CalendarDays size={16} color="#2A6640" strokeWidth={2.5} />}
+                label="Daily Challenge"
                 accentColor="#2A6640"
-                rows={[
-                  { label: 'played', value: `${dcStats.played}`, big: true },
-                  {
-                    label: 'best time',
-                    value: dcStats.bestTimeMs !== null ? formatTimeMs(dcStats.bestTimeMs) : '—',
-                  },
-                ]}
+                left={`${dcStats.played} played`}
+                right={dcStats.bestTimeMs !== null ? `Best: ${formatTimeMs(dcStats.bestTimeMs)}` : 'No best yet'}
+                last
               />
             </View>
           </Animated.View>

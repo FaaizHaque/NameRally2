@@ -492,9 +492,9 @@ export default function GameModeScreen() {
             </Text>
             <View style={{ marginBottom: 24, gap: 6 }}>
               {[
-                'A solo mode designed to test your vocabulary and speed.',
-                'Score points to unlock higher levels.',
-                'Categories get more creative and the rules more demanding.',
+                'A solo mode designed to test your vocabulary and speed',
+                'Score points to unlock higher levels',
+                'Categories get more creative and the rules more demanding',
               ].map((line, i) => (
                 <Text key={i} style={{ color: 'rgba(160,200,255,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
                   {line}
@@ -532,9 +532,9 @@ export default function GameModeScreen() {
             </Text>
             <View style={{ marginBottom: 24, gap: 6 }}>
               {[
-                'A fresh feel of the classic Name Place Animal Things.',
-                'Compete with friends and family in exciting categories.',
-                'Unleash your creativity and outscore your rivals.',
+                'A fresh feel of the classic Name Place Animal Things',
+                'Compete with friends and family in exciting categories',
+                'Unleash your creativity and outscore your rivals',
               ].map((line, i) => (
                 <Text key={i} style={{ color: 'rgba(255,240,180,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
                   {line}

@@ -341,6 +341,13 @@ export default function HomeScreen() {
               </Animated.View>
             </View>
 
+            {/* Profile avatar — between title amber line and name amber line */}
+            {currentUser && (
+              <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 4 }}>
+                <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
+              </View>
+            )}
+
             {/* MIDDLE: Username entry or Play — centered in remaining space */}
             <View style={{ flex: 1, justifyContent: 'center' }}>
 
@@ -413,9 +420,6 @@ export default function HomeScreen() {
               ) : currentUser ? (
                 /* ── Returning user ── */
                 <View style={{ gap: 16 }}>
-                  {/* Profile card — emoji + stats */}
-                  <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
-
                   <Animated.View
                     entering={splashDone ? FadeInUp.duration(500) : undefined}
                     style={{ marginBottom: 0, opacity: splashDone ? 1 : 0, alignItems: 'center' }}
