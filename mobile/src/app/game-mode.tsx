@@ -490,9 +490,17 @@ export default function GameModeScreen() {
             <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Single Player 🎮
             </Text>
-            <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              A solo mode designed to test your vocabulary and speed. Score points to unlock higher levels, where categories get more creative and the rules more demanding.
-            </Text>
+            <View style={{ marginBottom: 24, gap: 6 }}>
+              {[
+                'A solo mode designed to test your vocabulary and speed.',
+                'Score points to unlock higher levels.',
+                'Categories get more creative and the rules more demanding.',
+              ].map((line, i) => (
+                <Text key={i} style={{ color: 'rgba(160,200,255,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
+                  {line}
+                </Text>
+              ))}
+            </View>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -522,9 +530,17 @@ export default function GameModeScreen() {
             <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Multiplayer 🎲
             </Text>
-            <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              A group mode to give you a fresh feel of the classic Name Place Animal Things. Compete with friends and family in new exciting categories. Unleash your creativity and outscore your rivals to claim victory.
-            </Text>
+            <View style={{ marginBottom: 24, gap: 6 }}>
+              {[
+                'A fresh feel of the classic Name Place Animal Things.',
+                'Compete with friends and family in exciting categories.',
+                'Unleash your creativity and outscore your rivals.',
+              ].map((line, i) => (
+                <Text key={i} style={{ color: 'rgba(255,240,180,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
+                  {line}
+                </Text>
+              ))}
+            </View>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

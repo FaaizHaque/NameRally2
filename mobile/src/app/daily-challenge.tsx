@@ -1047,9 +1047,17 @@ export default function DailyChallengeScreen() {
             <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 14 }}>
               Daily Challenge 📅
             </Text>
-            <Text style={{ color: 'rgba(0,200,64,0.85)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              A special mode to further challenge your wits. Each day a new challenge awaits, consisting of 6 random categories. Finish quickly to top today's leaderboard.
-            </Text>
+            <View style={{ marginBottom: 24, gap: 6 }}>
+              {[
+                'A special mode to further challenge your wits.',
+                'Each day a new challenge with 6 random categories.',
+                'Finish quickly to top today\'s leaderboard.',
+              ].map((line, i) => (
+                <Text key={i} style={{ color: 'rgba(0,200,64,0.85)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
+                  {line}
+                </Text>
+              ))}
+            </View>
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

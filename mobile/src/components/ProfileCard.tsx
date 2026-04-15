@@ -107,10 +107,12 @@ function StatCard({
               color: SKETCH_COLORS.inkLight,
             }}>{row.value}</Text>
           )}
-          <Text style={{
-            fontSize: 10, color: SKETCH_COLORS.inkFaint,
-            fontWeight: '600', letterSpacing: 0.3,
-          }}>{row.label}</Text>
+          {row.label ? (
+            <Text style={{
+              fontSize: 10, color: SKETCH_COLORS.inkFaint,
+              fontWeight: '600', letterSpacing: 0.3,
+            }}>{row.label}</Text>
+          ) : null}
         </View>
       ))}
     </View>
@@ -285,8 +287,8 @@ function StatsSheet({
                 accentColor="#D09010"
                 rows={[
                   { label: 'level', value: `${spLevel}`, big: true },
-                  { label: `star${spStars !== 1 ? 's' : ''}`, value: `⭐ ${spStars}` },
-                  { label: 'points', value: `${spPoints} pts` },
+                  { label: '', value: `⭐ ${spStars}` },
+                  { label: '', value: `${spPoints} pts` },
                 ]}
               />
               <StatCard
