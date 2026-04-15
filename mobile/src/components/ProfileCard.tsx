@@ -140,43 +140,62 @@ function EmojiPickerModal({
   );
 }
 
-// ─── Stats row ────────────────────────────────────────────────────────────────
+// ─── Themed stat card ─────────────────────────────────────────────────────────
 
-function StatsRow({
-  icon, label, accentColor, left, right, last,
+function StatCard({
+  icon, label, primary, secondary, theme,
 }: {
   icon: React.ReactNode;
   label: string;
-  accentColor: string;
-  left: string;
-  right: string;
-  last?: boolean;
+  primary: string;
+  secondary: string;
+  theme: 'sp' | 'mp' | 'dc';
 }) {
+  const themes = {
+    sp: {
+      bg: '#F2EAD0',
+      border: '#D09010',
+      iconBg: 'rgba(208,144,16,0.18)',
+      labelColor: '#1C1410',
+      primaryColor: '#1C1410',
+      secondaryColor: '#5A3E1B',
+    },
+    mp: {
+      bg: '#163468',
+      border: 'rgba(80,160,255,0.45)',
+      iconBg: 'rgba(80,160,255,0.15)',
+      labelColor: '#FFFFFF',
+      primaryColor: '#FFFFFF',
+      secondaryColor: 'rgba(144,192,255,0.8)',
+    },
+    dc: {
+      bg: '#0D1F0D',
+      border: 'rgba(74,222,128,0.4)',
+      iconBg: 'rgba(74,222,128,0.12)',
+      labelColor: '#4ADE80',
+      primaryColor: '#4ADE80',
+      secondaryColor: 'rgba(74,222,128,0.6)',
+    },
+  };
+  const t = themes[theme];
   return (
     <View style={{
+      backgroundColor: t.bg,
+      borderRadius: 14, borderWidth: 1.5, borderColor: t.border,
+      paddingVertical: 14, paddingHorizontal: 14,
       flexDirection: 'row', alignItems: 'center',
-      paddingVertical: 14, paddingHorizontal: 16,
-      borderBottomWidth: last ? 0 : 1,
-      borderBottomColor: SKETCH_COLORS.paperLine + '30',
+      overflow: 'hidden',
     }}>
-      <View style={{
-        width: 34, height: 34, borderRadius: 10,
-        backgroundColor: accentColor + '18',
-        alignItems: 'center', justifyContent: 'center',
-        marginRight: 12,
-      }}>
+      {theme === 'sp' && [16, 34, 52].map((top) => (
+        <View key={top} style={{ position: 'absolute', left: 0, right: 0, top, height: 1, backgroundColor: 'rgba(208,144,16,0.15)' }} />
+      ))}
+      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: t.iconBg, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
         {icon}
       </View>
-      <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: SKETCH_COLORS.ink }}>
-        {label}
-      </Text>
+      <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: t.labelColor }}>{label}</Text>
       <View style={{ alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 18, fontWeight: '900', color: SKETCH_COLORS.ink, lineHeight: 22 }}>
-          {left}
-        </Text>
-        <Text style={{ fontSize: 11, fontWeight: '600', color: SKETCH_COLORS.inkFaint, marginTop: 1 }}>
-          {right}
-        </Text>
+        <Text style={{ fontSize: 17, fontWeight: '900', color: t.primaryColor, lineHeight: 22 }}>{primary}</Text>
+        <Text style={{ fontSize: 11, fontWeight: '600', color: t.secondaryColor, marginTop: 1 }}>{secondary}</Text>
       </View>
     </View>
   );
@@ -255,36 +274,28 @@ function StatsSheet({
               </Pressable>
             </View>
 
-            {/* Stats rows */}
-            <View style={{
-              marginHorizontal: 20,
-              backgroundColor: SKETCH_COLORS.paper,
-              borderRadius: 16,
-              borderWidth: 1.5,
-              borderColor: SKETCH_COLORS.paperLine + '40',
-              overflow: 'hidden',
-            }}>
-              <StatsRow
+            {/* Themed stat cards */}
+            <View style={{ marginHorizontal: 20, gap: 10 }}>
+              <StatCard
+                theme="sp"
                 icon={<Trophy size={16} color="#D09010" strokeWidth={2.5} />}
                 label="Single Player"
-                accentColor="#D09010"
-                left={`Level ${spLevel}`}
-                right={`⭐ ${spStars}  ·  ${spPoints} pts`}
+                primary={`Level ${spLevel}`}
+                secondary={`⭐ ${spStars}  ·  ${spPoints} pts`}
               />
-              <StatsRow
-                icon={<Users size={16} color="#205880" strokeWidth={2.5} />}
+              <StatCard
+                theme="mp"
+                icon={<Users size={16} color="#90c0ff" strokeWidth={2.5} />}
                 label="Multiplayer"
-                accentColor="#205880"
-                left={`${mpStats.gamesPlayed} played`}
-                right={`${mpStats.gamesWon} won 🏆`}
+                primary={`${mpStats.gamesPlayed} played`}
+                secondary={`${mpStats.gamesWon} won 🏆`}
               />
-              <StatsRow
-                icon={<CalendarDays size={16} color="#2A6640" strokeWidth={2.5} />}
+              <StatCard
+                theme="dc"
+                icon={<CalendarDays size={16} color="#4ADE80" strokeWidth={2.5} />}
                 label="Daily Challenge"
-                accentColor="#2A6640"
-                left={`${dcStats.played} played`}
-                right={dcStats.bestTimeMs !== null ? `Best: ${formatTimeMs(dcStats.bestTimeMs)}` : 'No best yet'}
-                last
+                primary={`${dcStats.played} played`}
+                secondary={dcStats.bestTimeMs !== null ? `Best: ${formatTimeMs(dcStats.bestTimeMs)}` : 'No best yet'}
               />
             </View>
           </Animated.View>
