@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, ScrollView, Modal,
 } from 'react-native';
-import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn, FadeInDown, useSharedValue, useAnimatedStyle,
+  withSpring, withTiming,
+} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { Trophy, Users, CalendarDays, Star, Pencil } from 'lucide-react-native';
+import { Trophy, Users, CalendarDays, Pencil, ChevronDown } from 'lucide-react-native';
 import { SKETCH_COLORS } from '@/lib/theme';
 import type { LevelProgress } from '@/lib/level-types';
 
@@ -55,7 +58,7 @@ async function loadDcStats(): Promise<DcStats> {
   return { played, bestTimeMs };
 }
 
-// ─── Stat chip ────────────────────────────────────────────────────────────────
+// ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({
   icon, title, accentColor, rows,
@@ -67,22 +70,20 @@ function StatCard({
 }) {
   return (
     <View style={{
-      width: 110,
+      flex: 1,
       backgroundColor: SKETCH_COLORS.paper,
-      borderRadius: 12,
+      borderRadius: 14,
       borderWidth: 1.5,
       borderColor: accentColor + '55',
       borderTopWidth: 3,
       borderTopColor: accentColor,
-      paddingHorizontal: 10,
-      paddingVertical: 10,
-      marginRight: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
       shadowColor: SKETCH_COLORS.ink,
       shadowOffset: { width: 1, height: 2 },
       shadowOpacity: 0.08, shadowRadius: 0,
     }}>
-      {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 10 }}>
         {icon}
         <Text style={{
           fontSize: 10, fontWeight: '700',
@@ -92,14 +93,13 @@ function StatCard({
           flexShrink: 1,
         }} numberOfLines={1}>{title}</Text>
       </View>
-      {/* Rows */}
       {rows.map((row, i) => (
-        <View key={i} style={{ marginBottom: i < rows.length - 1 ? 5 : 0 }}>
+        <View key={i} style={{ marginBottom: i < rows.length - 1 ? 6 : 0 }}>
           {row.big ? (
             <Text style={{
-              fontSize: 26, fontWeight: '900',
+              fontSize: 28, fontWeight: '900',
               color: SKETCH_COLORS.ink,
-              lineHeight: 28,
+              lineHeight: 30,
             }}>{row.value}</Text>
           ) : (
             <Text style={{
@@ -117,7 +117,7 @@ function StatCard({
   );
 }
 
-// ─── Emoji picker modal ────────────────────────────────────────────────────────
+// ─── Emoji picker ─────────────────────────────────────────────────────────────
 
 function EmojiPickerModal({
   visible, current, onPick, onClose,
@@ -129,12 +129,7 @@ function EmojiPickerModal({
 }) {
   const COLS = 5;
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable
         style={{ flex: 1, backgroundColor: 'rgba(28,18,10,0.5)', justifyContent: 'flex-end' }}
         onPress={onClose}
@@ -145,12 +140,11 @@ function EmojiPickerModal({
             style={{
               backgroundColor: SKETCH_COLORS.paper,
               borderTopLeftRadius: 28, borderTopRightRadius: 28,
-              paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32,
+              paddingHorizontal: 20, paddingTop: 16, paddingBottom: 36,
               borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1,
               borderColor: SKETCH_COLORS.paperLine + '50',
             }}
           >
-            {/* Handle */}
             <View style={{
               width: 40, height: 4, borderRadius: 2,
               backgroundColor: SKETCH_COLORS.inkFaint + '60',
@@ -163,8 +157,6 @@ function EmojiPickerModal({
             <Text style={{
               fontSize: 12, color: SKETCH_COLORS.inkFaint, textAlign: 'center', marginBottom: 20,
             }}>tap to select</Text>
-
-            {/* Emoji grid */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
               {PROFILE_EMOJIS.map((emoji) => (
                 <Pressable
@@ -189,7 +181,6 @@ function EmojiPickerModal({
                 </Pressable>
               ))}
             </View>
-
             <Pressable
               onPress={onClose}
               style={({ pressed }) => ({
@@ -208,6 +199,125 @@ function EmojiPickerModal({
   );
 }
 
+// ─── Stats sheet modal ────────────────────────────────────────────────────────
+
+function StatsSheet({
+  visible, emoji, mpStats, dcStats, levelProgress, onClose, onChangeAvatar,
+}: {
+  visible: boolean;
+  emoji: string;
+  mpStats: MpStats;
+  dcStats: DcStats;
+  levelProgress: LevelProgress;
+  onClose: () => void;
+  onChangeAvatar: () => void;
+}) {
+  const spLevel = levelProgress.unlockedLevel;
+  const spStars = levelProgress.totalStars ?? 0;
+  const spPoints = levelProgress.totalPoints ?? 0;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(28,18,10,0.45)', justifyContent: 'flex-end' }}
+        onPress={onClose}
+      >
+        <Pressable onPress={e => e.stopPropagation()}>
+          <Animated.View
+            entering={FadeInDown.duration(300).springify()}
+            style={{
+              backgroundColor: SKETCH_COLORS.paperDark,
+              borderTopLeftRadius: 28, borderTopRightRadius: 28,
+              paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40,
+              borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1,
+              borderColor: SKETCH_COLORS.paperLine + '40',
+            }}
+          >
+            {/* Handle */}
+            <View style={{
+              width: 40, height: 4, borderRadius: 2,
+              backgroundColor: SKETCH_COLORS.inkFaint + '50',
+              alignSelf: 'center', marginBottom: 20,
+            }} />
+
+            {/* Avatar + change button */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View style={{
+                width: 72, height: 72, borderRadius: 36,
+                backgroundColor: SKETCH_COLORS.paper,
+                borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '80',
+                alignItems: 'center', justifyContent: 'center',
+                shadowColor: SKETCH_COLORS.ink,
+                shadowOffset: { width: 1, height: 2 },
+                shadowOpacity: 0.12, shadowRadius: 0,
+                marginBottom: 10,
+              }}>
+                <Text style={{ fontSize: 38 }}>{emoji}</Text>
+              </View>
+              <Pressable
+                onPress={onChangeAvatar}
+                style={({ pressed }) => ({
+                  flexDirection: 'row', alignItems: 'center', gap: 5,
+                  paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
+                  backgroundColor: pressed ? SKETCH_COLORS.paperLine + '30' : SKETCH_COLORS.paper,
+                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '60',
+                })}
+              >
+                <Pencil size={12} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
+                <Text style={{ fontSize: 12, fontWeight: '700', color: SKETCH_COLORS.amber }}>
+                  Change Avatar
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Stats label */}
+            <Text style={{
+              fontSize: 11, fontWeight: '800', color: SKETCH_COLORS.inkFaint,
+              letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center',
+              marginBottom: 14,
+            }}>Your Stats</Text>
+
+            {/* Stat cards — 3-column row */}
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <StatCard
+                icon={<Trophy size={11} color="#D09010" strokeWidth={2.5} />}
+                title="Single"
+                accentColor="#D09010"
+                rows={[
+                  { label: 'level', value: `${spLevel}`, big: true },
+                  { label: `star${spStars !== 1 ? 's' : ''}`, value: `⭐ ${spStars}` },
+                  { label: 'points', value: `${spPoints} pts` },
+                ]}
+              />
+              <StatCard
+                icon={<Users size={11} color="#205880" strokeWidth={2.5} />}
+                title="Multi"
+                accentColor="#205880"
+                rows={[
+                  { label: 'played', value: `${mpStats.gamesPlayed}`, big: true },
+                  { label: 'won', value: `${mpStats.gamesWon} 🏆` },
+                ]}
+              />
+              <StatCard
+                icon={<CalendarDays size={11} color="#2A6640" strokeWidth={2.5} />}
+                title="Daily"
+                accentColor="#2A6640"
+                rows={[
+                  { label: 'played', value: `${dcStats.played}`, big: true },
+                  {
+                    label: 'best time',
+                    value: dcStats.bestTimeMs !== null ? formatTimeMs(dcStats.bestTimeMs) : '—',
+                  },
+                ]}
+              />
+            </View>
+          </Animated.View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 // ─── ProfileCard ──────────────────────────────────────────────────────────────
 
 interface ProfileCardProps {
@@ -217,6 +327,7 @@ interface ProfileCardProps {
 
 export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
   const [emoji, setEmoji] = useState<string>(DEFAULT_EMOJI);
+  const [showStats, setShowStats] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [mpStats, setMpStats] = useState<MpStats>({ gamesPlayed: 0, gamesWon: 0 });
   const [dcStats, setDcStats] = useState<DcStats>({ played: 0, bestTimeMs: null });
@@ -235,104 +346,66 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
     setShowPicker(false);
   };
 
-  const spLevel = levelProgress.unlockedLevel;
-  const spStars = levelProgress.totalStars ?? 0;
-  const spPoints = levelProgress.totalPoints ?? 0;
+  const handleAvatarPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowStats(true);
+  };
+
+  const handleChangeAvatar = () => {
+    setShowStats(false);
+    // Small delay so stats sheet closes before picker opens
+    setTimeout(() => setShowPicker(true), 320);
+  };
 
   return (
     <>
+      {/* Compact avatar — always visible */}
       <Animated.View
         entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-        style={{
-          backgroundColor: SKETCH_COLORS.paperDark,
-          borderRadius: 18,
-          borderWidth: 1.5,
-          borderColor: SKETCH_COLORS.paperLine + '40',
-          padding: 16,
-          shadowColor: SKETCH_COLORS.ink,
-          shadowOffset: { width: 2, height: 4 },
-          shadowOpacity: 0.10, shadowRadius: 0,
-          transform: [{ rotate: '-0.3deg' }],
-        }}
+        style={{ alignItems: 'center' }}
       >
-        {/* Emoji avatar */}
-        <View style={{ alignItems: 'center', marginBottom: 14 }}>
-          <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowPicker(true); }}
-            style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.93 : 1 }] })}
-          >
-            <View style={{ position: 'relative' }}>
-              <View style={{
-                width: 72, height: 72, borderRadius: 36,
-                backgroundColor: SKETCH_COLORS.paper,
-                borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '80',
-                alignItems: 'center', justifyContent: 'center',
-                shadowColor: SKETCH_COLORS.ink,
-                shadowOffset: { width: 1, height: 2 },
-                shadowOpacity: 0.12, shadowRadius: 0,
-              }}>
-                <Text style={{ fontSize: 38 }}>{emoji}</Text>
-              </View>
-              {/* Edit badge */}
-              <View style={{
-                position: 'absolute', bottom: 0, right: 0,
-                width: 22, height: 22, borderRadius: 11,
-                backgroundColor: SKETCH_COLORS.amber,
-                borderWidth: 2, borderColor: SKETCH_COLORS.paperDark,
-                alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Pencil size={11} color={SKETCH_COLORS.ink} strokeWidth={2.5} />
-              </View>
-            </View>
-          </Pressable>
-        </View>
-
-        {/* Stat cards — horizontal scroll */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-          contentContainerStyle={{ paddingRight: 4 }}
+        <Pressable
+          onPress={handleAvatarPress}
+          style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.93 : 1 }] })}
         >
-          {/* Single Player */}
-          <StatCard
-            icon={<Trophy size={11} color="#D09010" strokeWidth={2.5} />}
-            title="Single"
-            accentColor="#D09010"
-            rows={[
-              { label: 'level', value: `${spLevel}`, big: true },
-              { label: `star${spStars !== 1 ? 's' : ''}`, value: `⭐ ${spStars}` },
-              { label: 'points', value: `${spPoints} pts` },
-            ]}
-          />
-
-          {/* Multiplayer */}
-          <StatCard
-            icon={<Users size={11} color="#205880" strokeWidth={2.5} />}
-            title="Multi"
-            accentColor="#205880"
-            rows={[
-              { label: 'played', value: `${mpStats.gamesPlayed}`, big: true },
-              { label: 'won', value: `${mpStats.gamesWon} 🏆` },
-            ]}
-          />
-
-          {/* Daily Challenge */}
-          <StatCard
-            icon={<CalendarDays size={11} color="#2A6640" strokeWidth={2.5} />}
-            title="Daily"
-            accentColor="#2A6640"
-            rows={[
-              { label: 'played', value: `${dcStats.played}`, big: true },
-              {
-                label: 'best time',
-                value: dcStats.bestTimeMs !== null ? formatTimeMs(dcStats.bestTimeMs) : '—',
-              },
-            ]}
-          />
-        </ScrollView>
+          <View style={{ position: 'relative' }}>
+            <View style={{
+              width: 72, height: 72, borderRadius: 36,
+              backgroundColor: SKETCH_COLORS.paperDark,
+              borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '80',
+              alignItems: 'center', justifyContent: 'center',
+              shadowColor: SKETCH_COLORS.ink,
+              shadowOffset: { width: 2, height: 4 },
+              shadowOpacity: 0.12, shadowRadius: 0,
+            }}>
+              <Text style={{ fontSize: 38 }}>{emoji}</Text>
+            </View>
+            {/* Stats hint badge */}
+            <View style={{
+              position: 'absolute', bottom: 0, right: 0,
+              width: 22, height: 22, borderRadius: 11,
+              backgroundColor: SKETCH_COLORS.amber,
+              borderWidth: 2, borderColor: SKETCH_COLORS.paper,
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <ChevronDown size={11} color={SKETCH_COLORS.ink} strokeWidth={3} />
+            </View>
+          </View>
+        </Pressable>
       </Animated.View>
 
+      {/* Stats bottom sheet */}
+      <StatsSheet
+        visible={showStats}
+        emoji={emoji}
+        mpStats={mpStats}
+        dcStats={dcStats}
+        levelProgress={levelProgress}
+        onClose={() => setShowStats(false)}
+        onChangeAvatar={handleChangeAvatar}
+      />
+
+      {/* Emoji picker */}
       <EmojiPickerModal
         visible={showPicker}
         current={emoji}
