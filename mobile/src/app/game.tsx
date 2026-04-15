@@ -364,6 +364,8 @@ export default function GameScreen() {
   const hasEndedRound     = useRef(false);
   const prevTimeRef       = useRef<number>(999);
   const prevStopCountdownRef = useRef<number>(999);
+  const hadMultiplePlayersRef = useRef(false);
+  const abandonedHandledRef   = useRef(false);
 
   const session           = useGameStore(s => s.session);
   const localAnswers      = useGameStore(s => s.localAnswers);
@@ -397,6 +399,7 @@ export default function GameScreen() {
 
   const [showExitModal,    setShowExitModal]    = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
+  const [showAbandonedBanner, setShowAbandonedBanner] = useState(false);
   const [stopCountdown,    setStopCountdown]    = useState(5);
   const [showLeaderboard,  setShowLeaderboard]  = useState(false);
   const [usedHints,    setUsedHints]    = useState<Set<CategoryType>>(new Set());
@@ -856,6 +859,7 @@ export default function GameScreen() {
         setShowReveal(false);
         setShowExitModal(false);
         setShowEndGameModal(false);
+        setShowAbandonedBanner(false);
         setPendingHint(null);
         setShowL1Tutorial(false);
         if (adPauseStart.current !== null) {
@@ -986,6 +990,32 @@ export default function GameScreen() {
     adPauseStart.current = null;
     setRoundInputDisabled(false);
   }, [session?.currentRound, currentLevel?.level]);
+
+  // Detect when all other players leave mid-game (multiplayer only)
+  useEffect(() => {
+    if (!session || !currentUser) return;
+    if (session.id.startsWith('local-')) return;
+    if (abandonedHandledRef.current) return;
+    if (session.players.length > 1) {
+      hadMultiplePlayersRef.current = true;
+      return;
+    }
+    if (
+      hadMultiplePlayersRef.current &&
+      session.players.length === 1 &&
+      session.players[0]?.visibleId === currentUser.id &&
+      (session.status === 'playing' || session.status === 'picking_letter')
+    ) {
+      abandonedHandledRef.current = true;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setShowAbandonedBanner(true);
+      setRoundInputDisabled(true);
+      // Give the player a moment to read the banner, then end the round
+      setTimeout(() => {
+        handleRoundEnd();
+      }, 2500);
+    }
+  }, [session?.players.length]);
 
   useEffect(() => {
     if (!session || session.status !== 'playing') return;
@@ -1896,6 +1926,30 @@ export default function GameScreen() {
       </KeyboardAvoidingView>
 
       {/* ════ OVERLAYS ════ */}
+
+      {/* All players left banner — slides in at the top during multiplayer */}
+      {showAbandonedBanner && (
+        <Animated.View
+          entering={FadeInDown.duration(300).springify()}
+          style={{
+            position: 'absolute', top: insets.top + 8, left: 16, right: 16,
+            backgroundColor: '#1a2540', borderRadius: 16, padding: 16,
+            borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.35)',
+            flexDirection: 'row', alignItems: 'center', gap: 12,
+            zIndex: 60,
+            shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
+          }}
+        >
+          <Text style={{ fontSize: 24 }}>👻</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Everyone left</Text>
+            <Text style={{ color: 'rgba(160,200,255,0.7)', fontSize: 12, marginTop: 2 }}>
+              All other players have left the game. Ending round…
+            </Text>
+          </View>
+        </Animated.View>
+      )}
+
       {showExitModal && (
         <View style={[s.backdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }]}>
           <Animated.View entering={ZoomIn.duration(280).springify()} style={s.modalCard}>

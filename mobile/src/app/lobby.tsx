@@ -84,6 +84,10 @@ export default function LobbyScreen() {
   const insets = useSafeAreaInsets();
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showAbandonedModal, setShowAbandonedModal] = useState(false);
+  // Track whether we've seen >1 player so we don't fire on initial solo lobby entry
+  const hadMultiplePlayersRef = useRef(false);
+  const abandonedShownRef = useRef(false);
 
   const session = useGameStore((s) => s.session);
   const currentUser = useGameStore((s) => s.currentUser);
@@ -109,6 +113,23 @@ export default function LobbyScreen() {
       Sounds.stopBackground();
     };
   }, [!!session]);
+
+  // Detect when all other players have left — sole survivor gets notified
+  useEffect(() => {
+    if (!session || !currentUser) return;
+    if (session.id.startsWith('local-')) return;
+    if (abandonedShownRef.current) return;
+    if (session.players.length > 1) {
+      hadMultiplePlayersRef.current = true;
+      return;
+    }
+    // Only fire if we previously saw multiple players (avoids false positive on initial solo entry)
+    if (hadMultiplePlayersRef.current && session.players.length === 1 && session.players[0]?.visibleId === currentUser.id) {
+      abandonedShownRef.current = true;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setShowAbandonedModal(true);
+    }
+  }, [session?.players.length]);
 
   // Navigate to game when status changes to 'playing' or 'picking_letter'
   useEffect(() => {
@@ -446,6 +467,45 @@ export default function LobbyScreen() {
 
         </View>
       </NotebookBackground>
+
+      {/* ── All players left overlay ── */}
+      {showAbandonedModal && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          alignItems: 'center', justifyContent: 'center',
+          zIndex: 60,
+        }}>
+          <Animated.View entering={FadeInDown.duration(220).springify()} style={{
+            width: '82%', backgroundColor: P.paper, borderRadius: 24, padding: 28,
+            borderWidth: 2, borderColor: P.paperDeep,
+            shadowColor: P.ink, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 16,
+            alignItems: 'center',
+          }}>
+            <Text style={{ fontSize: 36, marginBottom: 8 }}>👻</Text>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: P.inkMed, textAlign: 'center', marginBottom: 6 }}>
+              Everyone Left
+            </Text>
+            <Text style={{ fontSize: 14, color: P.inkFaint, textAlign: 'center', marginBottom: 24 }}>
+              All other players have left the lobby.
+            </Text>
+            <Pressable
+              onPress={async () => {
+                setShowAbandonedModal(false);
+                await leaveGame();
+                router.replace('/multiplayer-options');
+              }}
+              style={({ pressed }) => ({
+                width: '100%', paddingVertical: 15, borderRadius: 14,
+                backgroundColor: pressed ? P.paperDark : P.amberBg,
+                alignItems: 'center', borderWidth: 2, borderColor: P.amber,
+              })}
+            >
+              <Text style={{ color: P.inkMed, fontWeight: '700', fontSize: 16 }}>Back to Menu</Text>
+            </Pressable>
+          </Animated.View>
+        </View>
+      )}
 
       {/* ── Leave confirmation overlay ── */}
       {showLeaveModal && (
