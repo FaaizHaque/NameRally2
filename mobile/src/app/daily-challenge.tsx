@@ -52,7 +52,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { validateWithFallback } from '@/lib/word-validation';
 import type { DailyChallenge, DailyChallengeAnswer, DailyChallengeResult } from '@/lib/daily-challenge-types';
-import { calculateAnswerScore, DAILY_CHALLENGE_TIME_LIMIT_S, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
+import { calculateAnswerScore, getTodayDateString, generateShareMessage } from '@/lib/daily-challenge-types';
 import { supabase, type DbDailyChallengeScore } from '@/lib/supabase';
 import { CAT_COLORS } from '@/lib/category-colors';
 
@@ -135,15 +135,14 @@ export default function DailyChallengeScreen() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [myLeaderboardEntry, setMyLeaderboardEntry] = useState<(DbDailyChallengeScore & { rank: number }) | null>(null);
   const [streak, setStreak] = useState(0);
-  const [history, setHistory] = useState<Array<{ date: string; score: number; correct: number; grid: string }>>([]);
+  const [history, setHistory] = useState<Array<{ date: string; timeMs: number; correct: number; grid: string }>>([]);
 
   // Game state
   const [answers, setAnswers] = useState<Record<CategoryType, string>>({} as Record<CategoryType, string>);
   const [categoryStartTimes, setCategoryStartTimes] = useState<Record<CategoryType, number>>({} as Record<CategoryType, number>);
   const [answerTimes, setAnswerTimes] = useState<Record<CategoryType, number>>({} as Record<CategoryType, number>);
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(DAILY_CHALLENGE_TIME_LIMIT_S);
-  const timesUpRef = useRef(false);
+  const [timeElapsed, setTimeElapsed] = useState(0);
   const handleSubmitRef = useRef<() => void>(() => {});
 
   // Animation values
@@ -186,7 +185,7 @@ export default function DailyChallengeScreen() {
 
         // Load past results (last 30 days, excluding today)
         const loadHistory = async (todayDate: string) => {
-          const items: Array<{ date: string; score: number; correct: number; grid: string }> = [];
+          const items: Array<{ date: string; timeMs: number; correct: number; grid: string }> = [];
           const today = new Date(todayDate);
           for (let i = 1; i <= 30 && items.length < 14; i++) {
             const d = new Date(today);
@@ -198,7 +197,7 @@ export default function DailyChallengeScreen() {
               const grid = r.answers.map(a => a.isValid ? '✅' : '❌').join('');
               items.push({
                 date: dateStr,
-                score: r.totalScore,
+                timeMs: r.totalTimeMs,
                 correct: r.answers.filter(a => a.isValid).length,
                 grid,
               });
@@ -231,7 +230,14 @@ export default function DailyChallengeScreen() {
           setShowDcIntro(true);
         } else {
           setAnswers(initialAnswers);
-          setGameStartTime(Date.now());
+          // Resume persisted start time so timer survives app kills/backgrounding
+          const persistedStart = await AsyncStorage.getItem(`npat_dc_start_${challengeData.date}`);
+          const startTime = persistedStart ? parseInt(persistedStart, 10) : Date.now();
+          if (!persistedStart) {
+            await AsyncStorage.setItem(`npat_dc_start_${challengeData.date}`, String(startTime));
+          }
+          setGameStartTime(startTime);
+          setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
           setPhase('playing');
           Sounds.startBackground('daily_challenge');
         }
@@ -257,23 +263,12 @@ export default function DailyChallengeScreen() {
     }, [])
   );
 
-  // Game timer — 60-second countdown; auto-submits at 0
+  // Game timer — counts up; naturally resumes after backgrounding
   useEffect(() => {
     if (phase !== 'playing' || !gameStartTime) return;
-    timesUpRef.current = false;
 
     timerRef.current = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
-      const remaining = Math.max(0, DAILY_CHALLENGE_TIME_LIMIT_S - elapsed);
-      setTimeLeft(remaining);
-
-      if (remaining === 0 && !timesUpRef.current) {
-        timesUpRef.current = true;
-        if (timerRef.current) clearInterval(timerRef.current);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        // Use ref to get latest handleSubmit with current answers (avoids stale closure)
-        handleSubmitRef.current();
-      }
+      setTimeElapsed(Math.floor((Date.now() - gameStartTime) / 1000));
     }, 1000);
 
     return () => {
@@ -369,9 +364,7 @@ export default function DailyChallengeScreen() {
     setIsSubmitting(true);
 
     try {
-      const totalTimeMs = gameStartTime
-        ? Math.min(Date.now() - gameStartTime, DAILY_CHALLENGE_TIME_LIMIT_S * 1000)
-        : 0;
+      const totalTimeMs = gameStartTime ? Date.now() - gameStartTime : 0;
 
       // Validate all answers
       const validationPromises = challenge.categories.map(async (category) => {
@@ -494,7 +487,7 @@ export default function DailyChallengeScreen() {
           const hr: DailyChallengeResult = JSON.parse(hStored);
           histItems.push({
             date: hDateStr,
-            score: hr.totalScore,
+            timeMs: hr.totalTimeMs,
             correct: hr.answers.filter(a => a.isValid).length,
             grid: hr.answers.map(a => a.isValid ? '✅' : '❌').join(''),
           });
@@ -518,7 +511,6 @@ export default function DailyChallengeScreen() {
         .from('daily_challenge_scores')
         .select('username, total_score, total_time_ms, correct_count, completed_at')
         .eq('challenge_date', date)
-        .order('total_score', { ascending: false })
         .order('total_time_ms', { ascending: true })
         .limit(20);
 
@@ -541,7 +533,7 @@ export default function DailyChallengeScreen() {
               .from('daily_challenge_scores')
               .select('*', { count: 'exact', head: true })
               .eq('challenge_date', date)
-              .or(`total_score.gt.${entries[entries.length - 1]?.total_score ?? 0},and(total_score.eq.${entries[entries.length - 1]?.total_score ?? 0},total_time_ms.lt.${entries[entries.length - 1]?.total_time_ms ?? 0})`),
+              .lt('total_time_ms', myRow?.total_time_ms ?? 0),
           ]);
           if (myRow) {
             setMyLeaderboardEntry({ ...(myRow as DbDailyChallengeScore), rank: (count ?? 20) + 1 });
@@ -723,8 +715,8 @@ export default function DailyChallengeScreen() {
                     <Trophy size={48} color="#4ADE80" />
                   </LinearGradient>
                 </Animated.View>
-                <Text style={{ color: '#E8FFE8', fontSize: 56, fontWeight: '900', marginTop: 12, lineHeight: 60 }}>{result?.totalScore}</Text>
-                <Text style={{ color: '#4ADE8080', fontSize: 14 }}>points today</Text>
+                <Text style={{ color: '#E8FFE8', fontSize: 48, fontWeight: '900', marginTop: 12, lineHeight: 54 }}>{formatTimeMs(result?.totalTimeMs ?? 0)}</Text>
+                <Text style={{ color: '#4ADE8080', fontSize: 14 }}>your time</Text>
                 {streak > 0 && (
                   <View style={{
                     flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10,
@@ -800,20 +792,15 @@ export default function DailyChallengeScreen() {
                             </Text>
                           </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <View style={{
-                            width: 28, height: 28, borderRadius: 14,
-                            alignItems: 'center', justifyContent: 'center',
-                            backgroundColor: answer.isValid ? '#4ADE80' : 'rgba(255,107,107,0.4)',
-                          }}>
-                            {answer.isValid
-                              ? <Check size={16} color="#0D1F0D" strokeWidth={3} />
-                              : <X size={16} color="#fff" strokeWidth={3} />
-                            }
-                          </View>
-                          <Text style={{ color: answer.score > 0 ? '#4ADE80' : 'rgba(255,255,255,0.2)', fontWeight: '800', fontSize: 18 }}>
-                            +{answer.score}
-                          </Text>
+                        <View style={{
+                          width: 28, height: 28, borderRadius: 14,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: answer.isValid ? '#4ADE80' : 'rgba(255,107,107,0.4)',
+                        }}>
+                          {answer.isValid
+                            ? <Check size={16} color="#0D1F0D" strokeWidth={3} />
+                            : <X size={16} color="#fff" strokeWidth={3} />
+                          }
                         </View>
                       </Animated.View>
                     );
@@ -873,10 +860,7 @@ export default function DailyChallengeScreen() {
                             >
                               {entry.username}{isMe ? ' (you)' : ''}
                             </Text>
-                            <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>{timeSec}s</Text>
-                            <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
-                              <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{entry.total_score}</Text>
-                            </View>
+                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '800' }}>{timeSec}s</Text>
                           </View>
                         );
                       })}
@@ -900,12 +884,9 @@ export default function DailyChallengeScreen() {
                             <Text style={{ flex: 1, color: '#4ADE80', fontSize: 13, fontWeight: '900', marginLeft: 6 }} numberOfLines={1}>
                               {myLeaderboardEntry.username} (you)
                             </Text>
-                            <Text style={{ color: 'rgba(74,222,128,0.45)', fontSize: 11, marginRight: 10 }}>
+                            <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '800' }}>
                               {(myLeaderboardEntry.total_time_ms / 1000).toFixed(1)}s
                             </Text>
-                            <View style={{ backgroundColor: 'rgba(74,222,128,0.12)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
-                              <Text style={{ color: '#4ADE80', fontSize: 13, fontWeight: '900' }}>{myLeaderboardEntry.total_score}</Text>
-                            </View>
                           </View>
                         </>
                       )}
@@ -943,7 +924,7 @@ export default function DailyChallengeScreen() {
                         }}
                       >
                         <Text style={{ color: '#4ADE80', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>TODAY</Text>
-                        <Text style={{ color: '#E8FFE8', fontSize: 22, fontWeight: '900', lineHeight: 26 }}>{result.totalScore}</Text>
+                        <Text style={{ color: '#E8FFE8', fontSize: 16, fontWeight: '900', lineHeight: 20 }}>{formatTimeMs(result.totalTimeMs)}</Text>
                         <Text style={{ color: 'rgba(74,222,128,0.55)', fontSize: 10 }}>{result.answers.filter(a => a.isValid).length}/6</Text>
                         <Text style={{ fontSize: 11, lineHeight: 14 }}>
                           {result.answers.map(a => a.isValid ? '✅' : '❌').join('')}
@@ -965,7 +946,7 @@ export default function DailyChallengeScreen() {
                           }}
                         >
                           <Text style={{ color: 'rgba(74,222,128,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 }}>{label}</Text>
-                          <Text style={{ color: '#E8FFE8', fontSize: 22, fontWeight: '900', lineHeight: 26 }}>{item.score}</Text>
+                          <Text style={{ color: '#E8FFE8', fontSize: 16, fontWeight: '900', lineHeight: 20 }}>{formatTimeMs(item.timeMs)}</Text>
                           <Text style={{ color: 'rgba(74,222,128,0.55)', fontSize: 10 }}>{item.correct}/6</Text>
                           <Text style={{ fontSize: 11, lineHeight: 14 }}>{item.grid}</Text>
                         </View>
@@ -980,12 +961,12 @@ export default function DailyChallengeScreen() {
                 {/* All-time Stats */}
                 {(result || history.length > 0) && (() => {
                   const allEntries = [
-                    ...(result ? [{ score: result.totalScore, correct: result.answers.filter(a => a.isValid).length }] : []),
-                    ...history.map(h => ({ score: h.score, correct: h.correct })),
+                    ...(result ? [{ timeMs: result.totalTimeMs, correct: result.answers.filter(a => a.isValid).length }] : []),
+                    ...history.map(h => ({ timeMs: h.timeMs, correct: h.correct })),
                   ];
-                  const bestScore = Math.max(...allEntries.map(e => e.score));
+                  const times = allEntries.map(e => e.timeMs).filter(t => t > 0);
+                  const bestTimeMs = times.length > 0 ? Math.min(...times) : 0;
                   const totalDays = allEntries.length;
-                  const avgScore = Math.round(allEntries.reduce((s, e) => s + e.score, 0) / totalDays);
                   const perfectRounds = allEntries.filter(e => e.correct === 6).length;
                   return (
                     <Animated.View entering={FadeInUp.duration(400).delay(1100)} style={{ marginBottom: 14 }}>
@@ -1000,14 +981,14 @@ export default function DailyChallengeScreen() {
                         borderColor: 'rgba(251,191,36,0.2)', gap: 0,
                       }}>
                         {[
-                          { label: 'Best', value: String(bestScore), icon: '🏆' },
-                          { label: 'Avg', value: String(avgScore), icon: '📊' },
+                          { label: 'Best', value: bestTimeMs > 0 ? formatTimeMs(bestTimeMs) : '—', icon: '⚡' },
                           { label: 'Days', value: String(totalDays), icon: '📅' },
                           { label: 'Perfect', value: String(perfectRounds), icon: '✨' },
+                          { label: 'Streak', value: streak > 0 ? `${streak}🔥` : '0', icon: '🏆' },
                         ].map((stat, idx, arr) => (
                           <View key={stat.label} style={{ flex: 1, alignItems: 'center', borderRightWidth: idx < arr.length - 1 ? 1 : 0, borderRightColor: 'rgba(251,191,36,0.15)' }}>
                             <Text style={{ fontSize: 16 }}>{stat.icon}</Text>
-                            <Text style={{ color: '#fde68a', fontSize: 20, fontWeight: '900', lineHeight: 26, marginTop: 2 }}>{stat.value}</Text>
+                            <Text style={{ color: '#fde68a', fontSize: 15, fontWeight: '900', lineHeight: 22, marginTop: 2 }}>{stat.value}</Text>
                             <Text style={{ color: 'rgba(251,191,36,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 1 }}>{stat.label}</Text>
                           </View>
                         ))}
@@ -1072,9 +1053,14 @@ export default function DailyChallengeScreen() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                const startTime = Date.now();
                 AsyncStorage.setItem('npat_dc_intro_shown', '1');
+                if (challenge) {
+                  AsyncStorage.setItem(`npat_dc_start_${challenge.date}`, String(startTime));
+                }
                 setShowDcIntro(false);
-                setGameStartTime(Date.now());
+                setGameStartTime(startTime);
+                setTimeElapsed(0);
                 setPhase('playing');
                 Sounds.startBackground('daily_challenge');
               }}
@@ -1145,13 +1131,13 @@ export default function DailyChallengeScreen() {
               {/* Timer + Sound toggle */}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View style={{
-                  backgroundColor: timeLeft <= 10 ? 'rgba(239,68,68,0.15)' : 'rgba(74,222,128,0.1)',
+                  backgroundColor: 'rgba(74,222,128,0.1)',
                   paddingHorizontal: 14, paddingVertical: 10,
                   borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6,
-                  borderWidth: 1, borderColor: timeLeft <= 10 ? 'rgba(239,68,68,0.4)' : 'rgba(74,222,128,0.2)',
+                  borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
                 }}>
-                  <Clock size={15} color={timeLeft <= 10 ? '#EF4444' : '#4ADE80'} strokeWidth={2.5} />
-                  <Text style={{ color: timeLeft <= 10 ? '#EF4444' : '#4ADE80', fontWeight: '800', fontSize: 15 }}>{formatTime(timeLeft)}</Text>
+                  <Clock size={15} color="#4ADE80" strokeWidth={2.5} />
+                  <Text style={{ color: '#4ADE80', fontWeight: '800', fontSize: 15 }}>{formatTime(timeElapsed)}</Text>
                 </View>
                 <Pressable onPress={toggleSound}
                   style={{ backgroundColor: 'rgba(74,222,128,0.1)', padding: 10, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)' }}>
