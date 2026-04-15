@@ -450,7 +450,7 @@ export default function GameScreen() {
       countries: 21, brands: 31, celebrities: 41, professions: 51, health_issues: 61,
     };
     const CONSTRAINT_MILESTONE_LEVELS: Partial<Record<string, number>> = {
-      min_word_length: 6, max_word_length: 11, double_letters: 25,
+      min_word_length: 6, max_word_length: 12, double_letters: 25,
       ends_with_letter: 30, repeated_letter: 20, combo: 74,
     };
 
@@ -488,8 +488,8 @@ export default function GameScreen() {
       if (constraintMilestone && currentLevel.level === constraintMilestone) {
         lastNoveltyShownForLevel.current = currentLevel.level;
         const CONSTRAINT_INFO: Record<string, { title: string; message: string }> = {
-          min_word_length:   { title: 'New Rule: Long Words',        message: 'Answers must be 4+ letters long' },
-          max_word_length:   { title: 'New Rule: Short Words',       message: 'Answers must be short — keep it brief!' },
+          min_word_length:   { title: 'New Rule: Min Length',         message: currentLevel.constraint.description },
+          max_word_length:   { title: 'New Rule: Max Length',        message: currentLevel.constraint.description },
           ends_with_letter:  { title: 'New Rule: Ending Letter',     message: 'Each answer must end with a specific letter' },
           double_letters:    { title: 'New Rule: Double Letters',    message: 'Answers must contain double letters (ee, ll, ss…)' },
           repeated_letter:   { title: 'New Rule: Repeated Letter',  message: 'Answers must have any letter appearing twice or more (e.g. paper, level, total)' },

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, FlatList, ActivityIndicator, Alert } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import React, { useState, useCallback } from 'react';
+import { View, Text, Pressable, StatusBar, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Star } from 'lucide-react-native';
@@ -51,7 +50,7 @@ export default function CompletedLevelsScreen() {
       setGameMode('single');
       await startLevelGame(levelData);
       Sounds.navigate();
-      router.push('/game');
+      router.replace('/game');
     } catch (error: any) {
       console.error('Error starting level:', error?.message);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -68,14 +67,10 @@ export default function CompletedLevelsScreen() {
     const isThisLoading = loadingLevel === levelNum;
 
     return (
-      <Animated.View
-        entering={FadeInDown.duration(300)}
-        style={{ width: `${100 / COLS}%`, padding: 6, aspectRatio: 1 }}
-      >
-        <TouchableOpacity
+      <View style={{ width: `${100 / COLS}%`, padding: 6, aspectRatio: 1 }}>
+        <Pressable
           onPress={() => handleLevelPress(levelNum)}
           disabled={loadingLevel !== null}
-          activeOpacity={0.7}
           style={{ flex: 1 }}
         >
           <LinearGradient
@@ -131,8 +126,8 @@ export default function CompletedLevelsScreen() {
               </>
             )}
           </LinearGradient>
-        </TouchableOpacity>
-      </Animated.View>
+        </Pressable>
+      </View>
     );
   };
 
@@ -154,7 +149,7 @@ export default function CompletedLevelsScreen() {
           borderBottomColor: 'rgba(255,255,255,0.05)',
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <TouchableOpacity
+            <Pressable
               onPress={handleBack}
               style={{
                 width: 40,
@@ -168,7 +163,7 @@ export default function CompletedLevelsScreen() {
               }}
             >
               <ChevronLeft size={24} color="#fff" strokeWidth={2} />
-            </TouchableOpacity>
+            </Pressable>
 
             <View style={{ flex: 1, alignItems: 'center' }}>
               <Text style={{
@@ -206,6 +201,10 @@ export default function CompletedLevelsScreen() {
               paddingVertical: 12,
             }}
             showsVerticalScrollIndicator={false}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={16}
+            windowSize={5}
+            initialNumToRender={20}
           />
         ) : (
           <View style={{

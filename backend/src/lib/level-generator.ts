@@ -289,7 +289,7 @@ const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
 
   // Known fixed letters (forced or two-letter) — used only for adjacency checking
   const fixedMap: Record<number, string> = {
-    1: 'S', 2: 'M', 3: 'T', 4: 'C', 5: 'P', 6: 'R', 7: 'D',
+    1: 'S', 2: 'I', 3: 'T', 4: 'C', 5: 'P', 6: 'R', 7: 'D',
     8: 'L', 10: 'CH', 13: 'B', 14: 'Z', 15: 'SH', 17: 'Q',
     19: 'BA', 23: 'CO', 29: 'MA', 33: 'SO', 38: 'LA', 44: 'TA',
     48: 'LI', 53: 'FA', 60: 'PA', 63: 'RA', 66: 'Y', 67: 'A',
@@ -370,7 +370,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L1-4: starter cats, no constraint ─────────────────────────────────────
   // L1 = 3 cats (names, places, animal), L2 = 4 cats (+thing)
   1: { forceLetter: 'S', specificCategories: ['names', 'places', 'animal'] },
-  2: { forceLetter: 'M', specificCategories: ['names', 'places', 'animal', 'thing'] },
+  2: { forceLetter: 'I', specificCategories: ['names', 'places', 'animal', 'thing'] },
   3: { forceLetter: 'T', categoryCount: 4 },
   4: { forceLetter: 'C', categoryCount: 4 },
   // ── L5-10: +Food&Dishes (5 cats), CH combo at 10 ──────────────────────────
@@ -382,9 +382,9 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // L10 → TWO_LETTER_LEVELS = 'CH'
   10: { categoryCount: 5 },
   // ── L11-15: +Sports&Games (6 cats), SH combo at 15 ────────────────────────
-  11: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
-  12: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
-  13: { forceLetter: 'B', categoryCount: 6, constraintType: 'max_word_length', constraintValue: 8 },
+  11: { categoryCount: 6 },
+  12: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 12 },
+  13: { forceLetter: 'B', categoryCount: 6, constraintType: 'max_word_length', constraintValue: 12 },
   14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
   15: { categoryCount: 5 },
@@ -422,7 +422,11 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L41-50: +Celebrities (10 cats, 8 max), TA at 44 ───────────────────────
   41: { categoryCount: 8, constraintType: 'double_letters' },
   42: { useEasyCategories: true, easyCount: 6, constraintType: 'double_letters' },
-  43: { categoryCount: 8, isMultiLetterMode: true },
+  43: {
+    specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'countries', 'sports_games', 'food_dishes'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { names: 'S', places: 'M', animal: 'T', thing: 'X', brands: 'C', countries: 'P', sports_games: 'R', food_dishes: 'D' },
+  },
   // L44 → TWO_LETTER_LEVELS = 'TA'
   45: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['D', 'R'] },
   46: { categoryCount: 8, constraintType: 'repeated_letter' },
@@ -430,7 +434,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
   48: { forceLetter: 'LI', categoryCount: 6 },
   49: { categoryCount: 8, forceLetter: 'M' },
-  50: { categoryCount: 8, constraintType: 'repeated_letter' },
+  50: { forceLetter: 'E', categoryCount: 8, constraintType: 'repeated_letter' },
   // ── L51-60: +Professions (11 cats, 9 max) ─────────────────────────────────
   51: { categoryCount: 9, constraintType: 'repeated_letter' },
   52: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6, isMultiLetterMode: true },
@@ -438,12 +442,12 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   54: { categoryCount: 9, constraintType: 'repeated_letter' },
   55: { useEasyCategories: true, easyCount: 7 },
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
-  57: { categoryCount: 8, isMultiLetterMode: true, constraintType: 'repeated_letter' },
-  58: { categoryCount: 8, constraintType: 'repeated_letter' },
+  57: { categoryCount: 8, isMultiLetterMode: true },
+  58: { categoryCount: 8 },
   59: { categoryCount: 8, constraintType: 'repeated_letter' },
   60: { forceLetter: 'PA', categoryCount: 8 },
   // ── L61-70: +Health Issues (12 cats, 10 max), all 12 at 65 & 70 ───────────
-  61: { categoryCount: 10 },
+  61: { forceLetter: 'L', categoryCount: 10 },
   62: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
   63: { categoryCount: 10, isMultiLetterMode: true },
   64: {
@@ -479,12 +483,16 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     constraintType: 'combo',
     comboConstraints: [{ type: 'min_word_length', value: 4 }, { type: 'max_word_length', value: 10 }],
   },
-  75: { categoryCount: 7, isMultiLetterMode: true },
+  75: {
+    specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'countries', 'food_dishes'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { names: 'X', places: 'G', animal: 'H', thing: 'N', brands: 'L', countries: 'F', food_dishes: 'B' },
+  },
   // L76 → TWO_LETTER_LEVELS = 'HA'
   76: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
   },
-  77: { categoryCount: 7, constraintType: 'max_word_length', constraintValue: 10 },
+  77: { forceLetter: 'I', categoryCount: 7, constraintType: 'max_word_length', constraintValue: 8 },
   78: { useFullPool: true },
   79: { useFullPool: true, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
   80: { useFullPool: true },
@@ -509,7 +517,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   91: { categoryCount: 10 },
   92: { categoryCount: 10, constraintType: 'double_letters' },
   93: { categoryCount: 10, isMultiLetterMode: true },
-  94: { categoryCount: 10 },
+  94: { categoryCount: 10, constraintType: 'max_word_length', constraintValue: 8 },
   // L95 → TWO_LETTER_LEVELS = 'PR'
   95: {
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'professions', 'sports_games'],
@@ -532,7 +540,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     useFullPool: true,
     isMultiLetterMode: true,
     constraintType: 'combo',
-    comboConstraints: [{ type: 'min_word_length', value: 5 }, { type: 'max_word_length', value: 12 }],
+    comboConstraints: [{ type: 'min_word_length', value: 5 }, { type: 'max_word_length', value: 8 }],
   },
 };
 
@@ -1026,7 +1034,7 @@ function createSingleConstraint(
       return {
         type: 'min_word_length',
         value: minLength,
-        description: `Words must be ${minLength}+ letters`,
+        description: `Min: ${minLength} letters`,
       };
     }
 
@@ -1036,7 +1044,7 @@ function createSingleConstraint(
       return {
         type: 'max_word_length',
         value: maxLength,
-        description: `Words must be ${maxLength} letters or less`,
+        description: `Max: ${maxLength} letters`,
       };
     }
 
@@ -1460,10 +1468,10 @@ export function generateLevel(levelNumber: number): LevelData {
     const cType = override.constraintType;
     if (cType === 'min_word_length') {
       const val = override.constraintValue ?? 4;
-      constraint = { type: 'min_word_length', value: val, description: `Words must be ${val}+ letters` };
+      constraint = { type: 'min_word_length', value: val, description: `Min: ${val} letters` };
     } else if (cType === 'max_word_length') {
       const val = override.constraintValue ?? 8;
-      constraint = { type: 'max_word_length', value: val, description: `Words must be ${val} letters or less` };
+      constraint = { type: 'max_word_length', value: val, description: `Max: ${val} letters` };
     } else if (cType === 'ends_with_letter') {
       const el = override.constraintEndLetterOptions
         ? rng.pick(override.constraintEndLetterOptions)
@@ -1478,8 +1486,8 @@ export function generateLevel(levelNumber: number): LevelData {
     } else if (cType === 'combo' && override.comboConstraints) {
       const combos = override.comboConstraints;
       const descriptions = combos.map((c) => {
-        if (c.type === 'min_word_length') return `${c.value}+ letters`;
-        if (c.type === 'max_word_length') return `${c.value} letters or less`;
+        if (c.type === 'min_word_length') return `Min: ${c.value} letters`;
+        if (c.type === 'max_word_length') return `Max: ${c.value} letters`;
         if (c.type === 'ends_with_letter') return `ends with "${c.endLetter}"`;
         return c.type;
       });
