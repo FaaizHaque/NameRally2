@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.haquegames.napt",
-      "buildNumber": "102",
+      "buildNumber": "106",
       "infoPlist": {
         "CFBundleDisplayName": "NAPT",
         "NSMicrophoneUsageDescription": "NAPT uses the microphone for audio features.",
