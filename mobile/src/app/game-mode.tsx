@@ -480,6 +480,46 @@ export default function GameModeScreen() {
       {/* Single Player first-time intro — absolute View, NOT Modal, so it can never
           bleed through to other screens in the navigation stack */}
       {showSpIntro && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
+          <View style={{
+            backgroundColor: '#163468', borderRadius: 20, padding: 26,
+            borderWidth: 2, borderColor: 'rgba(80,160,255,0.5)',
+            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 24,
+            elevation: 20, width: '100%',
+          }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 16 }}>
+              Single Player 🎮
+            </Text>
+            <View style={{ marginBottom: 24, gap: 8 }}>
+              {[
+                'A solo mode designed to test your vocabulary and speed',
+                'Score points to unlock higher levels',
+                'Categories get more creative and the rules more demanding',
+              ].map((line, i) => (
+                <Text key={i} style={{ color: 'rgba(144,192,255,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
+                  {line}
+                </Text>
+              ))}
+            </View>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                AsyncStorage.setItem('npat_sp_intro_shown', '1');
+                setShowSpIntro(false);
+                startGame();
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+            >
+              <View style={{ backgroundColor: '#4090e8', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {/* Multiplayer first-time intro — absolute View, NOT Modal */}
+      {showMpIntro && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(28,20,10,0.72)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
           <View style={{
             backgroundColor: '#F2EAD0', borderRadius: 20, padding: 26,
@@ -494,46 +534,6 @@ export default function GameModeScreen() {
             {/* Red margin line */}
             <View style={{ position: 'absolute', left: 44, top: 0, bottom: 0, width: 1.5, backgroundColor: 'rgba(220,60,60,0.22)' }} />
             <Text style={{ color: '#1C1410', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 16 }}>
-              Single Player 🎮
-            </Text>
-            <View style={{ marginBottom: 24, gap: 8 }}>
-              {[
-                'A solo mode designed to test your vocabulary and speed',
-                'Score points to unlock higher levels',
-                'Categories get more creative and the rules more demanding',
-              ].map((line, i) => (
-                <Text key={i} style={{ color: '#5A3E1B', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
-                  {line}
-                </Text>
-              ))}
-            </View>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                AsyncStorage.setItem('npat_sp_intro_shown', '1');
-                setShowSpIntro(false);
-                startGame();
-              }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-            >
-              <View style={{ backgroundColor: '#1C1410', borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 2, borderColor: '#D09010' }}>
-                <Text style={{ color: '#F2EAD0', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
-              </View>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      {/* Multiplayer first-time intro — absolute View, NOT Modal */}
-      {showMpIntro && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, zIndex: 50 }}>
-          <View style={{
-            backgroundColor: '#163468', borderRadius: 20, padding: 26,
-            borderWidth: 2, borderColor: 'rgba(80,160,255,0.5)',
-            shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 24,
-            elevation: 20, width: '100%',
-          }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 16 }}>
               Multiplayer 🎲
             </Text>
             <View style={{ marginBottom: 24, gap: 8 }}>
@@ -542,7 +542,7 @@ export default function GameModeScreen() {
                 'Compete with friends and family in exciting categories',
                 'Unleash your creativity and outscore your rivals',
               ].map((line, i) => (
-                <Text key={i} style={{ color: 'rgba(144,192,255,0.9)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
+                <Text key={i} style={{ color: '#5A3E1B', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
                   {line}
                 </Text>
               ))}
@@ -557,8 +557,8 @@ export default function GameModeScreen() {
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
-              <View style={{ backgroundColor: '#4090e8', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
+              <View style={{ backgroundColor: '#1C1410', borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 2, borderColor: '#D09010' }}>
+                <Text style={{ color: '#F2EAD0', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
               </View>
             </Pressable>
           </View>

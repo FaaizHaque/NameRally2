@@ -153,6 +153,14 @@ function StatCard({
 }) {
   const themes = {
     sp: {
+      bg: '#163468',
+      border: 'rgba(80,160,255,0.5)',
+      iconBg: 'rgba(80,160,255,0.15)',
+      labelColor: '#FFFFFF',
+      primaryColor: '#FFFFFF',
+      secondaryColor: 'rgba(144,192,255,0.8)',
+    },
+    mp: {
       bg: '#F2EAD0',
       border: '#D09010',
       iconBg: 'rgba(208,144,16,0.18)',
@@ -160,17 +168,9 @@ function StatCard({
       primaryColor: '#1C1410',
       secondaryColor: '#5A3E1B',
     },
-    mp: {
-      bg: '#163468',
-      border: 'rgba(80,160,255,0.45)',
-      iconBg: 'rgba(80,160,255,0.15)',
-      labelColor: '#FFFFFF',
-      primaryColor: '#FFFFFF',
-      secondaryColor: 'rgba(144,192,255,0.8)',
-    },
     dc: {
       bg: '#0D1F0D',
-      border: 'rgba(74,222,128,0.4)',
+      border: 'rgba(74,222,128,0.45)',
       iconBg: 'rgba(74,222,128,0.12)',
       labelColor: '#4ADE80',
       primaryColor: '#4ADE80',
@@ -181,21 +181,23 @@ function StatCard({
   return (
     <View style={{
       backgroundColor: t.bg,
-      borderRadius: 14, borderWidth: 1.5, borderColor: t.border,
-      paddingVertical: 14, paddingHorizontal: 14,
+      borderRadius: 16, borderWidth: 2, borderColor: t.border,
+      paddingVertical: 16, paddingHorizontal: 16,
       flexDirection: 'row', alignItems: 'center',
       overflow: 'hidden',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8,
+      elevation: 6,
     }}>
-      {theme === 'sp' && [16, 34, 52].map((top) => (
+      {theme === 'mp' && [16, 34, 52, 70].map((top) => (
         <View key={top} style={{ position: 'absolute', left: 0, right: 0, top, height: 1, backgroundColor: 'rgba(208,144,16,0.15)' }} />
       ))}
-      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: t.iconBg, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+      <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: t.iconBg, alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
         {icon}
       </View>
       <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: t.labelColor }}>{label}</Text>
       <View style={{ alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 17, fontWeight: '900', color: t.primaryColor, lineHeight: 22 }}>{primary}</Text>
-        <Text style={{ fontSize: 11, fontWeight: '600', color: t.secondaryColor, marginTop: 1 }}>{secondary}</Text>
+        <Text style={{ fontSize: 18, fontWeight: '900', color: t.primaryColor, lineHeight: 23 }}>{primary}</Text>
+        <Text style={{ fontSize: 11, fontWeight: '600', color: t.secondaryColor, marginTop: 2 }}>{secondary}</Text>
       </View>
     </View>
   );
@@ -228,17 +230,17 @@ function StatsSheet({
           <Animated.View
             entering={FadeInDown.duration(300).springify()}
             style={{
-              backgroundColor: SKETCH_COLORS.paperDark,
+              backgroundColor: '#111111',
               borderTopLeftRadius: 28, borderTopRightRadius: 28,
               paddingTop: 14, paddingBottom: 40,
-              borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1,
-              borderColor: SKETCH_COLORS.paperLine + '40',
+              borderTopWidth: 1.5, borderLeftWidth: 1, borderRightWidth: 1,
+              borderColor: 'rgba(255,255,255,0.1)',
             }}
           >
             {/* Handle */}
             <View style={{
               width: 40, height: 4, borderRadius: 2,
-              backgroundColor: SKETCH_COLORS.inkFaint + '50',
+              backgroundColor: 'rgba(255,255,255,0.2)',
               alignSelf: 'center', marginBottom: 18,
             }} />
 
@@ -246,12 +248,12 @@ function StatsSheet({
             <View style={{ alignItems: 'center', marginBottom: 22 }}>
               <View style={{
                 width: 72, height: 72, borderRadius: 36,
-                backgroundColor: SKETCH_COLORS.paper,
-                borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '80',
+                backgroundColor: '#1E1E1E',
+                borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '90',
                 alignItems: 'center', justifyContent: 'center',
-                shadowColor: SKETCH_COLORS.ink,
-                shadowOffset: { width: 1, height: 2 },
-                shadowOpacity: 0.12, shadowRadius: 0,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.4, shadowRadius: 8,
                 marginBottom: 10,
               }}>
                 <Text style={{ fontSize: 38 }}>{emoji}</Text>
@@ -263,8 +265,8 @@ function StatsSheet({
                   flexWrap: 'nowrap',
                   alignItems: 'center',
                   paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-                  backgroundColor: pressed ? SKETCH_COLORS.paperLine + '30' : SKETCH_COLORS.paper,
-                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '60',
+                  backgroundColor: pressed ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.06)',
+                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '70',
                 })}
               >
                 <Pencil size={12} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
@@ -278,14 +280,14 @@ function StatsSheet({
             <View style={{ marginHorizontal: 20, gap: 10 }}>
               <StatCard
                 theme="sp"
-                icon={<Trophy size={16} color="#D09010" strokeWidth={2.5} />}
+                icon={<Trophy size={16} color="#90c0ff" strokeWidth={2.5} />}
                 label="Single Player"
                 primary={`Level ${spLevel}`}
                 secondary={`⭐ ${spStars}  ·  ${spPoints} pts`}
               />
               <StatCard
                 theme="mp"
-                icon={<Users size={16} color="#90c0ff" strokeWidth={2.5} />}
+                icon={<Users size={16} color="#D09010" strokeWidth={2.5} />}
                 label="Multiplayer"
                 primary={`${mpStats.gamesPlayed} played`}
                 secondary={`${mpStats.gamesWon} won 🏆`}
