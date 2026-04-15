@@ -491,7 +491,7 @@ export default function GameModeScreen() {
               Single Player 🎮
             </Text>
             <Text style={{ color: 'rgba(160,200,255,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              A letter drops. Fill every category with a word starting with it before time runs out. Score enough to unlock the next level.
+              A solo mode designed to test your vocabulary and speed. Score points to unlock higher levels, where categories get more creative and the rules more demanding.
             </Text>
             <Pressable
               onPress={() => {
@@ -523,7 +523,7 @@ export default function GameModeScreen() {
               Multiplayer 🎲
             </Text>
             <Text style={{ color: 'rgba(255,240,180,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              Everyone gets the same letter. Fill your categories and hit STOP when done. See how your answers stack up. Unique answers score more than shared ones.
+              A group mode to give you a fresh feel of the classic Name Place Animal Things. Compete with friends and family in new exciting categories. Unleash your creativity and outscore your rivals to claim victory.
             </Text>
             <Pressable
               onPress={() => {

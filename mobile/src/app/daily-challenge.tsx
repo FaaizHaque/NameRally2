@@ -1067,7 +1067,7 @@ export default function DailyChallengeScreen() {
               Daily Challenge 📅
             </Text>
             <Text style={{ color: 'rgba(0,200,64,0.85)', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 24 }}>
-              One shot per day. Same letter for everyone — fill all categories and lock in your score on the global leaderboard.
+              A special mode to further challenge your wits. Each day a new challenge awaits, consisting of 6 random categories. Finish quickly to top today's leaderboard.
             </Text>
             <Pressable
               onPress={() => {
