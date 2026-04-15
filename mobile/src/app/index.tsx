@@ -27,6 +27,7 @@ import { useGameStore } from '@/lib/state/game-store';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { Sounds, initSounds } from '@/lib/sounds';
+import { ProfileCard } from '@/components/ProfileCard';
 
 const mainLogoSource = require('@/assets/logo-main-dark.png');
 
@@ -154,6 +155,7 @@ export default function HomeScreen() {
   const editInputRef = useRef<TextInput>(null);
 
   const currentUser = useGameStore((s) => s.currentUser);
+  const levelProgress = useGameStore((s) => s.levelProgress);
   const setCurrentUser = useGameStore((s) => s.setCurrentUser);
   const loadUser = useGameStore((s) => s.loadUser);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
@@ -410,10 +412,13 @@ export default function HomeScreen() {
 
               ) : currentUser ? (
                 /* ── Returning user ── */
-                <View>
+                <View style={{ gap: 16 }}>
+                  {/* Profile card — emoji + stats */}
+                  <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
+
                   <Animated.View
                     entering={splashDone ? FadeInUp.duration(500) : undefined}
-                    style={{ marginBottom: 20, opacity: splashDone ? 1 : 0, alignItems: 'center' }}
+                    style={{ marginBottom: 0, opacity: splashDone ? 1 : 0, alignItems: 'center' }}
                   >
                     {/* Inline editable name — tap to rename, no label needed */}
                     <View style={{
@@ -465,7 +470,7 @@ export default function HomeScreen() {
 
                   <Animated.View
                     entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
-                    style={{ opacity: splashDone ? 1 : 0, marginTop: 6, alignItems: 'center' }}
+                    style={{ opacity: splashDone ? 1 : 0, alignItems: 'center' }}
                   >
                     <Pressable onPress={handlePlay}>
                       <View style={{

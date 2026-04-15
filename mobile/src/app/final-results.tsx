@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { navGuard } from '@/lib/nav-guard';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -6,6 +6,7 @@ import { SKETCH_COLORS } from '@/lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, {
   FadeInDown,
   FadeInUp,
@@ -78,6 +79,7 @@ export default function FinalResultsScreen() {
   const trophyScale = useSharedValue(0);
   const confettiOpacity = useSharedValue(0);
   const soundPlayedRef = React.useRef(false);
+  const mpStatsUpdatedRef = useRef(false);
 
   const isSoloMode = session?.players.length === 1;
   const playerScore = session?.players[0]?.totalScore || 0;
@@ -112,6 +114,17 @@ export default function FinalResultsScreen() {
     }
     if (isSoloMode && !isLevelMode && playerScore > 0) {
       saveHighScore(playerScore);
+    }
+    // Track multiplayer game stats (games played + wins) — once per visit
+    if (!isLevelMode && !isSoloMode && !mpStatsUpdatedRef.current) {
+      mpStatsUpdatedRef.current = true;
+      AsyncStorage.getItem('npat_mp_stats').then(raw => {
+        const current = raw ? JSON.parse(raw) : { gamesPlayed: 0, gamesWon: 0 };
+        AsyncStorage.setItem('npat_mp_stats', JSON.stringify({
+          gamesPlayed: current.gamesPlayed + 1,
+          gamesWon: current.gamesWon + (isCurrentUserWinner ? 1 : 0),
+        })).catch(() => {});
+      }).catch(() => {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLevelMode]);
