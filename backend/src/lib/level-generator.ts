@@ -293,7 +293,7 @@ const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
     8: 'L', 10: 'CH', 13: 'B', 14: 'Z', 15: 'SH', 17: 'Q',
     19: 'BA', 23: 'CO', 29: 'MA', 33: 'SO', 38: 'LA', 44: 'TA',
     48: 'LI', 53: 'FA', 60: 'PA', 63: 'RA', 66: 'Y', 67: 'A',
-    72: 'J', 76: 'HA', 82: 'K', 86: 'WA', 95: 'PR', 96: 'F',
+    71: 'S', 72: 'J', 76: 'HA', 82: 'K', 86: 'WA', 95: 'PR', 96: 'F',
   };
 
   // Full map we'll build up (starts with fixed letters)
