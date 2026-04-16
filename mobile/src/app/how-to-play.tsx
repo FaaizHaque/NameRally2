@@ -369,7 +369,7 @@ function SinglePlayerContent() {
           <Text className="text-white text-xl font-bold">Level Journey</Text>
         </View>
         <Text className="text-white/80 text-sm leading-6">
-          Each level is one round. Score enough to unlock the next. Letters get harder, constraints get wilder.
+          Each level is one round. Score above the pass threshold to unlock the next. Earn points and stars as you climb — letters get harder and constraints get wilder.
         </Text>
       </Animated.View>
 
@@ -384,7 +384,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Progressive Difficulty</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Common letters early on. Later: Q, X, Z and two-letter combos like "CH", "TH".
+                Early levels use common letters. As you advance: rare letters (Q, X, Z), two-letter combos (CH, TH, ST), tighter timers, and more categories per round.
               </Text>
             </View>
           </View>
@@ -394,9 +394,9 @@ function SinglePlayerContent() {
               <Star size={24} color="#D4A84B" />
             </View>
             <View className="flex-1">
-              <Text className="text-white text-base font-bold mb-1">Earn Stars</Text>
+              <Text className="text-white text-base font-bold mb-1">Points & Stars</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Pass = 1★ · 75%+ = 2★ · 90%+ = 3★. Replay levels to improve your rating.
+                Pass = 1★ · ~75% = 2★ · ~90% = 3★ (thresholds rise with more categories){'\n'}Points accumulate from your best score on each level. Every 100 points earns 5 bonus stars.
               </Text>
             </View>
           </View>
@@ -408,7 +408,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Special Constraints</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Min word length · no repeat letters · survival (one wrong = fail) · time pressure · double letters
+                Levels add rules to raise the difficulty: minimum word length · no repeated letters · must end with a set letter · double letters · odd-length words · survival mode (one wrong answer ends the round)
               </Text>
             </View>
           </View>
@@ -420,7 +420,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Things (L2) · Fruits & Veg (L4) · Countries (L6) · Professions (L8) · Sports (L11) · Food (L14) · Brands (L17) · Health (L20) · Famous People (L24)
+                New categories unlock as you level up:{'\n'}Things (L2) · Fruits & Veg (L4) · Countries (L6) · Professions (L8) · Sports (L11) · Food (L14) · Brands (L17) · Health (L20) · Famous People (L24)
               </Text>
             </View>
           </View>
