@@ -27,6 +27,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
 import { getCategoryName } from '@/lib/word-validation';
 import { NotebookBackground } from '@/components/NotebookBackground';
@@ -85,6 +86,7 @@ export default function LobbyScreen() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showAbandonedModal, setShowAbandonedModal] = useState(false);
+  const [profileEmoji, setProfileEmoji] = useState<string>('🦊');
   // Track whether we've seen >1 player so we don't fire on initial solo lobby entry
   const hadMultiplePlayersRef = useRef(false);
   const abandonedShownRef = useRef(false);
@@ -95,6 +97,11 @@ export default function LobbyScreen() {
   const setTimeRemaining = useGameStore((s) => s.setTimeRemaining);
   const refreshSession = useGameStore((s) => s.refreshSession);
   const leaveGame = useGameStore((s) => s.leaveGame);
+
+  // Load the player's chosen profile emoji
+  useEffect(() => {
+    AsyncStorage.getItem('npat_profile_emoji').then(e => { if (e) setProfileEmoji(e); });
+  }, []);
 
   // Poll for updates as fallback
   useEffect(() => {
@@ -382,7 +389,9 @@ export default function LobbyScreen() {
                                 borderWidth: 2, borderColor: PLAYER_COLORS[getAvatarIndex(player.username)] + '80',
                                 alignItems: 'center', justifyContent: 'center',
                               }}>
-                                <Text style={{ fontSize: 20 }}>{PLAYER_EMOJIS[getAvatarIndex(player.username)]}</Text>
+                                <Text style={{ fontSize: 20 }}>
+                                  {isCurrentPlayer ? profileEmoji : PLAYER_EMOJIS[getAvatarIndex(player.username)]}
+                                </Text>
                               </View>
                               {player.isHost && (
                                 <View style={{
