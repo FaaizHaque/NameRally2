@@ -179,7 +179,7 @@ function BasicsContent() {
     {
       icon: <Clock size={24} color="#D4A84B" />,
       title: 'Race the Clock',
-      description: 'Fill all categories before time runs out. When it hits zero, that\'s it.',
+      description: 'Fill all categories before time runs out.',
       color: '#D4A84B',
     },
     {
@@ -199,7 +199,7 @@ function BasicsContent() {
       >
         <Text className="text-white text-xl font-bold mb-2">What is NPAT?</Text>
         <Text className="text-white/80 text-base leading-6">
-          Think of words starting with a given letter across different categories. Play solo levels, take the daily challenge, or battle friends in real-time.
+          A timeless and classic word game, revived with a fresh look.{'\n'}Think across new and exciting categories, challenge your creativity, and play solo, take on daily challenges, or compete with family and friends in real time.
         </Text>
       </Animated.View>
 
@@ -347,7 +347,7 @@ function CategoriesContent() {
         <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
         <View className="flex-1">
           <Text className="text-white/60 text-sm leading-5">
-            Word lists cover widely recognised entries globally. Some valid answers may not yet be in our database — we're always expanding.
+            Our database is built around commonly and popular recognized entries from worldwide.{'\n'}While not exhaustive, it continues to grow over time.
           </Text>
         </View>
       </Animated.View>
@@ -468,7 +468,7 @@ function DailyChallengeContent() {
           <Text className="text-white text-xl font-bold">Daily Challenge</Text>
         </View>
         <Text className="text-white/80 text-sm leading-6">
-          One shot per day. Everyone gets the same letter and 6 categories. See how you rank globally.
+          A new challenge every day. Same letter and 6 categories. Finish faster to climb the global leaderboard.
         </Text>
       </Animated.View>
 
