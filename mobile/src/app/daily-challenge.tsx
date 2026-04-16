@@ -611,7 +611,7 @@ export default function DailyChallengeScreen() {
   const handleExit = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
-    router.replace('/game-mode');
+    router.back();
   };
 
   const formatTime = (seconds: number) => {

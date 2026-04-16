@@ -172,7 +172,7 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await leaveGame();
-    if (isLevelMode) router.replace('/game-mode');
+    if (isLevelMode) router.back();
     else router.replace('/create-game');
   };
 
@@ -207,7 +207,7 @@ export default function FinalResultsScreen() {
     const nextLevelNumber = currentLevel.level + 1;
     if (nextLevelNumber > 500) {
       setIsLoadingNextLevel(false);
-      router.replace('/game-mode');
+      router.back();
       return;
     }
     try {
