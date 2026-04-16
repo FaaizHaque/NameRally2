@@ -420,7 +420,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Unlock Categories</Text>
               <Text className="text-white/70 text-sm leading-5">
-                New categories unlock as you level up:{'\n'}Things (L2) · Fruits & Veg (L4) · Countries (L6) · Professions (L8) · Sports (L11) · Food (L14) · Brands (L17) · Health (L20) · Famous People (L24)
+                New categories unlock as you level up:{'\n'}Things (L2) · Food (L5) · Sports (L11) · Fruits & Veg (L16) · Countries (L21) · Brands (L31) · Famous People (L41) · Professions (L51) · Health (L61)
               </Text>
             </View>
           </View>
