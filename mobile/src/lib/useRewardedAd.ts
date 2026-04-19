@@ -7,11 +7,9 @@ import {
 } from 'react-native-google-mobile-ads';
 
 // ─── Ad Unit IDs ──────────────────────────────────────────────────────────────
-// Using Google test IDs until the app is live on the App Store and AdMob approves it.
-// Once live, swap ios back to: ca-app-pub-1431240801280221/3292546851
 const AD_UNIT_ID = Platform.select({
-  ios:     'ca-app-pub-3940256099942544/1712485313',   // Google test rewarded (iOS)
-  android: 'ca-app-pub-3940256099942544/5224354917',   // Google test rewarded (Android)
+  ios:     'ca-app-pub-1431240801280221/3292546851',   // Production rewarded (iOS)
+  android: 'ca-app-pub-3940256099942544/5224354917',   // Google test rewarded (Android — unused)
   default: 'ca-app-pub-3940256099942544/5224354917',
 })!;
 
