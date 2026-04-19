@@ -32,7 +32,7 @@ import Animated, {
 import { Audio } from 'expo-av';
 import {
   Clock, Hand, User, MapPin, Cat, Box, Trophy, Apple,
-  ShoppingBag, Check, AlertTriangle, LogOut, X, HeartPulse,
+  ShoppingBag, Check, AlertTriangle, LogOut, X, HeartPulse, Heart,
   Gamepad2, Crown, ChevronDown, ChevronUp, Globe, Film, Music,
   Briefcase, Utensils, Info, Landmark, Lightbulb, Star, Pencil, Play,
   Volume2, VolumeX,
@@ -413,6 +413,26 @@ export default function GameScreen() {
   const adPauseOffset = useRef(0);
   const adPauseStart  = useRef<number | null>(null);
   const { showAd } = useRewardedAd();
+  const [livesCountdown, setLivesCountdown] = useState('');
+  const resetLives = useGameStore(s => s.resetLives);
+
+  // Countdown to next life restore when lives = 0 in level mode
+  useEffect(() => {
+    if (!isLevelMode || (levelProgress.lives ?? 3) > 0) return;
+    const RESET_MS = 12 * 60 * 60 * 1000;
+    const update = () => {
+      const elapsed = Date.now() - (levelProgress.livesLastReset || 0);
+      const remaining = Math.max(0, RESET_MS - elapsed);
+      if (remaining === 0) { resetLives(); return; }
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      setLivesCountdown(h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`);
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [isLevelMode, levelProgress.lives, levelProgress.livesLastReset]);
 
   // Level 1 tutorial — shown once, skippable, gives newcomers 3 quick tips
   const [showL1Tutorial, setShowL1Tutorial] = useState(false);
@@ -1226,28 +1246,80 @@ export default function GameScreen() {
               </View>
             </View>
 
-            {/* Letter display */}
-            <View style={{ alignItems: 'center', paddingBottom: 14 }}>
-              <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
+            {/* Letter display + lives */}
+            <View style={{ paddingBottom: 14, paddingHorizontal: 14 }}>
+              <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>
                 Fill Out Words Starting With
               </Text>
-              <View style={{
-                width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
-                backgroundColor: currentLevel?.isMultiLetterMode ? '#0c3060' : '#1a3a6e',
-                borderWidth: 2.5,
-                borderColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : 'rgba(80,160,255,0.5)',
-                shadowColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : '#4090e8',
-                shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
-              }}>
-                {currentLevel?.isMultiLetterMode ? (
-                  <>
-                    <Text style={{ fontSize: 22, fontWeight: '900', color: '#38bdf8', letterSpacing: 1 }}>★</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#38bdf8', letterSpacing: 2 }}>WILD</Text>
-                  </>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                {/* Spacer to balance lives on the right */}
+                <View style={{ width: 56 }} />
+
+                {/* Big letter tile */}
+                <View style={{
+                  width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: currentLevel?.isMultiLetterMode ? '#0c3060' : '#1a3a6e',
+                  borderWidth: 2.5,
+                  borderColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : 'rgba(80,160,255,0.5)',
+                  shadowColor: currentLevel?.isMultiLetterMode ? '#38bdf8' : '#4090e8',
+                  shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
+                }}>
+                  {currentLevel?.isMultiLetterMode ? (
+                    <>
+                      <Text style={{ fontSize: 22, fontWeight: '900', color: '#38bdf8', letterSpacing: 1 }}>★</Text>
+                      <Text style={{ fontSize: 11, fontWeight: '900', color: '#38bdf8', letterSpacing: 2 }}>WILD</Text>
+                    </>
+                  ) : (
+                    <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
+                      {session.currentLetter}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Lives */}
+                {(levelProgress.lives ?? 3) > 0 ? (
+                  <View style={{ width: 56, alignItems: 'center', gap: 4 }}>
+                    <View style={{ flexDirection: 'row', gap: 4 }}>
+                      {[1, 2, 3].map(i => (
+                        <Heart
+                          key={i}
+                          size={15}
+                          color={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'rgba(144,192,255,0.2)'}
+                          fill={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'transparent'}
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </View>
+                    <Text style={{ color: 'rgba(144,192,255,0.55)', fontSize: 9, fontWeight: '700', letterSpacing: 0.8 }}>LIVES</Text>
+                  </View>
                 ) : (
-                  <Text style={{ fontSize: 38, fontWeight: '900', color: '#e0e7ff', letterSpacing: 2 }}>
-                    {session.currentLetter}
-                  </Text>
+                  /* No lives — show countdown + restore ad button */
+                  <View style={{ width: 56, alignItems: 'center', gap: 3 }}>
+                    <View style={{ flexDirection: 'row', gap: 3 }}>
+                      {[1, 2, 3].map(i => (
+                        <Heart key={i} size={13} color="rgba(144,192,255,0.15)" fill="transparent" strokeWidth={2} />
+                      ))}
+                    </View>
+                    <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '800', textAlign: 'center' }}>{livesCountdown}</Text>
+                    <Pressable
+                      onPress={() => {
+                        showAd(
+                          () => { resetLives(); },
+                          () => {},
+                        );
+                      }}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                    >
+                      <View style={{
+                        backgroundColor: 'rgba(248,113,113,0.15)',
+                        borderRadius: 6, paddingHorizontal: 4, paddingVertical: 3,
+                        borderWidth: 1, borderColor: 'rgba(248,113,113,0.4)',
+                        alignItems: 'center',
+                      }}>
+                        <Text style={{ color: '#f87171', fontSize: 8, fontWeight: '800', textAlign: 'center' }}>Restore{'\n'}Watch Ad</Text>
+                      </View>
+                    </Pressable>
+                  </View>
                 )}
               </View>
             </View>
