@@ -244,8 +244,23 @@ function StatsSheet({
               alignSelf: 'center', marginBottom: 18,
             }} />
 
-            {/* Avatar + change button */}
-            <View style={{ alignItems: 'center', marginBottom: 22 }}>
+            {/* Avatar row: [pencil] [avatar] [spacer] */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 22, paddingHorizontal: 24 }}>
+              {/* Pencil — inline to the left */}
+              <Pressable
+                onPress={onChangeAvatar}
+                style={({ pressed }) => ({
+                  width: 38, height: 38, borderRadius: 19,
+                  backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)',
+                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '70',
+                  alignItems: 'center', justifyContent: 'center',
+                  marginRight: 14,
+                })}
+              >
+                <Pencil size={15} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
+              </Pressable>
+
+              {/* Avatar circle */}
               <View style={{
                 width: 72, height: 72, borderRadius: 36,
                 backgroundColor: '#1E1E1E',
@@ -254,26 +269,12 @@ function StatsSheet({
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4, shadowRadius: 8,
-                marginBottom: 10,
               }}>
                 <Text style={{ fontSize: 38 }}>{emoji}</Text>
               </View>
-              <Pressable
-                onPress={onChangeAvatar}
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  flexWrap: 'nowrap',
-                  alignItems: 'center',
-                  paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-                  backgroundColor: pressed ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.06)',
-                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '70',
-                })}
-              >
-                <Pencil size={12} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: SKETCH_COLORS.amber, marginLeft: 5 }}>
-                  Change Avatar
-                </Text>
-              </Pressable>
+
+              {/* Spacer to balance left pencil */}
+              <View style={{ width: 52 }} />
             </View>
 
             {/* Themed stat cards */}
@@ -348,37 +349,45 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
 
   return (
     <>
-      {/* Compact avatar — always visible */}
+      {/* Avatar — prominent, obviously tappable */}
       <Animated.View
         entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
         style={{ alignItems: 'center' }}
       >
         <Pressable
           onPress={handleAvatarPress}
-          style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.93 : 1 }] })}
+          style={({ pressed }) => ({ alignItems: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
         >
           <View style={{ position: 'relative' }}>
             <View style={{
-              width: 72, height: 72, borderRadius: 36,
+              width: 88, height: 88, borderRadius: 44,
               backgroundColor: SKETCH_COLORS.paperDark,
-              borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '80',
+              borderWidth: 3, borderColor: SKETCH_COLORS.amber,
               alignItems: 'center', justifyContent: 'center',
-              shadowColor: SKETCH_COLORS.ink,
-              shadowOffset: { width: 2, height: 4 },
-              shadowOpacity: 0.12, shadowRadius: 0,
+              shadowColor: SKETCH_COLORS.amber,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3, shadowRadius: 12,
             }}>
-              <Text style={{ fontSize: 38 }}>{emoji}</Text>
+              <Text style={{ fontSize: 46 }}>{emoji}</Text>
             </View>
             {/* Stats hint badge */}
             <View style={{
-              position: 'absolute', bottom: 0, right: 0,
-              width: 22, height: 22, borderRadius: 11,
+              position: 'absolute', bottom: 2, right: 2,
+              width: 24, height: 24, borderRadius: 12,
               backgroundColor: SKETCH_COLORS.amber,
               borderWidth: 2, borderColor: SKETCH_COLORS.paper,
               alignItems: 'center', justifyContent: 'center',
             }}>
-              <ChevronDown size={11} color={SKETCH_COLORS.ink} strokeWidth={3} />
+              <ChevronDown size={12} color={SKETCH_COLORS.ink} strokeWidth={3} />
             </View>
+          </View>
+          {/* Tap hint label */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
+            <Text style={{
+              color: SKETCH_COLORS.inkFaint,
+              fontSize: 12, fontWeight: '700', letterSpacing: 0.4,
+            }}>Your Stats</Text>
+            <ChevronDown size={12} color={SKETCH_COLORS.inkFaint} strokeWidth={2.5} />
           </View>
         </Pressable>
       </Animated.View>
