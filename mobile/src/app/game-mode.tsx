@@ -84,10 +84,14 @@ export default function GameModeScreen() {
     if (isStartingGame || !levelLoaded) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.tap();
+    if (allLevelsCompleted) {
+      navGuard(() => router.push('/completed-levels'));
+      return;
+    }
     const shown = await AsyncStorage.getItem('npat_sp_intro_shown');
     if (!shown) { setShowSpIntro(true); return; }
     startGame();
-  }, [isStartingGame, levelLoaded, startGame]);
+  }, [isStartingGame, levelLoaded, allLevelsCompleted, startGame, router]);
 
   const handleMultiplayer = async () => {
     if (!navGuard()) return;
