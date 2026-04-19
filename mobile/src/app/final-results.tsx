@@ -242,7 +242,7 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    router.back();
+    router.navigate('/completed-levels');
   };
 
   const getMedalColor = (index: number) => {
@@ -609,9 +609,9 @@ export default function FinalResultsScreen() {
                   </Pressable>
                 )}
 
-                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ alignSelf: 'stretch', transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                   <View style={{
-                    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,
+                    borderRadius: 14, paddingVertical: 14,
                     backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
                     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}>
