@@ -409,6 +409,7 @@ export default function GameScreen() {
   // Immediately disables inputs when timer hits 0, before handleRoundEnd is called
   const [roundInputDisabled, setRoundInputDisabled] = useState(false);
   const roundEndScheduled = useRef(false);
+  const lastTimerSoundRef = useRef(0);
   const adPauseOffset = useRef(0);
   const adPauseStart  = useRef<number | null>(null);
   const { showAd } = useRewardedAd();
@@ -1036,10 +1037,14 @@ export default function GameScreen() {
       const pausedSoFar = adPauseOffset.current + (adPauseStart.current ? Date.now() - adPauseStart.current : 0);
       const remaining = Math.max(0, session.settings.roundDuration - Math.floor((Date.now() - session.roundStartTime! - pausedSoFar) / 1000));
       setTimeRemaining(remaining);
-      // Haptics + timer warning sound in last 10 seconds
+      // Haptics + timer warning sound in last 10 seconds (debounced to prevent double-play)
       if (remaining <= 10 && remaining < prevTimeRef.current && remaining > 0) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
-        Sounds.timerWarning();
+        const now = Date.now();
+        if (now - lastTimerSoundRef.current > 800) {
+          lastTimerSoundRef.current = now;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
+          Sounds.timerWarning();
+        }
       }
       prevTimeRef.current = remaining;
       if (remaining === 0 && !hasEndedRound.current && !roundEndScheduled.current) {
@@ -1858,7 +1863,10 @@ export default function GameScreen() {
               /* Keyboard is open — show a slim, static info row */
               allAnswersFilled ? (
                 <Pressable
-                  onPress={() => Keyboard.dismiss()}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    if (isLevelMode) handleStop();
+                  }}
                   style={{
                     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
                     backgroundColor: gameMode === 'multiplayer' ? P.stopRed : P.amber,
@@ -1876,7 +1884,7 @@ export default function GameScreen() {
                     : <Check size={22} color="#FFF" strokeWidth={3} />
                   }
                   <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                    {gameMode === 'single' ? 'Done — tap Submit' : 'Done — tap STOP!'}
+                    {isLevelMode ? 'Submit Answers!' : 'Done — tap STOP!'}
                   </Text>
                 </Pressable>
               ) : (

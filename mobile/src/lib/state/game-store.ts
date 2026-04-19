@@ -1111,8 +1111,25 @@ export const useGameStore = create<GameState>((set, get) => ({
       await get().refreshSession();
     }
 
-    const updatedSession = get().session;
+    let updatedSession = get().session;
     if (!updatedSession) return;
+
+    // For local sessions, always merge localAnswers directly into the player's answers.
+    // This guards against any race condition where submitAnswers wasn't called yet or
+    // was called with stale data — the user's typed answers are the ground truth.
+    if (isLocalSession) {
+      const { localAnswers, currentUser } = get();
+      if (currentUser && Object.keys(localAnswers).length > 0) {
+        updatedSession = {
+          ...updatedSession,
+          players: updatedSession.players.map(p =>
+            p.visibleId === currentUser.id
+              ? { ...p, currentRoundAnswers: { ...p.currentRoundAnswers, ...localAnswers } }
+              : p
+          ),
+        };
+      }
+    }
 
     // Validate ALL answers using hybrid validation (local DB + Wikipedia fallback)
     // This runs in parallel for performance
