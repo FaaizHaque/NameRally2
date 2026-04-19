@@ -191,7 +191,12 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    router.navigate('/game-mode');
+    // For level mode the stack is [home, game-mode, final-results] — back() pops
+    // correctly. navigate('/game-mode') would push a NEW game-mode on top, and
+    // pressing back from it would return to this screen with session=null, causing
+    // the stuck loading spinner.
+    if (isLevelMode) router.back();
+    else router.navigate('/game-mode');
   };
 
   const handleRetryLevel = async () => {
@@ -697,7 +702,7 @@ export default function FinalResultsScreen() {
               onPress={async () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 await leaveGame();
-                router.navigate('/game-mode');
+                router.back();
               }}
               style={({ pressed }) => ({ width: '100%', transform: [{ scale: pressed ? 0.97 : 1 }] })}
             >
