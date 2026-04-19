@@ -218,14 +218,9 @@ export default function GameModeScreen() {
                     }}>
                       <Pencil size={17} color="#90c0ff" strokeWidth={2} />
                     </View>
-                    <View>
-                      <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
-                        Single Player
-                      </Text>
-                      <Text style={{ color: 'rgba(180,210,255,0.9)', fontSize: 11, fontWeight: '600' }}>
-                        Solo level challenge
-                      </Text>
-                    </View>
+                    <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
+                      Single Player
+                    </Text>
                   </View>
 
                   {/* Progress bar */}
@@ -350,14 +345,9 @@ export default function GameModeScreen() {
                     }}>
                       <Users size={17} color="#7A5000" strokeWidth={2.5} />
                     </View>
-                    <View>
-                      <Text style={{ color: '#1C1208', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
-                        Multiplayer
-                      </Text>
-                      <Text style={{ color: '#8A6030', fontSize: 11, fontWeight: '600' }}>
-                        Host or join with friends
-                      </Text>
-                    </View>
+                    <Text style={{ color: '#1C1208', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
+                      Multiplayer
+                    </Text>
                   </View>
                 </View>
 
@@ -375,7 +365,6 @@ export default function GameModeScreen() {
                       </View>
                     ))}
                   </View>
-                  <Text style={{ color: '#A07830', fontSize: 10, fontWeight: '700' }}>2–10 players</Text>
                 </View>
               </View>
             </Pressable>
@@ -419,25 +408,14 @@ export default function GameModeScreen() {
                     }}>
                       <CalendarDays size={17} color="#00C840" strokeWidth={2} />
                     </View>
-                    <View>
-                      <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
-                        Daily Challenge
-                      </Text>
-                      <Text style={{ color: 'rgba(0,200,64,0.45)', fontSize: 11, fontWeight: '600' }}>
-                        New puzzle every day
-                      </Text>
-                    </View>
+                    <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
+                      Daily Challenge
+                    </Text>
                   </View>
                 </View>
 
-                {/* Right: leaderboard tag */}
-                <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                  <Zap size={22} color="#00C840" fill="#00C840" strokeWidth={1.5} />
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={{ color: 'rgba(0,200,64,0.5)', fontSize: 9, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>Global</Text>
-                    <Text style={{ color: 'rgba(0,200,64,0.7)', fontSize: 11, fontWeight: '800' }}>Leaderboard</Text>
-                  </View>
-                </View>
+                {/* Right: zap icon */}
+                <Zap size={26} color="#00C840" fill="#00C840" strokeWidth={1.5} />
               </View>
             </Pressable>
           </Animated.View>
