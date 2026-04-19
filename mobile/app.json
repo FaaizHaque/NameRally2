@@ -35,7 +35,6 @@
           "iosAppId": "ca-app-pub-1431240801280221~1971859778"
         }
       ],
-      "expo-tracking-transparency",
       [
         "expo-av",
         {
