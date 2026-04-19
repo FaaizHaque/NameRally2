@@ -510,8 +510,8 @@ export default function FinalResultsScreen() {
                     )}
                   </LinearGradient>
                 </Pressable>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  {starsEarned < 3 && (
+                {starsEarned < 3 ? (
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
                     <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                       <View style={{
                         borderRadius: 14, paddingVertical: 14,
@@ -522,18 +522,29 @@ export default function FinalResultsScreen() {
                         <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>Replay</Text>
                       </View>
                     </Pressable>
-                  )}
-                  <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                    <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                      <View style={{
+                        borderRadius: 14, paddingVertical: 14,
+                        backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      }}>
+                        <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
+                        <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
+                      </View>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                     <View style={{
-                      borderRadius: 14, paddingVertical: 14,
-                      backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
+                      borderRadius: 14, paddingVertical: 16,
+                      backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
                       flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                     }}>
-                      <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
-                      <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
+                      <Layers size={19} color="#a0c8ff" strokeWidth={2.5} />
+                      <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>All Levels</Text>
                     </View>
                   </Pressable>
-                </View>
+                )}
               </>
             ) : (
               <>

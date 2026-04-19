@@ -180,8 +180,8 @@ export default function GameModeScreen() {
           </Text>
         </View>
 
-        {/* Cards — stacked, vertically centred, fixed heights */}
-        <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
+        {/* Cards — stacked, evenly distributed in available space */}
+        <View style={{ flex: 1, justifyContent: 'space-evenly' }}>
 
           {/* ── SINGLE PLAYER ── */}
           <Animated.View entering={FadeInDown.duration(400).delay(0)}>

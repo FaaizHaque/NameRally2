@@ -343,7 +343,7 @@ export default function HomeScreen() {
 
             {/* Profile avatar — between title amber line and name amber line */}
             {currentUser && (
-              <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 4 }}>
+              <View style={{ alignItems: 'center', marginTop: 36, marginBottom: 8 }}>
                 <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
               </View>
             )}

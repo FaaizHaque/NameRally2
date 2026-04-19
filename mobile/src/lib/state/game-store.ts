@@ -871,7 +871,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       get().unsubscribeFromSession();
     }
 
-    set({ session: null, localAnswers: {} });
+    set({ session: null, localAnswers: {}, currentLevel: null });
   },
 
   startGame: async () => {
