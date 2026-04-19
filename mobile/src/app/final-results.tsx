@@ -4,7 +4,7 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-nati
 import { useRouter } from 'expo-router';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NotebookBack to Modesground } from '@/components/NotebookBack to Modesground';
+import { NotebookBackground } from '@/components/NotebookBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, {
