@@ -711,7 +711,7 @@ export default function FinalResultsScreen() {
 
   // ── OG NOTEBOOK THEME: Multiplayer / solo non-level mode ─────────────────────
   return (
-    <NotebookBack to Modesground lineStartY={160} lineSpacing={36} lineCount={28} showMargin={false}>
+    <NotebookBackground lineStartY={160} lineSpacing={36} lineCount={28} showMargin={false}>
       {/* Sparkle confetti (decorative) */}
       <Animated.View style={[confettiStyle, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }]}>
         <View style={{ position: 'absolute', top: 80, left: 40 }}><Sparkles size={20} color={SKETCH_COLORS.amber} /></View>
@@ -937,6 +937,6 @@ export default function FinalResultsScreen() {
           </Animated.View>
         </ScrollView>
       </View>
-    </NotebookBack to Modesground>
+    </NotebookBackground>
   );
 }
