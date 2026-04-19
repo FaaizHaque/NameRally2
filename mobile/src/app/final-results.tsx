@@ -48,6 +48,7 @@ const MODERN_CAT_COLORS: Record<string, { bg: string; border: string; icon: stri
 );
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
+const MAX_LEVEL = 100;
 
 export default function FinalResultsScreen() {
   const router = useRouter();
@@ -70,6 +71,7 @@ export default function FinalResultsScreen() {
   const [isLoadingNextLevel, setIsLoadingNextLevel] = useState(false);
   const [levelProcessed, setLevelProcessed] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showLevelCapModal, setShowLevelCapModal] = useState(false);
   // Staged reveal: 0=verdict, 1=score+stars, 2=answers, 3=stats+buttons
   const [revealStage, setRevealStage] = useState(0);
 
@@ -205,9 +207,10 @@ export default function FinalResultsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsLoadingNextLevel(true);
     const nextLevelNumber = currentLevel.level + 1;
-    if (nextLevelNumber > 500) {
+    if (nextLevelNumber > MAX_LEVEL) {
       setIsLoadingNextLevel(false);
-      router.back();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowLevelCapModal(true);
       return;
     }
     try {
@@ -246,6 +249,7 @@ export default function FinalResultsScreen() {
     };
 
     return (
+      <View style={{ flex: 1 }}>
       <LinearGradient colors={['#1a3a6e', '#1e4a8a', '#163468']} style={{ flex: 1 }}>
           <ScrollView
             style={{ flex: 1 }}
@@ -484,7 +488,7 @@ export default function FinalResultsScreen() {
                       <>
                         <Play size={22} color="#fff" fill="#fff" strokeWidth={2} />
                         <Text style={{ color: '#fff', fontWeight: '900', fontSize: 19, letterSpacing: 0.5 }}>
-                          {currentLevel.level >= 500 ? 'All Levels Done! 🏆' : `Next Level  ${currentLevel.level + 1}`}
+                          {currentLevel.level >= MAX_LEVEL ? 'All 100 Levels Done! 🏆' : `Next Level  ${currentLevel.level + 1}`}
                         </Text>
                       </>
                     )}
@@ -533,6 +537,78 @@ export default function FinalResultsScreen() {
           </View>
 
       </LinearGradient>
+
+      {/* ── LEVEL CAP CELEBRATION OVERLAY ── */}
+
+      {showLevelCapModal && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.88)',
+          alignItems: 'center', justifyContent: 'center',
+          paddingHorizontal: 28, zIndex: 100,
+        }}>
+          <Animated.View entering={FadeInUp.duration(500).springify().damping(14)} style={{
+            width: '100%', backgroundColor: '#0e1a30',
+            borderRadius: 24, padding: 32,
+            borderWidth: 2, borderColor: 'rgba(250,200,50,0.6)',
+            alignItems: 'center', gap: 16,
+            shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 32,
+          }}>
+            {/* Trophy */}
+            <Text style={{ fontSize: 72, lineHeight: 80 }}>🏆</Text>
+
+            {/* Headline */}
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <Text style={{ color: '#fbbf24', fontSize: 26, fontWeight: '900', textAlign: 'center', letterSpacing: 0.3 }}>
+                All 100 Levels Conquered!
+              </Text>
+              <Text style={{ color: 'rgba(251,191,36,0.6)', fontSize: 13, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                You're a Word Champion
+              </Text>
+            </View>
+
+            {/* Divider */}
+            <View style={{ width: '60%', height: 1, backgroundColor: 'rgba(251,191,36,0.2)' }} />
+
+            {/* Stay tuned message */}
+            <View style={{ alignItems: 'center', gap: 8, paddingHorizontal: 8 }}>
+              <Text style={{ color: 'rgba(200,220,255,0.9)', fontSize: 15, lineHeight: 22, textAlign: 'center', fontWeight: '500' }}>
+                More levels are on their way in the next update. Stay tuned — the challenge isn't over yet!
+              </Text>
+            </View>
+
+            {/* Stars row */}
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {[...Array(5)].map((_, i) => (
+                <Text key={i} style={{ fontSize: 22 }}>⭐</Text>
+              ))}
+            </View>
+
+            {/* Home button */}
+            <Pressable
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                await leaveGame();
+                router.replace('/');
+              }}
+              style={({ pressed }) => ({ width: '100%', transform: [{ scale: pressed ? 0.97 : 1 }] })}
+            >
+              <LinearGradient
+                colors={['#f59e0b', '#d97706']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={{
+                  borderRadius: 14, paddingVertical: 16,
+                  alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8,
+                }}
+              >
+                <Home size={18} color="#1a0a00" strokeWidth={2.5} />
+                <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back to Home</Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
+        </View>
+      )}
+      </View>
     );
   }
 

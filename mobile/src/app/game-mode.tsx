@@ -14,6 +14,7 @@ import { Sounds } from '@/lib/sounds';
 import type { LevelData } from '@/lib/level-types';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL || 'http://localhost:3000';
+const MAX_LEVEL = 100;
 
 export default function GameModeScreen() {
   const router = useRouter();
@@ -57,6 +58,7 @@ export default function GameModeScreen() {
   );
 
   const startGame = useCallback(async () => {
+    if (levelProgress.unlockedLevel > MAX_LEVEL) return;
     setGameMode('single');
     // Only show the loading overlay if the fetch is slow — avoids a jarring flash
     // when Railway responds quickly (< 400 ms)
@@ -123,9 +125,8 @@ export default function GameModeScreen() {
     navGuard(() => router.push('/completed-levels'));
   };
 
-  const completedCount = Math.max(0, levelProgress.unlockedLevel - 1);
-  // All 500 levels completed: unlockedLevel is capped at 500, but level 500 itself has a score
-  const allLevelsCompleted = levelProgress.unlockedLevel >= 500 && !!levelProgress.levelScores[500];
+  const completedCount = Math.max(0, Math.min(levelProgress.unlockedLevel - 1, MAX_LEVEL));
+  const allLevelsCompleted = levelProgress.unlockedLevel > MAX_LEVEL;
 
   return (
     <View style={{ flex: 1, backgroundColor: '#1a2540' }}>
@@ -216,9 +217,10 @@ export default function GameModeScreen() {
                           </Text>
                         </View>
                       ) : allLevelsCompleted ? (
-                        <View>
-                          <Text style={{ color: 'rgba(251,191,36,0.6)', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>All done!</Text>
-                          <Text style={{ color: '#fde68a', fontSize: 36, fontWeight: '900', letterSpacing: -1, lineHeight: 40 }}>500/500</Text>
+                        <View style={{ gap: 4 }}>
+                          <Text style={{ color: 'rgba(251,191,36,0.6)', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>All 100 Levels Done! 🏆</Text>
+                          <Text style={{ color: '#fde68a', fontSize: 28, fontWeight: '900', letterSpacing: -1, lineHeight: 32 }}>More Coming Soon</Text>
+                          <Text style={{ color: 'rgba(251,191,36,0.45)', fontSize: 11, fontWeight: '600' }}>Stay tuned for the next update</Text>
                         </View>
                       ) : (
                         <>
