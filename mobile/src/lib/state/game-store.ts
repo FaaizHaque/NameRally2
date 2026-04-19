@@ -556,7 +556,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
 
     console.log('[LevelProgress] New progress after update:', JSON.stringify(newProgress));
-    set({ levelProgress: newProgress });
+    // Read current lives from store at set-time so loseLife() changes aren't overwritten
+    const latestProgress = get().levelProgress;
+    set({ levelProgress: { ...newProgress, lives: latestProgress.lives, livesLastReset: latestProgress.livesLastReset } });
     await get().saveLevelProgress();
   },
 
