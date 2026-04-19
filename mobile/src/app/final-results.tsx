@@ -4,7 +4,7 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-nati
 import { useRouter } from 'expo-router';
 import { SKETCH_COLORS } from '@/lib/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NotebookBackground } from '@/components/NotebookBackground';
+import { NotebookBack to Modesground } from '@/components/NotebookBack to Modesground';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, {
@@ -98,7 +98,6 @@ export default function FinalResultsScreen() {
 
   useEffect(() => {
     loadHighScores();
-    loadLevelProgress();
   }, []);
 
   // Sound, trophy animation, and score saving — re-runs only when meaningful data changes
@@ -192,7 +191,7 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    router.replace('/');
+    router.navigate('/game-mode');
   };
 
   const handleRetryLevel = async () => {
@@ -629,7 +628,7 @@ export default function FinalResultsScreen() {
                 borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
               }}>
                 <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
-                <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back</Text>
+                <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back to Modes</Text>
               </View>
             </Pressable>
           </View>
@@ -687,7 +686,7 @@ export default function FinalResultsScreen() {
               onPress={async () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 await leaveGame();
-                router.replace('/');
+                router.navigate('/game-mode');
               }}
               style={({ pressed }) => ({ width: '100%', transform: [{ scale: pressed ? 0.97 : 1 }] })}
             >
@@ -700,7 +699,7 @@ export default function FinalResultsScreen() {
                 }}
               >
                 <Home size={18} color="#1a0a00" strokeWidth={2.5} />
-                <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back</Text>
+                <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back to Modes</Text>
               </LinearGradient>
             </Pressable>
           </Animated.View>
@@ -712,7 +711,7 @@ export default function FinalResultsScreen() {
 
   // ── OG NOTEBOOK THEME: Multiplayer / solo non-level mode ─────────────────────
   return (
-    <NotebookBackground lineStartY={160} lineSpacing={36} lineCount={28} showMargin={false}>
+    <NotebookBack to Modesground lineStartY={160} lineSpacing={36} lineCount={28} showMargin={false}>
       {/* Sparkle confetti (decorative) */}
       <Animated.View style={[confettiStyle, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }]}>
         <View style={{ position: 'absolute', top: 80, left: 40 }}><Sparkles size={20} color={SKETCH_COLORS.amber} /></View>
@@ -932,12 +931,12 @@ export default function FinalResultsScreen() {
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}>
                 <Home size={18} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
-                <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Back</Text>
+                <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Back to Modes</Text>
               </View>
             </Pressable>
           </Animated.View>
         </ScrollView>
       </View>
-    </NotebookBackground>
+    </NotebookBack to Modesground>
   );
 }

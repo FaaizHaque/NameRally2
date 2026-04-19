@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Users, Zap, Pencil, CalendarDays, ChevronRight, Trophy, Heart } from 'lucide-react-native';
 import { useRewardedAd } from '@/lib/useRewardedAd';
+import { NotebookBackground } from '@/components/NotebookBackground';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useGameStore } from '@/lib/state/game-store';
@@ -156,21 +157,8 @@ export default function GameModeScreen() {
   const progressPct = Math.min(completedCount / MAX_LEVEL, 1);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F5EDD8' }}>
+    <NotebookBackground lineStartY={160} lineSpacing={36} lineCount={32} marginX={48}>
       <StatusBar barStyle="dark-content" />
-
-      {/* Notebook lines — matches home page aesthetic */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
-        {Array.from({ length: 30 }, (_, i) => (
-          <View key={i} style={{
-            position: 'absolute', left: 0, right: 0,
-            top: 80 + i * 32, height: 1,
-            backgroundColor: 'rgba(180,150,80,0.13)',
-          }} />
-        ))}
-        {/* Red margin line */}
-        <View style={{ position: 'absolute', left: 44, top: 0, bottom: 0, width: 1.5, backgroundColor: 'rgba(200,60,50,0.15)' }} />
-      </View>
 
       <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom + 20, paddingHorizontal: 20 }}>
 
@@ -193,7 +181,7 @@ export default function GameModeScreen() {
         </View>
 
         {/* Cards — stacked, vertically centred, fixed heights */}
-        <View style={{ flex: 1, justifyContent: 'center', gap: 14 }}>
+        <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
 
           {/* ── SINGLE PLAYER ── */}
           <Animated.View entering={FadeInDown.duration(400).delay(0)}>
@@ -207,7 +195,7 @@ export default function GameModeScreen() {
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                 style={{
                   borderRadius: 20, overflow: 'hidden',
-                  borderWidth: 3, borderColor: 'rgba(100,160,255,0.6)',
+                  borderWidth: 4, borderColor: 'rgba(120,170,255,0.85)',
                   padding: 20, flexDirection: 'row', alignItems: 'center',
                   minHeight: 130,
                 }}
@@ -234,7 +222,7 @@ export default function GameModeScreen() {
                       <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
                         Single Player
                       </Text>
-                      <Text style={{ color: 'rgba(144,192,255,0.55)', fontSize: 11, fontWeight: '600' }}>
+                      <Text style={{ color: 'rgba(180,210,255,0.9)', fontSize: 11, fontWeight: '600' }}>
                         Solo level challenge
                       </Text>
                     </View>
@@ -250,7 +238,7 @@ export default function GameModeScreen() {
                           width: `${progressPct * 100}%`,
                         }} />
                       </View>
-                      <Text style={{ color: 'rgba(144,192,255,0.4)', fontSize: 10, fontWeight: '600' }}>
+                      <Text style={{ color: 'rgba(180,210,255,0.8)', fontSize: 10, fontWeight: '600' }}>
                         {completedCount} of {MAX_LEVEL} levels completed
                       </Text>
                     </Animated.View>
@@ -292,15 +280,15 @@ export default function GameModeScreen() {
                       ) : (
                         <>
                           <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={{ color: 'rgba(144,192,255,0.5)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Up Next</Text>
+                            <Text style={{ color: 'rgba(200,225,255,0.95)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Up Next</Text>
                             <Text style={{ color: '#fff', fontSize: 40, fontWeight: '900', letterSpacing: -2, lineHeight: 42 }}>
                               {levelProgress.unlockedLevel}
                             </Text>
                           </View>
                           {completedCount > 0 && (
                             <Pressable onPress={(e) => { e.stopPropagation?.(); handleCompletedLevels(); }} style={{ alignItems: 'flex-end' }}>
-                              <Text style={{ color: 'rgba(52,211,153,0.5)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Done</Text>
-                              <Text style={{ color: 'rgba(52,211,153,0.85)', fontSize: 22, fontWeight: '900', letterSpacing: -1, lineHeight: 24 }}>
+                              <Text style={{ color: 'rgba(52,211,153,0.9)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Done</Text>
+                              <Text style={{ color: '#34d399', fontSize: 22, fontWeight: '900', letterSpacing: -1, lineHeight: 24 }}>
                                 {completedCount} ›
                               </Text>
                             </Pressable>
@@ -328,7 +316,7 @@ export default function GameModeScreen() {
               <View style={{
                 borderRadius: 20, overflow: 'hidden',
                 backgroundColor: '#EDE4C4',
-                borderWidth: 3, borderColor: '#B8900A',
+                borderWidth: 4, borderColor: '#B8900A',
                 padding: 20, flexDirection: 'row', alignItems: 'center',
                 minHeight: 112,
               }}>
@@ -392,7 +380,7 @@ export default function GameModeScreen() {
               <View style={{
                 borderRadius: 20, overflow: 'hidden',
                 backgroundColor: '#061410',
-                borderWidth: 3, borderColor: '#00B83A',
+                borderWidth: 4, borderColor: '#00C840',
                 padding: 20, flexDirection: 'row', alignItems: 'center',
                 minHeight: 112,
               }}>
@@ -453,7 +441,7 @@ export default function GameModeScreen() {
           onPress={() => setIsStartingGame(false)}
           style={{
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: '#F5EDD8',
+            backgroundColor: '#EEE3BE',
             alignItems: 'center', justifyContent: 'center',
             zIndex: 99,
           }}
@@ -580,6 +568,6 @@ export default function GameModeScreen() {
           </Animated.View>
         </View>
       )}
-    </View>
+    </NotebookBackground>
   );
 }
