@@ -6,8 +6,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { registerForPushNotifications } from '@/lib/notifications';
 import MobileAds from 'react-native-google-mobile-ads';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -51,7 +53,14 @@ function RootLayoutNav() {
 export default function RootLayout() {
   useEffect(() => {
     registerForPushNotifications();
-    MobileAds().initialize();
+    const initAds = async () => {
+      // Request ATT on iOS 14.5+ before initialising AdMob (required by Apple)
+      if (Platform.OS === 'ios') {
+        await requestTrackingPermissionsAsync();
+      }
+      MobileAds().initialize();
+    };
+    initAds();
   }, []);
 
   return (

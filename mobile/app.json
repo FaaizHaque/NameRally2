@@ -17,10 +17,7 @@
       "buildNumber": "106",
       "infoPlist": {
         "CFBundleDisplayName": "NAPT",
-        "NSMicrophoneUsageDescription": "NAPT uses the microphone for audio features.",
-        "NSCalendarsUsageDescription": "NAPT needs access to your calendar.",
-        "NSCalendarsFullAccessUsageDescription": "NAPT needs full calendar access.",
-        "NSRemindersUsageDescription": "NAPT needs access to reminders.",
+        "NSUserTrackingUsageDescription": "This identifier will be used to show you relevant ads and improve your experience.",
         "UIBackgroundModes": ["audio"]
       }
     },
@@ -38,10 +35,11 @@
           "iosAppId": "ca-app-pub-1431240801280221~1971859778"
         }
       ],
+      "expo-tracking-transparency",
       [
         "expo-av",
         {
-          "microphonePermission": "NAPT uses the microphone for audio features."
+          "microphonePermission": false
         }
       ],
       [

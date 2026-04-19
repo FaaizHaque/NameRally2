@@ -46,6 +46,7 @@
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-system-ui": "~5.0.7",
+    "expo-tracking-transparency": "^55.0.13",
     "lucide-react-native": "^0.468.0",
     "nativewind": "~4.1.23",
     "patch-package": "^8.0.0",
