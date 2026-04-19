@@ -72,6 +72,8 @@ export interface LevelProgress {
   totalStars: number; // Total stars earned across all levels
   totalPoints: number; // Sum of best scores from all completed levels
   milestoneStarsAwarded?: number; // Total milestone bonus stars already awarded (every 100 pts = 5 stars)
+  lives: number; // 0–3 remaining lives (refill every 24h or via ad)
+  livesLastReset: number; // Unix ms timestamp of the last 24h lives reset
 }
 
 /**

@@ -19,7 +19,8 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark, Layers } from 'lucide-react-native';
+import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark, Layers, Heart } from 'lucide-react-native';
+import { useRewardedAd } from '@/lib/useRewardedAd';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
@@ -67,13 +68,18 @@ export default function FinalResultsScreen() {
   const gameMode = useGameStore((s) => s.gameMode);
   const levelProgress = useGameStore((s) => s.levelProgress);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
+  const loseLife = useGameStore((s) => s.loseLife);
+  const resetLives = useGameStore((s) => s.resetLives);
 
   const [isLoadingNextLevel, setIsLoadingNextLevel] = useState(false);
   const [levelProcessed, setLevelProcessed] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showLevelCapModal, setShowLevelCapModal] = useState(false);
+  const [lifeDeducted, setLifeDeducted] = useState(false);
   // Staged reveal: 0=verdict, 1=score+stars, 2=answers, 3=stats+buttons
   const [revealStage, setRevealStage] = useState(0);
+
+  const { showAd: showLivesAd, loaded: livesAdLoaded } = useRewardedAd();
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
   const highScore = highScores[difficulty] || 0;
@@ -112,6 +118,10 @@ export default function FinalResultsScreen() {
     confettiOpacity.value = withDelay(500, withRepeat(withSequence(withTiming(1, { duration: 1000 }), withTiming(0.5, { duration: 1000 })), -1, true));
     if (isLevelMode && currentLevel && !levelProcessed) {
       completeLevelWithScore(playerScore);
+      if (!levelPassed) {
+        loseLife();
+        setLifeDeducted(true);
+      }
       setLevelProcessed(true);
     }
     if (isSoloMode && !isLevelMode && playerScore > 0) {
@@ -528,21 +538,78 @@ export default function FinalResultsScreen() {
               </>
             ) : (
               <>
-                <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-                  <View style={{
-                    borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                    backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                    shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
-                  }}>
-                    {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
-                      <>
-                        <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
-                        <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 19 }}>Try Again</Text>
-                      </>
-                    )}
-                  </View>
-                </Pressable>
+                {/* Lives indicator */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 2 }}>
+                  {[1, 2, 3].map((i) => (
+                    <Heart
+                      key={i}
+                      size={16}
+                      color={i <= levelProgress.lives ? '#f87171' : 'rgba(248,113,113,0.2)'}
+                      fill={i <= levelProgress.lives ? '#f87171' : 'transparent'}
+                      strokeWidth={2}
+                    />
+                  ))}
+                  <Text style={{ color: 'rgba(252,165,165,0.55)', fontSize: 11, fontWeight: '700', marginLeft: 4 }}>
+                    {levelProgress.lives} {levelProgress.lives === 1 ? 'life' : 'lives'} remaining
+                  </Text>
+                </View>
+
+                {levelProgress.lives > 0 ? (
+                  /* Has lives — show Try Again normally */
+                  <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
+                    <View style={{
+                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
+                      backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                      shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
+                    }}>
+                      {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
+                        <>
+                          <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
+                          <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 19 }}>Try Again</Text>
+                        </>
+                      )}
+                    </View>
+                  </Pressable>
+                ) : (
+                  /* No lives — offer ad restore */
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      showLivesAd(
+                        async () => {
+                          resetLives();
+                          // Retry the level automatically after restoring lives
+                          if (currentLevel) {
+                            setIsLoadingNextLevel(true);
+                            setIsTransitioning(true);
+                            try {
+                              await leaveGame();
+                              await startLevelGame(currentLevel);
+                              router.replace('/game');
+                            } catch {
+                              setIsLoadingNextLevel(false);
+                              setIsTransitioning(false);
+                            }
+                          }
+                        },
+                        () => {},
+                      );
+                    }}
+                    disabled={isLoadingNextLevel}
+                    style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}
+                  >
+                    <View style={{
+                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
+                      backgroundColor: '#1a0f00', borderWidth: 2, borderColor: '#f59e0b',
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                      shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
+                    }}>
+                      <Text style={{ color: '#fbbf24', fontWeight: '900', fontSize: 18 }}>▶  Watch Ad – Restore & Retry</Text>
+                    </View>
+                  </Pressable>
+                )}
+
                 <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                   <View style={{
                     borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,

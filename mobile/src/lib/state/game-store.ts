@@ -202,6 +202,8 @@ interface GameState {
   startLevelGame: (level: LevelData) => Promise<void>; // Start level directly without lobby
   devUnlockAllLevels: () => Promise<void>; // DEV: Unlock all 500 levels for testing
   spendStars: (amount: number) => boolean; // Spend stars (returns false if not enough)
+  loseLife: () => void; // Deduct 1 life on level fail
+  resetLives: () => void; // Restore all 3 lives (ad reward or 24h auto-reset)
 
   // Realtime
   subscribeToSession: (sessionId: string) => void;
@@ -340,6 +342,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     levelStars: {},
     totalStars: 0,
     totalPoints: 0,
+    lives: 3,
+    livesLastReset: 0,
   } as LevelProgress,
   currentLevel: null as LevelData | null,
   realtimeChannel: null,
@@ -434,10 +438,24 @@ export const useGameStore = create<GameState>((set, get) => ({
             const correctUnlockedLevel = Math.min(highestCompletedLevel + 1, 500);
             console.log('[LevelProgress] REPAIR: Fixing unlockedLevel from', parsed.unlockedLevel, 'to', correctUnlockedLevel);
             parsed.unlockedLevel = correctUnlockedLevel;
-            // Save the repaired data
-            await AsyncStorage.setItem('npat_level_progress', JSON.stringify(parsed));
           }
         }
+
+        // Backwards compat: seed lives fields for existing saves
+        if (parsed.lives === undefined || parsed.lives === null) parsed.lives = 3;
+        if (!parsed.livesLastReset) parsed.livesLastReset = 0;
+
+        // Auto-reset lives if 24h+ has elapsed since last reset
+        const LIVES_RESET_MS = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        if (now - parsed.livesLastReset >= LIVES_RESET_MS) {
+          parsed.lives = 3;
+          parsed.livesLastReset = now;
+          console.log('[Lives] Auto-reset: 24h elapsed, lives restored to 3');
+        }
+
+        // Save any repairs / lives reset back to storage
+        await AsyncStorage.setItem('npat_level_progress', JSON.stringify(parsed));
 
         set({ levelProgress: parsed });
       } else {
@@ -569,6 +587,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     get().saveLevelProgress();
     console.log('[Stars] Spent', amount, 'stars. Remaining:', newProgress.totalStars);
     return true;
+  },
+
+  loseLife: () => {
+    const { levelProgress } = get();
+    if (levelProgress.lives <= 0) return;
+    const newProgress: LevelProgress = { ...levelProgress, lives: levelProgress.lives - 1 };
+    set({ levelProgress: newProgress });
+    get().saveLevelProgress();
+    console.log('[Lives] Lost a life. Remaining:', newProgress.lives);
+  },
+
+  resetLives: () => {
+    const { levelProgress } = get();
+    const newProgress: LevelProgress = { ...levelProgress, lives: 3, livesLastReset: Date.now() };
+    set({ levelProgress: newProgress });
+    get().saveLevelProgress();
+    console.log('[Lives] Lives reset to 3');
   },
 
   startLevelGame: async (level: LevelData) => {

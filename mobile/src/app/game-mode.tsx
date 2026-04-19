@@ -6,7 +6,8 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, useSharedValue, withRepeat, wit
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Pencil, CalendarDays, ChevronRight, Trophy } from 'lucide-react-native';
+import { ChevronLeft, Users, Zap, Pencil, CalendarDays, ChevronRight, Trophy, Heart } from 'lucide-react-native';
+import { useRewardedAd } from '@/lib/useRewardedAd';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useGameStore } from '@/lib/state/game-store';
@@ -24,10 +25,15 @@ export default function GameModeScreen() {
   const levelProgress = useGameStore((s) => s.levelProgress);
   const startLevelGame = useGameStore((s) => s.startLevelGame);
   const setSession = useGameStore((s) => s.setSession);
+  const resetLives = useGameStore((s) => s.resetLives);
   const [levelLoaded, setLevelLoaded] = useState(false);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [showSpIntro, setShowSpIntro] = useState(false);
   const [showMpIntro, setShowMpIntro] = useState(false);
+  const [showNoLivesModal, setShowNoLivesModal] = useState(false);
+  const [livesCountdown, setLivesCountdown] = useState('');
+
+  const { showAd: showLivesAd, loaded: livesAdLoaded } = useRewardedAd();
 
   const shimmer = useSharedValue(0);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: 0.3 + shimmer.value * 0.5 }));
@@ -49,9 +55,33 @@ export default function GameModeScreen() {
     useCallback(() => {
       setShowSpIntro(false);
       setShowMpIntro(false);
+      loadLevelProgress(); // Refresh lives + 24h auto-reset check on each focus
       return () => { setShowSpIntro(false); setShowMpIntro(false); };
-    }, [])
+    }, [loadLevelProgress])
   );
+
+  // Countdown timer for the no-lives modal
+  useEffect(() => {
+    if (!showNoLivesModal) return;
+    const RESET_MS = 24 * 60 * 60 * 1000;
+    const update = () => {
+      const elapsed = Date.now() - (levelProgress.livesLastReset || 0);
+      const remaining = Math.max(0, RESET_MS - elapsed);
+      if (remaining === 0) {
+        // 24h elapsed while modal was open — auto-reset
+        resetLives();
+        setShowNoLivesModal(false);
+        return;
+      }
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      setLivesCountdown(`${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [showNoLivesModal, levelProgress.livesLastReset, resetLives]);
 
   const startGame = useCallback(async () => {
     if (levelProgress.unlockedLevel > MAX_LEVEL) return;
@@ -88,10 +118,14 @@ export default function GameModeScreen() {
       navGuard(() => router.push('/completed-levels'));
       return;
     }
+    if ((levelProgress.lives ?? 3) <= 0) {
+      setShowNoLivesModal(true);
+      return;
+    }
     const shown = await AsyncStorage.getItem('npat_sp_intro_shown');
     if (!shown) { setShowSpIntro(true); return; }
     startGame();
-  }, [isStartingGame, levelLoaded, allLevelsCompleted, startGame, router]);
+  }, [isStartingGame, levelLoaded, allLevelsCompleted, levelProgress.lives, startGame, router]);
 
   const handleMultiplayer = async () => {
     if (!navGuard()) return;
@@ -219,6 +253,27 @@ export default function GameModeScreen() {
                       <Text style={{ color: 'rgba(144,192,255,0.4)', fontSize: 10, fontWeight: '600' }}>
                         {completedCount} of {MAX_LEVEL} levels completed
                       </Text>
+                    </Animated.View>
+                  )}
+
+                  {/* Lives */}
+                  {levelLoaded && !allLevelsCompleted && (
+                    <Animated.View entering={FadeIn.duration(400)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                      {[1, 2, 3].map((i) => {
+                        const alive = i <= (levelProgress.lives ?? 3);
+                        return (
+                          <Heart
+                            key={i}
+                            size={13}
+                            color={alive ? '#f87171' : 'rgba(144,192,255,0.2)'}
+                            fill={alive ? '#f87171' : 'transparent'}
+                            strokeWidth={2}
+                          />
+                        );
+                      })}
+                      {(levelProgress.lives ?? 3) === 0 && (
+                        <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '700', marginLeft: 2 }}>Tap to restore</Text>
+                      )}
                     </Animated.View>
                   )}
                 </View>
@@ -456,6 +511,71 @@ export default function GameModeScreen() {
               <View style={{ backgroundColor: '#1C1208', borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#D09010' }}>
                 <Text style={{ color: '#F5EDCF', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
               </View>
+            </Pressable>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* ── NO LIVES MODAL ── */}
+      {showNoLivesModal && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.80)',
+          alignItems: 'center', justifyContent: 'center',
+          paddingHorizontal: 28, zIndex: 60,
+        }}>
+          <Animated.View entering={FadeInUp.duration(400).springify().damping(14)} style={{
+            width: '100%', backgroundColor: '#1a1520',
+            borderRadius: 24, padding: 28,
+            borderWidth: 2.5, borderColor: '#f87171',
+            alignItems: 'center', gap: 14,
+            shadowColor: '#f87171', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 28,
+          }}>
+            {/* Hearts row */}
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 4 }}>
+              {[1, 2, 3].map((i) => (
+                <Heart key={i} size={30} color="rgba(248,113,113,0.25)" fill="transparent" strokeWidth={2} />
+              ))}
+            </View>
+
+            <Text style={{ color: '#fca5a5', fontSize: 24, fontWeight: '900', textAlign: 'center' }}>
+              Out of Lives!
+            </Text>
+            <Text style={{ color: 'rgba(252,165,165,0.6)', fontSize: 13, textAlign: 'center', lineHeight: 20 }}>
+              You've used all your lives.{'\n'}They refill automatically every 24 hours.
+            </Text>
+
+            {/* Countdown */}
+            <View style={{ backgroundColor: 'rgba(248,113,113,0.1)', borderRadius: 12, paddingHorizontal: 18, paddingVertical: 10, borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.3)' }}>
+              <Text style={{ color: 'rgba(252,165,165,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textAlign: 'center', marginBottom: 2 }}>NEXT REFILL IN</Text>
+              <Text style={{ color: '#fca5a5', fontSize: 26, fontWeight: '900', textAlign: 'center', letterSpacing: 1 }}>{livesCountdown}</Text>
+            </View>
+
+            {/* Watch Ad button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                showLivesAd(
+                  () => { resetLives(); setShowNoLivesModal(false); },
+                  () => {},
+                );
+              }}
+              style={({ pressed }) => ({ width: '100%', transform: [{ scale: pressed ? 0.97 : 1 }] })}
+            >
+              <View style={{
+                borderRadius: 14, paddingVertical: 16,
+                backgroundColor: '#ef4444', borderWidth: 0,
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}>
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 }}>
+                  {livesAdLoaded ? '▶  Watch Ad – Restore All Lives' : '▶  Watch Ad – Restore All Lives'}
+                </Text>
+              </View>
+            </Pressable>
+
+            {/* Dismiss */}
+            <Pressable onPress={() => setShowNoLivesModal(false)} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+              <Text style={{ color: 'rgba(252,165,165,0.5)', fontSize: 13, fontWeight: '600' }}>Maybe Later</Text>
             </Pressable>
           </Animated.View>
         </View>
