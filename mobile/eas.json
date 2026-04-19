@@ -21,6 +21,10 @@
       "autoIncrement": true,
       "ios": {
         "image": "latest"
+      },
+      "env": {
+        "FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT": "120",
+        "FASTLANE_XCODEBUILD_SETTINGS_RETRIES": "5"
       }
     }
   },
