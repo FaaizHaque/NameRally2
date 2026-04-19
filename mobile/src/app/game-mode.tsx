@@ -63,7 +63,7 @@ export default function GameModeScreen() {
   // Countdown timer for the no-lives modal
   useEffect(() => {
     if (!showNoLivesModal) return;
-    const RESET_MS = 24 * 60 * 60 * 1000;
+    const RESET_MS = 12 * 60 * 60 * 1000;
     const update = () => {
       const elapsed = Date.now() - (levelProgress.livesLastReset || 0);
       const remaining = Math.max(0, RESET_MS - elapsed);

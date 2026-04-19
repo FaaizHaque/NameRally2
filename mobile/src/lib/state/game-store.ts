@@ -446,7 +446,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (!parsed.livesLastReset) parsed.livesLastReset = 0;
 
         // Auto-reset lives if 24h+ has elapsed since last reset
-        const LIVES_RESET_MS = 24 * 60 * 60 * 1000;
+        const LIVES_RESET_MS = 12 * 60 * 60 * 1000;
         const now = Date.now();
         if (now - parsed.livesLastReset >= LIVES_RESET_MS) {
           parsed.lives = 3;
