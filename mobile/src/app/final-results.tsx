@@ -19,7 +19,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark } from 'lucide-react-native';
+import { Trophy, Crown, Medal, Home, RotateCcw, Sparkles, Star, Play, ChevronRight, XCircle, CheckCircle, Check, X, User, MapPin, Cat, Box, Apple, ShoppingBag, HeartPulse, Gamepad2, Zap, Globe, Film, Music, Briefcase, Utensils, Landmark, Layers } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, CategoryType } from '@/lib/state/game-store';
@@ -227,6 +227,13 @@ export default function FinalResultsScreen() {
       setIsLoadingNextLevel(false);
       setIsTransitioning(false);
     }
+  };
+
+  const handleViewAllLevels = async () => {
+    if (!navGuard()) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await leaveGame();
+    router.back();
   };
 
   const getMedalColor = (index: number) => {
@@ -494,35 +501,59 @@ export default function FinalResultsScreen() {
                     )}
                   </LinearGradient>
                 </Pressable>
-                {starsEarned < 3 && (
-                  <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {starsEarned < 3 && (
+                    <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                      <View style={{
+                        borderRadius: 14, paddingVertical: 14,
+                        backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      }}>
+                        <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
+                        <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>Replay</Text>
+                      </View>
+                    </Pressable>
+                  )}
+                  <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
                     <View style={{
-                      borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,
+                      borderRadius: 14, paddingVertical: 14,
                       backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
                       flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                     }}>
-                      <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
-                      <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>Replay Level</Text>
+                      <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
+                      <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
                     </View>
                   </Pressable>
-                )}
+                </View>
               </>
             ) : (
-              <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-                <View style={{
-                  borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                  backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                  shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
-                }}>
-                  {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
-                    <>
-                      <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
-                      <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 19 }}>Try Again</Text>
-                    </>
-                  )}
-                </View>
-              </Pressable>
+              <>
+                <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
+                  <View style={{
+                    borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
+                    backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+                    shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
+                  }}>
+                    {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
+                      <>
+                        <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
+                        <Text style={{ color: '#fca5a5', fontWeight: '900', fontSize: 19 }}>Try Again</Text>
+                      </>
+                    )}
+                  </View>
+                </Pressable>
+                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                  <View style={{
+                    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,
+                    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}>
+                    <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
+                    <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
+                  </View>
+                </Pressable>
+              </>
             )}
             <Pressable onPress={handleGoHome} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
               <View style={{
