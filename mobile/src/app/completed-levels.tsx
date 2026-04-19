@@ -49,7 +49,6 @@ export default function CompletedLevelsScreen() {
       const levelData: LevelData = await response.json();
       setGameMode('single');
       await startLevelGame(levelData);
-      Sounds.navigate();
       router.replace('/game');
     } catch (error: any) {
       console.error('Error starting level:', error?.message);
