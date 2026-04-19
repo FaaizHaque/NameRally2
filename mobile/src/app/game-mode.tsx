@@ -279,16 +279,26 @@ export default function GameModeScreen() {
                         </View>
                       ) : (
                         <>
-                          <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={{ color: 'rgba(200,225,255,0.95)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Up Next</Text>
+                          <View style={{
+                            alignItems: 'flex-end',
+                            backgroundColor: 'rgba(80,140,255,0.15)',
+                            borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
+                            borderWidth: 1, borderColor: 'rgba(120,170,255,0.25)',
+                          }}>
+                            <Text style={{ color: '#90c8ff', fontSize: 11, fontWeight: '800', letterSpacing: 1.4, textTransform: 'uppercase' }}>Up Next</Text>
                             <Text style={{ color: '#fff', fontSize: 40, fontWeight: '900', letterSpacing: -2, lineHeight: 42 }}>
                               {levelProgress.unlockedLevel}
                             </Text>
                           </View>
                           {completedCount > 0 && (
-                            <Pressable onPress={(e) => { e.stopPropagation?.(); handleCompletedLevels(); }} style={{ alignItems: 'flex-end' }}>
-                              <Text style={{ color: 'rgba(52,211,153,0.9)', fontSize: 9, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Done</Text>
-                              <Text style={{ color: '#34d399', fontSize: 22, fontWeight: '900', letterSpacing: -1, lineHeight: 24 }}>
+                            <Pressable onPress={(e) => { e.stopPropagation?.(); handleCompletedLevels(); }} style={{
+                              alignItems: 'flex-end',
+                              backgroundColor: 'rgba(52,211,153,0.12)',
+                              borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
+                              borderWidth: 1, borderColor: 'rgba(52,211,153,0.3)',
+                            }}>
+                              <Text style={{ color: '#34d399', fontSize: 11, fontWeight: '800', letterSpacing: 1.4, textTransform: 'uppercase' }}>Done</Text>
+                              <Text style={{ color: '#4ade80', fontSize: 26, fontWeight: '900', letterSpacing: -1, lineHeight: 28 }}>
                                 {completedCount} ›
                               </Text>
                             </Pressable>
