@@ -495,15 +495,12 @@ export default function FinalResultsScreen() {
           <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 16, gap: 10, borderTopWidth: 1, borderTopColor: 'rgba(80,160,255,0.12)', backgroundColor: 'rgba(26,58,110,0.95)' }}>
             {levelPassed ? (
               <>
+                {/* Primary: Next Level */}
                 <Pressable onPress={handlePlayNextLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
                   <LinearGradient
                     colors={['#5aa0f0', '#3070d8']}
                     start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                    style={{
-                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                      shadowColor: '#4090e8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 10,
-                    }}
+                    style={{ borderRadius: 16, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#4090e8', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 10 }}
                   >
                     {isLoadingNextLevel ? <ActivityIndicator color="#ffffff" size="small" /> : (
                       <>
@@ -515,69 +512,38 @@ export default function FinalResultsScreen() {
                     )}
                   </LinearGradient>
                 </Pressable>
-                {starsEarned < 3 ? (
-                  <View style={{ flexDirection: 'row', gap: 10 }}>
-                    <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                      <View style={{
-                        borderRadius: 14, paddingVertical: 14,
-                        backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
-                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      }}>
-                        <RotateCcw size={17} color="#a0c8ff" strokeWidth={2.5} />
-                        <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>Replay</Text>
-                      </View>
-                    </Pressable>
-                    <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ flex: 1, transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                      <View style={{
-                        borderRadius: 14, paddingVertical: 14,
-                        backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
-                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      }}>
-                        <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
-                        <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
-                      </View>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                    <View style={{
-                      borderRadius: 14, paddingVertical: 16,
-                      backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    }}>
-                      <Layers size={19} color="#a0c8ff" strokeWidth={2.5} />
-                      <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>All Levels</Text>
+                {/* Secondary: Replay (only when not perfect) */}
+                {starsEarned < 3 && (
+                  <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                    <View style={{ borderRadius: 14, paddingVertical: 16, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <RotateCcw size={18} color="#a0c8ff" strokeWidth={2.5} />
+                      <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Replay</Text>
                     </View>
                   </Pressable>
                 )}
+                {/* Secondary: All Levels */}
+                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                  <View style={{ borderRadius: 14, paddingVertical: 16, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Layers size={18} color="#a0c8ff" strokeWidth={2.5} />
+                    <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>All Levels</Text>
+                  </View>
+                </Pressable>
               </>
             ) : (
               <>
                 {/* Lives indicator */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 2 }}>
                   {[1, 2, 3].map((i) => (
-                    <Heart
-                      key={i}
-                      size={16}
-                      color={i <= levelProgress.lives ? '#f87171' : 'rgba(248,113,113,0.2)'}
-                      fill={i <= levelProgress.lives ? '#f87171' : 'transparent'}
-                      strokeWidth={2}
-                    />
+                    <Heart key={i} size={16} color={i <= levelProgress.lives ? '#f87171' : 'rgba(248,113,113,0.2)'} fill={i <= levelProgress.lives ? '#f87171' : 'transparent'} strokeWidth={2} />
                   ))}
                   <Text style={{ color: 'rgba(252,165,165,0.55)', fontSize: 11, fontWeight: '700', marginLeft: 4 }}>
                     {levelProgress.lives} {levelProgress.lives === 1 ? 'life' : 'lives'} remaining
                   </Text>
                 </View>
-
+                {/* Primary: Try Again or Watch Ad */}
                 {levelProgress.lives > 0 ? (
-                  /* Has lives — show Try Again normally */
                   <Pressable onPress={handleRetryLevel} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-                    <View style={{
-                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                      backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444',
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                      shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
-                    }}>
+                    <View style={{ borderRadius: 16, paddingVertical: 18, backgroundColor: '#2a0a0a', borderWidth: 2, borderColor: '#ef4444', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#ef4444', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 }}>
                       {isLoadingNextLevel ? <ActivityIndicator color="#ef4444" size="small" /> : (
                         <>
                           <RotateCcw size={22} color="#ef4444" strokeWidth={2.5} />
@@ -587,14 +553,12 @@ export default function FinalResultsScreen() {
                     </View>
                   </Pressable>
                 ) : (
-                  /* No lives — offer ad restore */
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       showLivesAd(
                         async () => {
                           resetLives();
-                          // Retry the level automatically after restoring lives
                           if (currentLevel) {
                             setIsLoadingNextLevel(true);
                             setIsTransitioning(true);
@@ -614,36 +578,24 @@ export default function FinalResultsScreen() {
                     disabled={isLoadingNextLevel}
                     style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}
                   >
-                    <View style={{
-                      borderRadius: 16, paddingVertical: 18, paddingHorizontal: 24,
-                      backgroundColor: '#1a0f00', borderWidth: 2, borderColor: '#f59e0b',
-                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                      shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
-                    }}>
+                    <View style={{ borderRadius: 16, paddingVertical: 18, backgroundColor: '#1a0f00', borderWidth: 2, borderColor: '#f59e0b', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 }}>
                       <Text style={{ color: '#fbbf24', fontWeight: '900', fontSize: 18 }}>▶  Watch Ad – Restore & Retry</Text>
                     </View>
                   </Pressable>
                 )}
-
-                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ alignSelf: 'stretch', transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-                  <View style={{
-                    borderRadius: 14, paddingVertical: 14,
-                    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.3)',
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  }}>
-                    <Layers size={17} color="#a0c8ff" strokeWidth={2.5} />
-                    <Text style={{ color: '#a0c8ff', fontWeight: '700', fontSize: 15 }}>All Levels</Text>
+                {/* Secondary: All Levels */}
+                <Pressable onPress={handleViewAllLevels} disabled={isLoadingNextLevel} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
+                  <View style={{ borderRadius: 14, paddingVertical: 16, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Layers size={18} color="#a0c8ff" strokeWidth={2.5} />
+                    <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>All Levels</Text>
                   </View>
                 </Pressable>
               </>
             )}
+            {/* Always: Back to Modes */}
             <Pressable onPress={handleGoHome} style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.97 : 1 }] })}>
-              <View style={{
-                backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, paddingVertical: 16,
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
-              }}>
-                <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)' }}>
+                <Home size={18} color="#a0c8ff" strokeWidth={2.5} />
                 <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back to Modes</Text>
               </View>
             </Pressable>
