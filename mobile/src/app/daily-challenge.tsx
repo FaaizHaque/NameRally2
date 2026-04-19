@@ -1035,7 +1035,7 @@ export default function DailyChallengeScreen() {
                     borderWidth: 1, borderColor: 'rgba(74,222,128,0.2)',
                   }}>
                     <Home size={20} color="#4ADE80" strokeWidth={2.5} />
-                    <Text style={{ color: '#E8FFE8', fontWeight: '700', fontSize: 16 }}>Back to Home</Text>
+                    <Text style={{ color: '#E8FFE8', fontWeight: '700', fontSize: 16 }}>Back</Text>
                   </View>
                 </Pressable>
                 <Text style={{ color: 'rgba(74,222,128,0.35)', textAlign: 'center', fontSize: 12, marginTop: 14 }}>

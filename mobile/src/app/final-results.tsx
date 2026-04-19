@@ -629,7 +629,7 @@ export default function FinalResultsScreen() {
                 borderWidth: 1.5, borderColor: 'rgba(120,180,255,0.25)',
               }}>
                 <Home size={19} color="#a0c8ff" strokeWidth={2.5} />
-                <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back to Home</Text>
+                <Text style={{ color: '#c0d8ff', fontWeight: '800', fontSize: 16 }}>Back</Text>
               </View>
             </Pressable>
           </View>
@@ -700,7 +700,7 @@ export default function FinalResultsScreen() {
                 }}
               >
                 <Home size={18} color="#1a0a00" strokeWidth={2.5} />
-                <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back to Home</Text>
+                <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back</Text>
               </LinearGradient>
             </Pressable>
           </Animated.View>
@@ -932,7 +932,7 @@ export default function FinalResultsScreen() {
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}>
                 <Home size={18} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
-                <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Back to Home</Text>
+                <Text style={{ color: SKETCH_COLORS.inkLight, fontWeight: '700', fontSize: 15 }}>Back</Text>
               </View>
             </Pressable>
           </Animated.View>
