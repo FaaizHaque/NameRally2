@@ -410,13 +410,13 @@ export default function GameModeScreen() {
 
                 {/* Right: global leaderboard badge */}
                 <View style={{
-                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                  flexDirection: 'row', alignItems: 'center', gap: 4,
                   backgroundColor: 'rgba(0,200,64,0.12)',
-                  borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
+                  borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6,
                   borderWidth: 1.5, borderColor: '#00C840',
                 }}>
-                  <Globe size={14} color="#00C840" strokeWidth={2.5} />
-                  <Text style={{ color: '#00C840', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
+                  <Globe size={11} color="#00C840" strokeWidth={2.5} />
+                  <Text style={{ color: '#00C840', fontSize: 10, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
                 </View>
               </View>
             </Pressable>
