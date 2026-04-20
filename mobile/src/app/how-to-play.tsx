@@ -298,7 +298,7 @@ function CategoriesContent() {
     { name: 'Animal', emoji: '🐾', color: '#6EC4B8', description: 'Any living creature — mammals, birds, fish, insects, reptiles.' },
     { name: 'Thing', emoji: '📦', color: '#9B6ED8', description: 'Any physical object you can touch.' },
     { name: 'Food & Dishes', emoji: '🍽️', color: '#FF6B6B', description: 'Any meal, dish, or cuisine from around the world. Fruits, vegetables, and ingredients also accepted.' },
-    { name: 'Sports & Games', emoji: '⚽', color: '#3BA99C', description: 'A sport, game (e-games included), or athletic discipline. Popular traditional games also accepted.' },
+    { name: 'Sports & Games', emoji: '⚽', color: '#3BA99C', description: 'Any sport, board game, video game, or mobile/online game. Popular titles like Candy Crush, Roblox, Fortnite, Ludo, Chess and more are all accepted.' },
     { name: 'Fruits & Vegetables', emoji: '🍎', color: '#D4A84B', description: 'Any fruit or vegetable, common or exotic.' },
     { name: 'Brands', emoji: '™️', color: '#6EC4B8', description: 'A company or brand you\'d recognise on a billboard.' },
     { name: 'Countries', emoji: '🌍', color: '#3BA99C', description: 'Any sovereign country in the world.' },
