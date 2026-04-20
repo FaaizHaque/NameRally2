@@ -10,6 +10,7 @@
     "web": "DARK_MODE=class expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "build:ios": "FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=120 FASTLANE_XCODEBUILD_SETTINGS_RETRIES=5 eas build --local --profile production --platform ios",
     "postinstall": "node scripts/patch-google-ads-codegen.cjs"
   },
   "dependencies": {
