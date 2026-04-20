@@ -389,7 +389,7 @@ export default function GameScreen() {
   const isLoading         = useGameStore(s => s.isLoading);
 
   const isLevelMode = gameMode === 'single' && currentLevel !== null;
-  const HINT_COST = 7;
+  const HINT_COST = 10;
 
   // Memoize sorted leaderboard to avoid re-sorting on every render
   const sortedPlayers = useMemo(
@@ -1396,12 +1396,8 @@ export default function GameScreen() {
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets={true}
           >
-              {[...session.settings.selectedCategories]
-                .sort((a, b) => a === newCategoryForLevel ? -1 : b === newCategoryForLevel ? 1 : 0)
-                .map((cat, i) => {
-                // Use the ORIGINAL index for multi-letter assignments (lettersPerCategory is
-                // indexed by the original selectedCategories order, not the sorted display order)
-                const origIndex = session.settings.selectedCategories.indexOf(cat);
+              {session.settings.selectedCategories.map((cat, i) => {
+                const origIndex = i;
                 const answer = localAnswers[cat] || '';
                 const letter = currentLevel.isMultiLetterMode && currentLevel.lettersPerCategory
                   ? (currentLevel.lettersPerCategory[origIndex] || session.currentLetter)
@@ -1499,8 +1495,10 @@ export default function GameScreen() {
                         value={answer}
                         onChangeText={t => {
                           if (roundInputDisabled) return;
-                          const upper = t.toUpperCase();
-                          if (!upper.startsWith(letter.toUpperCase())) return;
+                          let upper = t.toUpperCase();
+                          if (!upper.startsWith(letter.toUpperCase())) {
+                            upper = letter.toUpperCase() + upper;
+                          }
                           setSubmitAttempted(false);
                           updateLocalAnswer(cat, upper);
                         }}

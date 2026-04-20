@@ -76,6 +76,8 @@ export default function FinalResultsScreen() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showLevelCapModal, setShowLevelCapModal] = useState(false);
   const [lifeDeducted, setLifeDeducted] = useState(false);
+  const [showLivesRestoredModal, setShowLivesRestoredModal] = useState(false);
+  const [pendingLevelRestart, setPendingLevelRestart] = useState(false);
   // Staged reveal: 0=verdict, 1=score+stars, 2=answers, 3=stats+buttons
   const [revealStage, setRevealStage] = useState(0);
 
@@ -561,18 +563,8 @@ export default function FinalResultsScreen() {
                       showLivesAd(
                         async () => {
                           resetLives();
-                          if (currentLevel) {
-                            setIsLoadingNextLevel(true);
-                            setIsTransitioning(true);
-                            try {
-                              await leaveGame();
-                              await startLevelGame(currentLevel);
-                              router.replace('/game');
-                            } catch {
-                              setIsLoadingNextLevel(false);
-                              setIsTransitioning(false);
-                            }
-                          }
+                          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          setShowLivesRestoredModal(true);
                         },
                         () => {},
                       );
@@ -580,8 +572,14 @@ export default function FinalResultsScreen() {
                     disabled={isLoadingNextLevel}
                     style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.96 : 1 }] })}
                   >
-                    <View style={{ borderRadius: 16, paddingVertical: 18, backgroundColor: '#1a0f00', borderWidth: 2, borderColor: '#f59e0b', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 }}>
-                      <Text style={{ color: '#fbbf24', fontWeight: '900', fontSize: 18 }}>▶  Watch Ad – Restore & Retry</Text>
+                    <View style={{
+                      borderRadius: 16, paddingVertical: 18,
+                      backgroundColor: '#120800', borderWidth: 2, borderColor: '#f59e0b',
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8,
+                    }}>
+                      <Play size={20} color="#fbbf24" strokeWidth={2.5} fill="#fbbf24" />
+                      <Text style={{ color: '#fbbf24', fontWeight: '900', fontSize: 18, letterSpacing: 0.3 }}>Watch Ad — Restore Lives</Text>
                     </View>
                   </Pressable>
                 )}
@@ -672,6 +670,72 @@ export default function FinalResultsScreen() {
                 <Text style={{ color: '#1a0a00', fontWeight: '900', fontSize: 16 }}>Back to Modes</Text>
               </LinearGradient>
             </Pressable>
+          </Animated.View>
+        </View>
+      )}
+      {/* ── LIVES RESTORED MODAL ── */}
+      {showLivesRestoredModal && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          alignItems: 'center', justifyContent: 'center',
+          paddingHorizontal: 28, zIndex: 100,
+        }}>
+          <Animated.View entering={FadeInUp.duration(400).springify().damping(14)} style={{
+            width: '100%', backgroundColor: '#0d1f0d',
+            borderRadius: 28, padding: 32,
+            borderWidth: 2, borderColor: 'rgba(74,222,128,0.5)',
+            alignItems: 'center', gap: 20,
+            shadowColor: '#4ade80', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 24,
+          }}>
+            {/* Hearts */}
+            <Animated.View entering={FadeInUp.duration(350).delay(100).springify()}>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                {[1, 2, 3].map(i => (
+                  <Heart key={i} size={36} color="#f87171" fill="#f87171" strokeWidth={2} />
+                ))}
+              </View>
+            </Animated.View>
+
+            {/* Title */}
+            <Animated.View entering={FadeInUp.duration(300).delay(180).springify()} style={{ alignItems: 'center', gap: 6 }}>
+              <Text style={{ color: '#4ade80', fontSize: 28, fontWeight: '900', textAlign: 'center', letterSpacing: 0.3 }}>
+                Lives Restored!
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 20 }}>
+                You're back in the game. Good luck!
+              </Text>
+            </Animated.View>
+
+            {/* Continue button */}
+            <Animated.View entering={FadeInUp.duration(280).delay(260).springify()} style={{ width: '100%' }}>
+              <Pressable
+                onPress={async () => {
+                  if (!currentLevel) return;
+                  setShowLivesRestoredModal(false);
+                  setIsLoadingNextLevel(true);
+                  setIsTransitioning(true);
+                  try {
+                    await leaveGame();
+                    await startLevelGame(currentLevel);
+                    router.replace('/game');
+                  } catch {
+                    setIsLoadingNextLevel(false);
+                    setIsTransitioning(false);
+                  }
+                }}
+                style={({ pressed }) => ({ width: '100%', transform: [{ scale: pressed ? 0.97 : 1 }] })}
+              >
+                <LinearGradient
+                  colors={['#16a34a', '#15803d']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={{ borderRadius: 16, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10 }}
+                >
+                  <Play size={20} color="#fff" strokeWidth={2.5} fill="#fff" />
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 18 }}>Continue Game</Text>
+                </LinearGradient>
+              </Pressable>
+            </Animated.View>
           </Animated.View>
         </View>
       )}
