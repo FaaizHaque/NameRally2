@@ -280,7 +280,7 @@ export default function GameModeScreen() {
                             borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
                             borderWidth: 1, borderColor: 'rgba(120,170,255,0.25)',
                           }}>
-                            <Text style={{ color: '#90c8ff', fontSize: 11, fontWeight: '800', letterSpacing: 1.4, textTransform: 'uppercase' }}>Up Next</Text>
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1.4, textTransform: 'uppercase' }}>Up Next</Text>
                             <Text style={{ color: '#fff', fontSize: 40, fontWeight: '900', letterSpacing: -2, lineHeight: 42 }}>
                               {levelProgress.unlockedLevel}
                             </Text>
