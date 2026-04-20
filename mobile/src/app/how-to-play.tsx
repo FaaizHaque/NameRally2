@@ -22,6 +22,7 @@ import {
   Shield,
   Sparkles,
   Grid3X3,
+  Heart,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -397,6 +398,18 @@ function SinglePlayerContent() {
               <Text className="text-white text-base font-bold mb-1">Points & Stars</Text>
               <Text className="text-white/70 text-sm leading-5">
                 Pass = 1★ · ~75% = 2★ · ~90% = 3★ (thresholds rise with more categories){'\n'}Points accumulate from your best score on each level. Every 100 points earns 5 bonus stars.
+              </Text>
+            </View>
+          </View>
+
+          <View className="bg-white/8 rounded-2xl p-4 flex-row items-center gap-4 border border-white/8">
+            <View className="w-12 h-12 rounded-xl bg-[#f87171]/20 items-center justify-center">
+              <Heart size={24} color="#f87171" fill="#f87171" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-white text-base font-bold mb-1">Lives</Text>
+              <Text className="text-white/70 text-sm leading-5">
+                You get 3 lives. Failing a level costs one. Restore them by watching an ad or waiting 24 hours.
               </Text>
             </View>
           </View>
