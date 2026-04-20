@@ -412,7 +412,7 @@ export default function HomeScreen() {
 
               ) : currentUser ? (
                 /* ── Returning user ── */
-                <View style={{ gap: 20, alignItems: 'center' }}>
+                <View style={{ gap: 20, alignItems: 'center', marginTop: -50 }}>
                   {/* Avatar — centered in flex area, lower on screen */}
                   <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
                   <Animated.View

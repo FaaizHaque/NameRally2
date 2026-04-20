@@ -244,37 +244,34 @@ function StatsSheet({
               alignSelf: 'center', marginBottom: 18,
             }} />
 
-            {/* Avatar row: [pencil] [avatar] [spacer] */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 22, paddingHorizontal: 24 }}>
-              {/* Pencil — inline to the left */}
-              <Pressable
-                onPress={onChangeAvatar}
-                style={({ pressed }) => ({
-                  width: 38, height: 38, borderRadius: 19,
-                  backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)',
-                  borderWidth: 1, borderColor: SKETCH_COLORS.amber + '70',
+            {/* Avatar centered with pencil overlay */}
+            <View style={{ alignItems: 'center', marginBottom: 22 }}>
+              <View style={{ position: 'relative' }}>
+                <View style={{
+                  width: 76, height: 76, borderRadius: 38,
+                  backgroundColor: '#1E1E1E',
+                  borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '90',
                   alignItems: 'center', justifyContent: 'center',
-                  marginRight: 14,
-                })}
-              >
-                <Pencil size={15} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
-              </Pressable>
-
-              {/* Avatar circle */}
-              <View style={{
-                width: 72, height: 72, borderRadius: 36,
-                backgroundColor: '#1E1E1E',
-                borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '90',
-                alignItems: 'center', justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4, shadowRadius: 8,
-              }}>
-                <Text style={{ fontSize: 38 }}>{emoji}</Text>
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.4, shadowRadius: 8,
+                }}>
+                  <Text style={{ fontSize: 40 }}>{emoji}</Text>
+                </View>
+                {/* Pencil badge — bottom right of avatar */}
+                <Pressable
+                  onPress={onChangeAvatar}
+                  style={({ pressed }) => ({
+                    position: 'absolute', bottom: 0, right: 0,
+                    width: 28, height: 28, borderRadius: 14,
+                    backgroundColor: pressed ? SKETCH_COLORS.amber : '#2A2A2A',
+                    borderWidth: 1.5, borderColor: SKETCH_COLORS.amber,
+                    alignItems: 'center', justifyContent: 'center',
+                  })}
+                >
+                  <Pencil size={12} color={SKETCH_COLORS.amber} strokeWidth={2.5} />
+                </Pressable>
               </View>
-
-              {/* Spacer to balance left pencil */}
-              <View style={{ width: 52 }} />
             </View>
 
             {/* Themed stat cards */}
@@ -382,12 +379,14 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
             </View>
           </View>
           {/* Tap hint label */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
-            <Text style={{
-              color: SKETCH_COLORS.inkFaint,
-              fontSize: 12, fontWeight: '700', letterSpacing: 0.4,
-            }}>Your Stats</Text>
-            <ChevronDown size={12} color={SKETCH_COLORS.inkFaint} strokeWidth={2.5} />
+          <View style={{ alignItems: 'center', marginTop: 9 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={{
+                color: SKETCH_COLORS.ink,
+                fontSize: 13, fontWeight: '800', letterSpacing: 0.3,
+              }}>Your Stats</Text>
+              <ChevronDown size={13} color={SKETCH_COLORS.inkLight} strokeWidth={2.5} />
+            </View>
           </View>
         </Pressable>
       </Animated.View>

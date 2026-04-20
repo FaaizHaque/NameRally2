@@ -247,7 +247,7 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    router.navigate('/completed-levels');
+    router.replace('/completed-levels');
   };
 
   const getMedalColor = (index: number) => {
@@ -532,12 +532,14 @@ export default function FinalResultsScreen() {
             ) : (
               <>
                 {/* Lives indicator */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingBottom: 2 }}>
-                  {[1, 2, 3].map((i) => (
-                    <Heart key={i} size={16} color={i <= levelProgress.lives ? '#f87171' : 'rgba(248,113,113,0.2)'} fill={i <= levelProgress.lives ? '#f87171' : 'transparent'} strokeWidth={2} />
-                  ))}
-                  <Text style={{ color: 'rgba(252,165,165,0.55)', fontSize: 11, fontWeight: '700', marginLeft: 4 }}>
-                    {levelProgress.lives} {levelProgress.lives === 1 ? 'life' : 'lives'} remaining
+                <View style={{ alignItems: 'center', gap: 5, paddingBottom: 2 }}>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {[1, 2, 3].map((i) => (
+                      <Heart key={i} size={18} color={i <= levelProgress.lives ? '#f87171' : 'rgba(255,255,255,0.15)'} fill={i <= levelProgress.lives ? '#f87171' : 'transparent'} strokeWidth={2} />
+                    ))}
+                  </View>
+                  <Text style={{ color: levelProgress.lives > 0 ? 'rgba(252,165,165,0.65)' : 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>
+                    {levelProgress.lives > 0 ? `${levelProgress.lives} ${levelProgress.lives === 1 ? 'LIFE' : 'LIVES'} REMAINING` : 'NO LIVES LEFT'}
                   </Text>
                 </View>
                 {/* Primary: Try Again or Watch Ad */}

@@ -1247,15 +1247,12 @@ export default function GameScreen() {
             </View>
 
             {/* Letter display + lives */}
-            <View style={{ paddingBottom: 14, paddingHorizontal: 14 }}>
+            <View style={{ paddingBottom: 14, paddingHorizontal: 14, alignItems: 'center' }}>
               <Text style={{ color: 'rgba(144,192,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>
                 Fill Out Words Starting With
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                {/* Spacer to balance lives on the right */}
-                <View style={{ width: 56 }} />
-
-                {/* Big letter tile */}
+              {/* Letter tile — centered; lives are absolute so they don't disturb centering */}
+              <View style={{ position: 'relative', width: '100%', alignItems: 'center' }}>
                 <View style={{
                   width: 70, height: 70, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
                   backgroundColor: currentLevel?.isMultiLetterMode ? '#0c3060' : '#1a3a6e',
@@ -1276,51 +1273,45 @@ export default function GameScreen() {
                   )}
                 </View>
 
-                {/* Lives */}
-                {(levelProgress.lives ?? 3) > 0 ? (
-                  <View style={{ width: 56, alignItems: 'center', gap: 4 }}>
-                    <View style={{ flexDirection: 'row', gap: 4 }}>
-                      {[1, 2, 3].map(i => (
-                        <Heart
-                          key={i}
-                          size={15}
-                          color={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'rgba(144,192,255,0.2)'}
-                          fill={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'transparent'}
-                          strokeWidth={2}
-                        />
-                      ))}
+                {/* Lives — absolute right, slightly below top of letter tile */}
+                <View style={{ position: 'absolute', right: 8, top: 10 }}>
+                  {(levelProgress.lives ?? 3) > 0 ? (
+                    <View style={{ alignItems: 'center', gap: 5 }}>
+                      <View style={{ flexDirection: 'row', gap: 5 }}>
+                        {[1, 2, 3].map(i => (
+                          <Heart
+                            key={i}
+                            size={16}
+                            color={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'rgba(255,255,255,0.15)'}
+                            fill={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'transparent'}
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </View>
+                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '700', letterSpacing: 1 }}>LIVES</Text>
                     </View>
-                    <Text style={{ color: 'rgba(144,192,255,0.55)', fontSize: 9, fontWeight: '700', letterSpacing: 0.8 }}>LIVES</Text>
-                  </View>
-                ) : (
-                  /* No lives — show countdown + restore ad button */
-                  <View style={{ width: 56, alignItems: 'center', gap: 3 }}>
-                    <View style={{ flexDirection: 'row', gap: 3 }}>
-                      {[1, 2, 3].map(i => (
-                        <Heart key={i} size={13} color="rgba(144,192,255,0.15)" fill="transparent" strokeWidth={2} />
-                      ))}
-                    </View>
-                    <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '800', textAlign: 'center' }}>{livesCountdown}</Text>
+                  ) : (
+                    /* No lives */
                     <Pressable
-                      onPress={() => {
-                        showAd(
-                          () => { resetLives(); },
-                          () => {},
-                        );
-                      }}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                      onPress={() => { showAd(() => { resetLives(); }, () => {}); }}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, alignItems: 'center', gap: 4 })}
                     >
+                      <View style={{ flexDirection: 'row', gap: 4 }}>
+                        {[1, 2, 3].map(i => (
+                          <Heart key={i} size={14} color="rgba(248,113,113,0.3)" fill="transparent" strokeWidth={2} />
+                        ))}
+                      </View>
+                      <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '800' }}>{livesCountdown}</Text>
                       <View style={{
-                        backgroundColor: 'rgba(248,113,113,0.15)',
-                        borderRadius: 6, paddingHorizontal: 4, paddingVertical: 3,
-                        borderWidth: 1, borderColor: 'rgba(248,113,113,0.4)',
-                        alignItems: 'center',
+                        backgroundColor: 'rgba(248,113,113,0.12)',
+                        borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3,
+                        borderWidth: 1, borderColor: 'rgba(248,113,113,0.35)',
                       }}>
-                        <Text style={{ color: '#f87171', fontSize: 8, fontWeight: '800', textAlign: 'center' }}>Restore{'\n'}Watch Ad</Text>
+                        <Text style={{ color: '#f87171', fontSize: 8, fontWeight: '800' }}>Watch Ad</Text>
                       </View>
                     </Pressable>
-                  </View>
-                )}
+                  )}
+                </View>
               </View>
             </View>
           </View>
