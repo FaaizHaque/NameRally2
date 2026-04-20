@@ -6,7 +6,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, useSharedValue, withRepeat, wit
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Users, Zap, Pencil, CalendarDays, ChevronRight, Trophy, Heart } from 'lucide-react-native';
+import { ChevronLeft, Users, Globe, Pencil, CalendarDays, ChevronRight, Trophy, Heart } from 'lucide-react-native';
 import { useRewardedAd } from '@/lib/useRewardedAd';
 import { NotebookBackground } from '@/components/NotebookBackground';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -351,20 +351,14 @@ export default function GameModeScreen() {
                   </View>
                 </View>
 
-                {/* Right: emoji avatars */}
-                <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                  <View style={{ flexDirection: 'row', gap: 4 }}>
-                    {['🦊','🐼','🦁','🐯'].map((e, i) => (
-                      <View key={i} style={{
-                        width: 28, height: 28, borderRadius: 14,
-                        backgroundColor: 'rgba(184,144,10,0.12)',
-                        borderWidth: 1.5, borderColor: 'rgba(184,144,10,0.35)',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <Text style={{ fontSize: 14 }}>{e}</Text>
-                      </View>
-                    ))}
-                  </View>
+                {/* Right: player count badge */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                  backgroundColor: '#B8900A',
+                  borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
+                }}>
+                  <Users size={14} color="#fff" strokeWidth={2.5} />
+                  <Text style={{ color: '#fff', fontSize: 14, fontWeight: '900', letterSpacing: 0.3 }}>2–10 Players</Text>
                 </View>
               </View>
             </Pressable>
@@ -414,8 +408,16 @@ export default function GameModeScreen() {
                   </View>
                 </View>
 
-                {/* Right: zap icon */}
-                <Zap size={26} color="#00C840" fill="#00C840" strokeWidth={1.5} />
+                {/* Right: global leaderboard badge */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                  backgroundColor: 'rgba(0,200,64,0.12)',
+                  borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
+                  borderWidth: 1.5, borderColor: '#00C840',
+                }}>
+                  <Globe size={14} color="#00C840" strokeWidth={2.5} />
+                  <Text style={{ color: '#00C840', fontSize: 13, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
+                </View>
               </View>
             </Pressable>
           </Animated.View>
