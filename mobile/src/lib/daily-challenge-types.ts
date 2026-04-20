@@ -91,7 +91,7 @@ Score: ${result.totalScore} pts · ${correctCount}/6 correct
 Time: ${timeStr}
 
 Can you beat my score? Download NAPT on the App Store:
-https://apps.apple.com/app/namerally`;
+https://apps.apple.com/app/id6759828697`;
 }
 
 /**
