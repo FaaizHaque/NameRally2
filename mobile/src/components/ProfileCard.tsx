@@ -231,42 +231,43 @@ function StatsSheet({
             entering={FadeInDown.duration(300).springify()}
             style={{
               backgroundColor: '#111111',
-              borderTopLeftRadius: 28, borderTopRightRadius: 28,
-              paddingTop: 14, paddingBottom: 40,
+              borderTopLeftRadius: 32, borderTopRightRadius: 32,
+              paddingTop: 16, paddingBottom: 48,
+              paddingHorizontal: 20,
               borderTopWidth: 1.5, borderLeftWidth: 1, borderRightWidth: 1,
               borderColor: 'rgba(255,255,255,0.1)',
             }}
           >
             {/* Handle */}
             <View style={{
-              width: 40, height: 4, borderRadius: 2,
+              width: 44, height: 4, borderRadius: 2,
               backgroundColor: 'rgba(255,255,255,0.2)',
-              alignSelf: 'center', marginBottom: 18,
+              alignSelf: 'center', marginBottom: 28,
             }} />
 
             {/* Avatar centered with change label below */}
-            <View style={{ alignItems: 'center', marginBottom: 22 }}>
+            <View style={{ alignItems: 'center', marginBottom: 32 }}>
               <View style={{
-                width: 76, height: 76, borderRadius: 38,
+                width: 88, height: 88, borderRadius: 44,
                 backgroundColor: '#1E1E1E',
                 borderWidth: 2.5, borderColor: SKETCH_COLORS.amber + '90',
                 alignItems: 'center', justifyContent: 'center',
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4, shadowRadius: 8,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.5, shadowRadius: 12,
               }}>
-                <Text style={{ fontSize: 40 }}>{emoji}</Text>
+                <Text style={{ fontSize: 46 }}>{emoji}</Text>
               </View>
               <Pressable
                 onPress={onChangeAvatar}
-                style={({ pressed }) => ({ marginTop: 8, opacity: pressed ? 0.6 : 1 })}
+                style={({ pressed }) => ({ marginTop: 16, opacity: pressed ? 0.6 : 1 })}
               >
                 <View style={{
                   backgroundColor: 'rgba(255,255,255,0.08)',
                   borderWidth: 1, borderColor: SKETCH_COLORS.amber + '60',
-                  borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5,
+                  borderRadius: 14, paddingHorizontal: 18, paddingVertical: 7,
                 }}>
-                  <Text style={{ color: SKETCH_COLORS.amber, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 }}>
+                  <Text style={{ color: SKETCH_COLORS.amber, fontSize: 13, fontWeight: '700', letterSpacing: 0.3 }}>
                     Change Avatar
                   </Text>
                 </View>
@@ -274,7 +275,7 @@ function StatsSheet({
             </View>
 
             {/* Themed stat cards */}
-            <View style={{ marginHorizontal: 20, gap: 10 }}>
+            <View style={{ gap: 14 }}>
               <StatCard
                 theme="sp"
                 icon={<Trophy size={16} color="#90c0ff" strokeWidth={2.5} />}
