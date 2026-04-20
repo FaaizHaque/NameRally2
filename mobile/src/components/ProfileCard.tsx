@@ -354,21 +354,19 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
           onPress={handleAvatarPress}
           style={({ pressed }) => ({ alignItems: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
         >
-          <View style={{ position: 'relative' }}>
-            <View style={{
-              width: 88, height: 88, borderRadius: 44,
-              backgroundColor: SKETCH_COLORS.paperDark,
-              borderWidth: 3, borderColor: SKETCH_COLORS.amber,
-              alignItems: 'center', justifyContent: 'center',
-              shadowColor: SKETCH_COLORS.amber,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3, shadowRadius: 12,
-            }}>
-              <Text style={{ fontSize: 46 }}>{emoji}</Text>
-            </View>
+          <View style={{
+            width: 88, height: 88, borderRadius: 44,
+            backgroundColor: SKETCH_COLORS.paperDark,
+            borderWidth: 3, borderColor: SKETCH_COLORS.amber,
+            alignItems: 'center', justifyContent: 'center',
+            shadowColor: SKETCH_COLORS.amber,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3, shadowRadius: 12,
+          }}>
+            <Text style={{ fontSize: 46 }}>{emoji}</Text>
           </View>
           {/* Tap hint label — styled as a pill button */}
-          <View style={{ alignItems: 'center', marginTop: 10 }}>
+          <View style={{ alignItems: 'center', marginTop: 8 }}>
             <View style={{
               flexDirection: 'row', alignItems: 'center', gap: 5,
               backgroundColor: SKETCH_COLORS.amber,
