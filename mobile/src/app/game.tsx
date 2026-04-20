@@ -1273,41 +1273,52 @@ export default function GameScreen() {
                   )}
                 </View>
 
-                {/* Lives — absolute right, slightly below top of letter tile */}
-                <View style={{ position: 'absolute', right: 8, top: 10 }}>
+                {/* Lives — absolute right */}
+                <View style={{ position: 'absolute', right: 6, top: 8 }}>
                   {(levelProgress.lives ?? 3) > 0 ? (
-                    <View style={{ alignItems: 'center', gap: 5 }}>
-                      <View style={{ flexDirection: 'row', gap: 5 }}>
+                    <View style={{
+                      alignItems: 'center', gap: 4,
+                      backgroundColor: 'rgba(248,113,113,0.1)',
+                      borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.35)',
+                      borderRadius: 12, paddingHorizontal: 8, paddingVertical: 6,
+                    }}>
+                      <View style={{ flexDirection: 'row', gap: 4 }}>
                         {[1, 2, 3].map(i => (
                           <Heart
                             key={i}
-                            size={16}
-                            color={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'rgba(255,255,255,0.15)'}
+                            size={15}
+                            color={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'rgba(255,255,255,0.18)'}
                             fill={i <= (levelProgress.lives ?? 3) ? '#f87171' : 'transparent'}
-                            strokeWidth={2}
+                            strokeWidth={2.5}
                           />
                         ))}
                       </View>
-                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '700', letterSpacing: 1 }}>LIVES</Text>
+                      <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 }}>LIVES</Text>
                     </View>
                   ) : (
                     /* No lives */
                     <Pressable
                       onPress={() => { showAd(() => { resetLives(); }, () => {}); }}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, alignItems: 'center', gap: 4 })}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                     >
-                      <View style={{ flexDirection: 'row', gap: 4 }}>
-                        {[1, 2, 3].map(i => (
-                          <Heart key={i} size={14} color="rgba(248,113,113,0.3)" fill="transparent" strokeWidth={2} />
-                        ))}
-                      </View>
-                      <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '800' }}>{livesCountdown}</Text>
                       <View style={{
-                        backgroundColor: 'rgba(248,113,113,0.12)',
-                        borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3,
-                        borderWidth: 1, borderColor: 'rgba(248,113,113,0.35)',
+                        alignItems: 'center', gap: 4,
+                        backgroundColor: 'rgba(248,113,113,0.08)',
+                        borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.4)',
+                        borderRadius: 12, paddingHorizontal: 8, paddingVertical: 6,
                       }}>
-                        <Text style={{ color: '#f87171', fontSize: 8, fontWeight: '800' }}>Watch Ad</Text>
+                        <View style={{ flexDirection: 'row', gap: 4 }}>
+                          {[1, 2, 3].map(i => (
+                            <Heart key={i} size={14} color="rgba(248,113,113,0.3)" fill="transparent" strokeWidth={2.5} />
+                          ))}
+                        </View>
+                        <Text style={{ color: '#f87171', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 }}>{livesCountdown}</Text>
+                        <View style={{
+                          backgroundColor: '#f87171',
+                          borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2,
+                        }}>
+                          <Text style={{ color: '#fff', fontSize: 8, fontWeight: '900', letterSpacing: 0.3 }}>WATCH AD</Text>
+                        </View>
                       </View>
                     </Pressable>
                   )}
