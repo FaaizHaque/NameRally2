@@ -556,7 +556,9 @@ export default function GameScreen() {
     setSoundOn(next);
     if (next) {
       Sounds.tap();
-      Sounds.resumeBackground();
+      // resumeBackground only works if track is paused; use startBackground to
+      // also handle the case where the track was stopped/unloaded between levels
+      Sounds.startBackground(gameMode === 'multiplayer' ? 'game_mp' : 'game');
     } else {
       Sounds.pauseBackground();
     }
