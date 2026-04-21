@@ -1064,11 +1064,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     const adjustedCountdownStart = Date.now() - (MAX_STOP_COUNTDOWN - cappedCountdown) * 1000;
 
     if (isLocalSession) {
-      // For local sessions, update state directly
       await get().submitAnswers();
+      // Use get().session AFTER submitAnswers so currentRoundAnswers aren't overwritten
+      const updatedSession = get().session!;
       set({
         session: {
-          ...session,
+          ...updatedSession,
           stopRequested: true,
           stopRequestedBy: currentUser.id,
           stopCountdownStart: adjustedCountdownStart,
@@ -1121,7 +1122,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     // was called with stale data — the user's typed answers are the ground truth.
     if (isLocalSession) {
       const { localAnswers, currentUser } = get();
-      if (currentUser && Object.keys(localAnswers).length > 0) {
+      if (currentUser) {
         updatedSession = {
           ...updatedSession,
           players: updatedSession.players.map(p =>
