@@ -283,61 +283,18 @@ const TWO_LETTER_LEVELS: Record<number, string> = {
  * Forced/two-letter levels are handled by their existing checks in generateLevel
  * and are only referenced here to ensure adjacency constraints are respected.
  */
-const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = (() => {
-  // All 22 playable letters for levels 1-100
-  const pool = ['S', 'M', 'C', 'T', 'P', 'R', 'D', 'N', 'G', 'H', 'I', 'V', 'E', 'O', 'U', 'W', 'F', 'A', 'B', 'L', 'K', 'J'];
-
-  // Known fixed letters (forced or two-letter) — used only for adjacency checking
-  const fixedMap: Record<number, string> = {
-    1: 'S', 2: 'I', 3: 'T', 4: 'C', 5: 'P', 6: 'R', 7: 'D',
-    8: 'L', 10: 'CH', 13: 'B', 14: 'Z', 15: 'SH', 17: 'Q',
-    19: 'BA', 23: 'CO', 29: 'MA', 33: 'SO', 38: 'LA', 44: 'TA',
-    48: 'LI', 53: 'FA', 60: 'PA', 63: 'RA', 66: 'Y', 67: 'A',
-    71: 'S', 72: 'J', 76: 'HA', 82: 'K', 86: 'WA', 95: 'PR', 96: 'F',
-  };
-
-  // Full map we'll build up (starts with fixed letters)
-  const fullMap: Record<number, string> = { ...fixedMap };
-
-  // Free levels — those without a fixed assignment
-  const freeLevels: number[] = [];
-  for (let l = 1; l <= 100; l++) {
-    if (!fixedMap[l]) freeLevels.push(l);
-  }
-
-  // Build a long shuffled cycle of the pool with a fixed seed (deterministic, not game RNG)
-  const rng = new SeededRandom(99999);
-  let cycle: string[] = [];
-  for (let i = 0; i < 5; i++) {
-    cycle = cycle.concat(rng.shuffle([...pool]));
-  }
-
-  // Assign letters in level order, skipping letters that match adjacent levels
-  let idx = 0;
-  for (const lvl of freeLevels) {
-    const prev = fullMap[lvl - 1];
-    const next = fullMap[lvl + 1];
-
-    let picked = '';
-    for (let tries = 0; tries < cycle.length; tries++) {
-      const candidate = cycle[(idx + tries) % cycle.length]!;
-      if (candidate !== prev && candidate !== next) {
-        picked = candidate;
-        idx += tries + 1;
-        break;
-      }
-    }
-
-    fullMap[lvl] = picked || 'S';
-  }
-
-  // Return only free-level assignments
-  const result: Record<number, string> = {};
-  for (const lvl of freeLevels) {
-    result[lvl] = fullMap[lvl]!;
-  }
-  return result;
-})();
+const LEVEL_LETTER_ASSIGNMENTS: Record<number, string> = {
+  9: 'N',
+  11: 'E',  12: 'G',
+  16: 'K',  18: 'M',  20: 'I',  21: 'W',  22: 'J',
+  24: 'Q',  25: 'O',  26: 'U',  28: 'V',
+  30: 'Z',  31: 'Y',  32: 'H',  34: 'F',  35: 'D',  36: 'R',  37: 'L',  39: 'V',
+  40: 'J',  41: 'W',  42: 'O',  45: 'G',  46: 'T',
+  51: 'P',  54: 'N',  55: 'C',  56: 'A',  58: 'S',  59: 'K',  62: 'F',
+  65: 'I',  68: 'Q',  69: 'Z',  70: 'M',  71: 'S',  73: 'B',  74: 'G',
+  78: 'K',  79: 'T',  80: 'E',  83: 'W',  84: 'P',  85: 'O',  87: 'A',
+  89: 'L',  90: 'D',  91: 'N',  92: 'V',  94: 'H',  98: 'I',
+}
 
 // ============================================
 // LEVEL OVERRIDES — explicit config for levels 1-100
@@ -370,7 +327,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   // ── L1-4: starter cats, no constraint ─────────────────────────────────────
   // L1 = 3 cats (names, places, animal), L2 = 4 cats (+thing)
   1: { forceLetter: 'S', specificCategories: ['names', 'places', 'animal'] },
-  2: { forceLetter: 'I', specificCategories: ['names', 'places', 'animal', 'thing'] },
+  2: { forceLetter: 'A', specificCategories: ['names', 'places', 'animal', 'thing'] },
   3: { forceLetter: 'T', categoryCount: 4 },
   4: { forceLetter: 'C', categoryCount: 4 },
   // ── L5-10: +Food&Dishes (5 cats), CH combo at 10 ──────────────────────────
@@ -385,13 +342,13 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   11: { categoryCount: 6 },
   12: { categoryCount: 6, constraintType: 'max_word_length', constraintValue: 12 },
   13: { forceLetter: 'B', categoryCount: 6, constraintType: 'max_word_length', constraintValue: 12 },
-  14: { forceLetter: 'Z', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
+  14: { forceLetter: 'F', specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes'] },
   // L15 → TWO_LETTER_LEVELS = 'SH'
   15: { categoryCount: 5 },
   // ── L16-20: +Fruits&Veg (7 cats), BA combo at 19 ──────────────────────────
   // Note: {food_dishes, fruits_vegetables} are mutually exclusive from L16+
   16: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
-  17: { forceLetter: 'Q', categoryCount: 5 },
+  17: { forceLetter: 'H', categoryCount: 5 },
   18: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
   // L19 → TWO_LETTER_LEVELS = 'BA'
   19: { categoryCount: 6 },
@@ -404,7 +361,11 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   24: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
   25: { categoryCount: 6, constraintType: 'double_letters' },
   26: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 4 },
-  27: { categoryCount: 6, isMultiLetterMode: true },
+  27: {
+    specificCategories: ['names', 'food_dishes', 'sports_games', 'animal', 'places', 'thing'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { names: 'A', food_dishes: 'C', sports_games: 'P', animal: 'W', places: 'E', thing: 'T' },
+  },
   28: { categoryCount: 6, constraintType: 'min_word_length', constraintValue: 5 },
   // L29 → TWO_LETTER_LEVELS = 'MA'
   30: { categoryCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
@@ -413,7 +374,10 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   32: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
   // L33 → TWO_LETTER_LEVELS = 'SO'
   34: { categoryCount: 7, constraintType: 'min_word_length', constraintValue: 5 },
-  35: { categoryCount: 7, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['L', 'T'] },
+  35: {
+    specificCategories: ['names', 'places', 'animal', 'thing', 'food_dishes', 'sports_games', 'brands'],
+    constraintType: 'ends_with_letter', constraintEndLetterOptions: ['L', 'T'],
+  },
   36: { categoryCount: 7 },
   37: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
   // L38 → TWO_LETTER_LEVELS = 'LA'
@@ -425,13 +389,17 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   43: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'countries', 'sports_games', 'food_dishes'],
     isMultiLetterMode: true,
-    multiLetterAssignments: { names: 'S', places: 'M', animal: 'T', thing: 'X', brands: 'C', countries: 'P', sports_games: 'R', food_dishes: 'D' },
+    multiLetterAssignments: { names: 'S', places: 'M', animal: 'T', thing: 'X', brands: 'C', countries: 'R', sports_games: 'N', food_dishes: 'D' },
   },
   // L44 → TWO_LETTER_LEVELS = 'TA'
   45: { useEasyCategories: true, easyCount: 6, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['D', 'R'] },
   46: { categoryCount: 8, constraintType: 'repeated_letter' },
   // L47: 5+ easy cats, min 5 letters (softened — accessible challenge)
-  47: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 5, isMultiLetterMode: true },
+  47: {
+    specificCategories: ['animal', 'places', 'thing', 'brands', 'fruits_vegetables'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { animal: 'J', places: 'B', thing: 'H', brands: 'R', fruits_vegetables: 'P' },
+  },
   48: { forceLetter: 'LI', categoryCount: 6 },
   49: { categoryCount: 8, forceLetter: 'M' },
   50: { forceLetter: 'E', categoryCount: 8, constraintType: 'repeated_letter' },
@@ -442,14 +410,22 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   54: { categoryCount: 9, constraintType: 'repeated_letter' },
   55: { useEasyCategories: true, easyCount: 7 },
   56: { categoryCount: 8, constraintType: 'repeated_letter' },
-  57: { categoryCount: 8, isMultiLetterMode: true },
+  57: {
+    specificCategories: ['countries', 'sports_games', 'brands', 'celebrities', 'animal', 'fruits_vegetables', 'names', 'thing'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { countries: 'N', sports_games: 'C', brands: 'F', celebrities: 'E', animal: 'L', fruits_vegetables: 'K', names: 'D', thing: 'O' },
+  },
   58: { categoryCount: 8 },
   59: { categoryCount: 8, constraintType: 'repeated_letter' },
   60: { forceLetter: 'PA', categoryCount: 8 },
   // ── L61-70: +Health Issues (12 cats, 10 max), all 12 at 65 & 70 ───────────
-  61: { forceLetter: 'L', categoryCount: 10 },
+  61: { forceLetter: 'B', categoryCount: 10 },
   62: { useEasyCategories: true, easyCount: 5, constraintType: 'min_word_length', constraintValue: 6 },
-  63: { categoryCount: 10, isMultiLetterMode: true },
+  63: {
+    specificCategories: ['places', 'animal', 'names', 'health_issues', 'professions', 'thing', 'celebrities', 'sports_games', 'food_dishes', 'brands'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { places: 'I', animal: 'R', names: 'U', health_issues: 'R', professions: 'T', thing: 'P', celebrities: 'M', sports_games: 'S', food_dishes: 'E', brands: 'O' },
+  },
   64: {
     isMultiLetterMode: true,
     specificCategories: ['names', 'thing', 'animal', 'places', 'brands', 'food_dishes'],
@@ -476,6 +452,7 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   72: {
     specificCategories: ['names', 'places', 'thing', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
     isMultiLetterMode: true,
+    multiLetterAssignments: { names: 'J', places: 'F', thing: 'K', celebrities: 'S', food_dishes: 'H', brands: 'M', health_issues: 'N', professions: 'G' },
   },
   73: { categoryCount: 7 },
   74: {
@@ -486,20 +463,24 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
   75: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'countries', 'food_dishes'],
     isMultiLetterMode: true,
-    multiLetterAssignments: { names: 'X', places: 'G', animal: 'H', thing: 'N', brands: 'L', countries: 'F', food_dishes: 'B' },
+    multiLetterAssignments: { names: 'X', places: 'O', animal: 'F', thing: 'N', brands: 'H', countries: 'L', food_dishes: 'B' },
   },
   // L76 → TWO_LETTER_LEVELS = 'HA'
   76: {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
   },
-  77: { forceLetter: 'I', categoryCount: 7, constraintType: 'max_word_length', constraintValue: 8 },
+  77: { forceLetter: 'R', categoryCount: 7, constraintType: 'max_word_length', constraintValue: 8 },
   78: { useFullPool: true },
   79: { useFullPool: true, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['E', 'R'] },
   80: { useFullPool: true },
   // ── L81-90: 8-12 of 12, WA combo at 86, all 12 at 89-90 ──────────────────
-  81: { categoryCount: 8, isMultiLetterMode: true },
+  81: {
+    specificCategories: ['sports_games', 'professions', 'thing', 'fruits_vegetables', 'places', 'health_issues', 'animal', 'brands'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { sports_games: 'K', professions: 'W', thing: 'D', fruits_vegetables: 'A', places: 'U', health_issues: 'S', animal: 'G', brands: 'V' },
+  },
   82: {
-    forceLetter: 'K',
+    forceLetter: 'C',
     specificCategories: ['names', 'places', 'thing', 'animal', 'celebrities', 'food_dishes', 'brands', 'health_issues', 'professions'],
   },
   83: { categoryCount: 8, constraintType: 'double_letters' },
@@ -510,13 +491,21 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     specificCategories: ['names', 'places', 'animal', 'thing', 'brands', 'celebrities', 'professions', 'food_dishes'],
   },
   87: { categoryCount: 8 },
-  88: { categoryCount: 8, isMultiLetterMode: true },
+  88: {
+    specificCategories: ['health_issues', 'brands', 'names', 'places', 'professions', 'celebrities', 'sports_games', 'food_dishes'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { health_issues: 'F', brands: 'G', names: 'L', places: 'N', professions: 'B', celebrities: 'T', sports_games: 'J', food_dishes: 'P' },
+  },
   89: { useFullPool: true },
   90: { useFullPool: true, constraintType: 'ends_with_letter', constraintEndLetterOptions: ['N', 'T'] },
   // ── L91-100: 10-12 of 12, PR combo at 95, multi-letter at 99-100 ──────────
   91: { categoryCount: 10 },
   92: { categoryCount: 10, constraintType: 'double_letters' },
-  93: { categoryCount: 10, isMultiLetterMode: true },
+  93: {
+    specificCategories: ['thing', 'fruits_vegetables', 'brands', 'names', 'celebrities', 'health_issues', 'sports_games', 'places', 'professions', 'animal'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { thing: 'C', fruits_vegetables: 'D', brands: 'J', names: 'M', celebrities: 'L', health_issues: 'G', sports_games: 'R', places: 'V', professions: 'S', animal: 'H' },
+  },
   94: { categoryCount: 10, constraintType: 'max_word_length', constraintValue: 8 },
   // L95 → TWO_LETTER_LEVELS = 'PR'
   95: {
@@ -527,18 +516,23 @@ const LEVEL_OVERRIDES: Record<number, LevelOverride> = {
     specificCategories: ['names', 'places', 'thing', 'brands', 'celebrities', 'food_dishes', 'health_issues'],
     constraintType: 'ends_with_letter', constraintEndLetter: 'E',
   },
-  97: { categoryCount: 10, isMultiLetterMode: true },
+  97: {
+    specificCategories: ['animal', 'brands', 'sports_games', 'professions', 'places', 'health_issues', 'food_dishes', 'names', 'celebrities', 'thing'],
+    isMultiLetterMode: true,
+    multiLetterAssignments: { animal: 'B', brands: 'I', sports_games: 'A', professions: 'O', places: 'W', health_issues: 'K', food_dishes: 'Y', names: 'F', celebrities: 'V', thing: 'U' },
+  },
   98: { useFullPool: true },
   // L99: all 12, multi-letter pool — J/G/I/O/U/V/Y/Z/BR/E/NA/RO all valid with at least some categories
   99: {
-    useFullPool: true,
+    specificCategories: ['names', 'celebrities', 'fruits_vegetables', 'sports_games', 'animal', 'places', 'brands', 'health_issues', 'thing', 'professions'],
     isMultiLetterMode: true,
-    multiLetterOptions: ['BR', 'E', 'G', 'I', 'J', 'NA', 'O', 'RO', 'U', 'V', 'Y', 'Z'],
+    multiLetterAssignments: { names: 'RO', celebrities: 'NA', fruits_vegetables: 'V', sports_games: 'W', animal: 'Y', places: 'BR', brands: 'U', health_issues: 'I', thing: 'J', professions: 'E' },
   },
   // L100: all 12, combo constraint (min 5 + max 12), tight timer — grand finale
   100: {
-    useFullPool: true,
+    specificCategories: ['sports_games', 'professions', 'celebrities', 'animal', 'health_issues', 'food_dishes', 'thing', 'places', 'names', 'brands'],
     isMultiLetterMode: true,
+    multiLetterAssignments: { sports_games: 'G', professions: 'P', celebrities: 'I', animal: 'O', health_issues: 'M', food_dishes: 'K', thing: 'A', places: 'D', names: 'B', brands: 'L' },
     constraintType: 'combo',
     comboConstraints: [{ type: 'min_word_length', value: 5 }, { type: 'max_word_length', value: 8 }],
   },
