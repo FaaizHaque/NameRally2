@@ -349,12 +349,17 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
       {/* Avatar — prominent, obviously tappable */}
       <Animated.View
         entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-        style={{ alignItems: 'center', alignSelf: 'stretch' }}
+        style={{ alignSelf: 'stretch' }}
       >
         <Pressable
           onPress={handleAvatarPress}
-          style={({ pressed }) => ({ alignItems: 'center', alignSelf: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
+          style={({ pressed }) => ({
+            alignSelf: 'stretch',
+            alignItems: 'center',
+            transform: [{ scale: pressed ? 0.94 : 1 }],
+          })}
         >
+          {/* Avatar circle — independently centered */}
           <View style={{
             width: 88, height: 88, borderRadius: 44,
             backgroundColor: SKETCH_COLORS.paperDark,
@@ -366,23 +371,21 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
           }}>
             <Text style={{ fontSize: 46 }}>{emoji}</Text>
           </View>
-          {/* Tap hint label — styled as a pill button */}
-          <View style={{ alignItems: 'center', marginTop: 8 }}>
-            <View style={{
-              flexDirection: 'row', alignItems: 'center', gap: 5,
-              backgroundColor: SKETCH_COLORS.amber,
-              paddingHorizontal: 14, paddingVertical: 6,
-              borderRadius: 20,
-              shadowColor: SKETCH_COLORS.amber,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.35, shadowRadius: 6,
-            }}>
-              <Text style={{
-                color: SKETCH_COLORS.ink,
-                fontSize: 12, fontWeight: '900', letterSpacing: 0.4,
-              }}>Your Stats</Text>
-              <ChevronDown size={12} color={SKETCH_COLORS.ink} strokeWidth={3} />
-            </View>
+          {/* Your Stats pill — independently centered */}
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            backgroundColor: SKETCH_COLORS.amber,
+            paddingHorizontal: 14, paddingVertical: 6,
+            borderRadius: 20, marginTop: 8,
+            shadowColor: SKETCH_COLORS.amber,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.35, shadowRadius: 6,
+          }}>
+            <Text style={{
+              color: SKETCH_COLORS.ink,
+              fontSize: 12, fontWeight: '900', letterSpacing: 0.4,
+            }}>Your Stats</Text>
+            <ChevronDown size={12} color={SKETCH_COLORS.ink} strokeWidth={3} />
           </View>
         </Pressable>
       </Animated.View>

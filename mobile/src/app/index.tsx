@@ -341,8 +341,8 @@ export default function HomeScreen() {
               </Animated.View>
             </View>
 
-            {/* MIDDLE: Username entry or Play */}
-            <View style={{ flex: 1, justifyContent: 'flex-start', paddingTop: 28 }}>
+            {/* MIDDLE: Username entry or Play — centered in remaining space */}
+            <View style={{ flex: 1, justifyContent: 'center' }}>
 
               {showInput && !currentUser ? (
                 /* ── First-time: enter name ── */

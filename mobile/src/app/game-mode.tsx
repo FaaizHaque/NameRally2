@@ -86,8 +86,8 @@ export default function GameModeScreen() {
 
   const startGame = useCallback(async () => {
     if (levelProgress.unlockedLevel > MAX_LEVEL) return;
+    setIsStartingGame(true);
     setGameMode('single');
-    const slowTimer = setTimeout(() => setIsStartingGame(true), 400);
     try {
       const controller = new AbortController();
       const fetchTimeout = setTimeout(() => controller.abort(), 12000);
@@ -106,7 +106,6 @@ export default function GameModeScreen() {
       console.error('Error starting level:', error?.message);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
-      clearTimeout(slowTimer);
       setIsStartingGame(false);
     }
   }, [levelProgress.unlockedLevel, startLevelGame, setGameMode, router]);
