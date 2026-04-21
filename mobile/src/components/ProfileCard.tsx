@@ -349,11 +349,11 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
       {/* Avatar — prominent, obviously tappable */}
       <Animated.View
         entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-        style={{ alignItems: 'center' }}
+        style={{ alignItems: 'center', alignSelf: 'stretch' }}
       >
         <Pressable
           onPress={handleAvatarPress}
-          style={({ pressed }) => ({ alignItems: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
+          style={({ pressed }) => ({ alignItems: 'center', alignSelf: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
         >
           <View style={{
             width: 88, height: 88, borderRadius: 44,

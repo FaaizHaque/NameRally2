@@ -341,8 +341,8 @@ export default function HomeScreen() {
               </Animated.View>
             </View>
 
-            {/* MIDDLE: Username entry or Play — centered in remaining space */}
-            <View style={{ flex: 1, justifyContent: 'center' }}>
+            {/* MIDDLE: Username entry or Play */}
+            <View style={{ flex: 1, justifyContent: 'flex-start', paddingTop: 28 }}>
 
               {showInput && !currentUser ? (
                 /* ── First-time: enter name ── */
@@ -412,7 +412,7 @@ export default function HomeScreen() {
 
               ) : currentUser ? (
                 /* ── Returning user ── */
-                <View style={{ gap: 20, alignItems: 'center', marginTop: -120 }}>
+                <View style={{ gap: 20, alignItems: 'center' }}>
                   {/* Avatar — centered in flex area, lower on screen */}
                   <ProfileCard levelProgress={levelProgress} splashDone={splashDone} />
                   <Animated.View
