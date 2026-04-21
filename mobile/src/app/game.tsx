@@ -870,15 +870,6 @@ export default function GameScreen() {
     prevStatusRef.current = session?.status;
   }, [session?.status]);
 
-  // If the screen is focused but there's no active session and we're not loading,
-  // navigate back immediately — prevents getting trapped on a stale "Loading game..." screen
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isLoading && !session) {
-        router.back();
-      }
-    }, [isLoading, session])
-  );
 
   // Stop background music when screen loses focus (screens stay mounted in the stack,
   // so unmount cleanup alone is not enough — this fires on every blur/focus transition)
@@ -1174,7 +1165,7 @@ export default function GameScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
     await leaveGame();
-    router.back();
+    router.replace('/game-mode');
   };
 
   const handleReplayLevel = async () => {

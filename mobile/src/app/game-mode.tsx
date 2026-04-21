@@ -264,7 +264,7 @@ export default function GameModeScreen() {
                 {/* Right: level stats */}
                 <View style={{ alignItems: 'flex-end', marginLeft: 16, gap: 8 }}>
                   {levelLoaded ? (
-                    <Animated.View entering={FadeIn.duration(300)} style={{ alignItems: 'flex-end', gap: 6 }}>
+                    <View style={{ alignItems: 'flex-end', gap: 6 }}>
                       {isStartingGame ? (
                         <ActivityIndicator color="#90c0ff" size="small" />
                       ) : allLevelsCompleted ? (
@@ -280,8 +280,8 @@ export default function GameModeScreen() {
                             borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
                             borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.7)',
                           }}>
-                            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900', letterSpacing: 1.4, textTransform: 'uppercase' }}>Up Next</Text>
-                            <Text style={{ color: '#fff', fontSize: 40, fontWeight: '900', letterSpacing: -2, lineHeight: 42 }}>
+                            <Text style={{ color: '#90c0ff', fontSize: 11, fontWeight: '900', letterSpacing: 1.4, textTransform: 'uppercase' }}>Up Next</Text>
+                            <Text style={{ color: '#ffffff', fontSize: 40, fontWeight: '900', letterSpacing: -2, lineHeight: 42 }}>
                               {levelProgress.unlockedLevel} ›
                             </Text>
                           </View>
@@ -300,7 +300,7 @@ export default function GameModeScreen() {
                           )}
                         </>
                       )}
-                    </Animated.View>
+                    </View>
                   ) : (
                     <Animated.View style={[{ alignItems: 'flex-end', gap: 6 }, shimmerStyle]}>
                       <View style={{ width: 36, height: 8, borderRadius: 4, backgroundColor: 'rgba(144,192,255,0.15)' }} />
