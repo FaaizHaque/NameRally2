@@ -260,7 +260,7 @@ function StatsSheet({
               </View>
               <Pressable
                 onPress={onChangeAvatar}
-                style={({ pressed }) => ({ marginTop: 24, opacity: pressed ? 0.6 : 1 })}
+                style={({ pressed }) => ({ marginTop: 36, opacity: pressed ? 0.6 : 1 })}
               >
                 <View style={{
                   backgroundColor: 'rgba(255,255,255,0.08)',
