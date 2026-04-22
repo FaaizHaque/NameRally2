@@ -427,24 +427,6 @@ export default function GameModeScreen() {
         </View>
       </View>
 
-      {/* Loading overlay */}
-      {isStartingGame && (
-        <Pressable
-          onPress={() => setIsStartingGame(false)}
-          style={{
-            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: '#EEE3BE',
-            alignItems: 'center', justifyContent: 'center',
-            zIndex: 99,
-          }}
-        >
-          <ActivityIndicator size="large" color="#3C2A10" />
-          <Text style={{ color: '#3C2A10', marginTop: 16, fontSize: 17, fontWeight: '700' }}>
-            Loading level…
-          </Text>
-          <Text style={{ color: 'rgba(60,42,16,0.4)', marginTop: 28, fontSize: 12 }}>tap to cancel</Text>
-        </Pressable>
-      )}
 
       {/* SP first-time intro */}
       {showSpIntro && (

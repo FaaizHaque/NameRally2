@@ -1182,19 +1182,7 @@ export default function GameScreen() {
   };
 
   if (!session || isLoading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#142d58', alignItems: 'center', justifyContent: 'center' }}>
-        <LinearGradient colors={['#1a3a6e', '#1e4a8a', '#163468']} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-        <ActivityIndicator size="large" color="#90c0ff" />
-        <Text style={{ color: '#90c0ff', marginTop: 16, fontSize: 16, fontWeight: '600' }}>Loading game...</Text>
-        <Pressable
-          onPress={() => router.back()}
-          style={{ marginTop: 32, paddingVertical: 12, paddingHorizontal: 28, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(144,192,255,0.4)', backgroundColor: 'rgba(144,192,255,0.1)' }}
-        >
-          <Text style={{ color: '#90c0ff', fontSize: 14, fontWeight: '600' }}>Go Back</Text>
-        </Pressable>
-      </View>
-    );
+    return null;
   }
   const fmt = (sec: number) => `${Math.floor(sec / 60)}:${(sec % 60).toString().padStart(2, '0')}`;
 
