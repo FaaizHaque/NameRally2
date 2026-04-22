@@ -137,7 +137,7 @@ export default function GameModeScreen() {
     const shown = await AsyncStorage.getItem('npat_mp_intro_shown');
     if (!shown) { setShowMpIntro(true); return; }
     setGameMode('multiplayer');
-    router.push('/multiplayer-options');
+    navGuard(() => router.push('/multiplayer-options'));
   };
 
   const handleDaily = () => {

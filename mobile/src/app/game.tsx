@@ -998,14 +998,16 @@ export default function GameScreen() {
     try {
       await submitAnswers();
       if (isHost) {
-        if (!isLevelMode) await new Promise(r => setTimeout(r, 2500));
         await endRound();
+      } else {
+        // Non-host: immediately refresh so we don't wait the full polling interval
+        await refreshSession();
       }
     } catch (error) {
       console.error('Error in handleRoundEnd:', error);
       hasEndedRound.current = false;
     }
-  }, [endRound, submitAnswers, isHost, isLevelMode]);
+  }, [endRound, submitAnswers, isHost, refreshSession]);
 
   useEffect(() => {
     hasEndedRound.current = false;
@@ -1502,7 +1504,7 @@ export default function GameScreen() {
                         }}
                         autoCapitalize="characters"
                         autoCorrect={false}
-                        editable={!usedHints.has(cat) && timeRemaining > 0 && !roundInputDisabled}
+                        editable={!usedHints.has(cat) && timeRemaining > 0 && !roundInputDisabled && !showReveal}
                         underlineColorAndroid="transparent"
                       />
                       {hasAnswer && !startsOk && (
@@ -1948,7 +1950,7 @@ export default function GameScreen() {
                   onHint={() => handleUseHint(cat, i)}
                   isSinglePlayer={gameMode === 'single'}
                   isMultiplayer={gameMode === 'multiplayer'}
-                  inputDisabled={roundInputDisabled}
+                  inputDisabled={roundInputDisabled || showReveal}
                 />
               );
             })}
