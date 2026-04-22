@@ -445,8 +445,21 @@ export default function GameScreen() {
 
   // Novelty popup state — shown once per new category/constraint, fires at game start before reveal
   const [noveltyPopup, setNoveltyPopup] = useState<{ type: string; title: string; message: string; category?: CategoryType; constraintType?: string } | null>(null);
-  // Track which category is newly introduced this level (for highlight + sort-to-bottom)
-  const [newCategoryForLevel, setNewCategoryForLevel] = useState<CategoryType | null>(null);
+  // Compute which category is newly introduced this level synchronously on first render.
+  // Using useMemo (not useState+effect) prevents a re-render that re-sorts category cards,
+  // which was causing Reanimated to remount 'thing' and re-trigger its entering animation
+  // (making the input invisible + non-interactive for ~340ms after the novelty popup dismissed).
+  const CATEGORY_MILESTONE_LEVELS_MEMO: Partial<Record<string, number>> = {
+    thing: 2, food_dishes: 5, sports_games: 11, fruits_vegetables: 16,
+    countries: 21, brands: 31, celebrities: 41, professions: 51, health_issues: 61,
+  };
+  const newCategoryForLevel = useMemo<CategoryType | null>(() => {
+    if (gameMode !== 'single' || !currentLevel || currentLevel.level === 1) return null;
+    for (const cat of currentLevel.categories) {
+      if (CATEGORY_MILESTONE_LEVELS_MEMO[cat] === currentLevel.level) return cat as CategoryType;
+    }
+    return null;
+  }, [currentLevel?.level, gameMode]);
   // While novelty popup is visible, block the reveal overlay from auto-dismissing
   const noveltyShowing = useRef(false);
   // Idempotency guard — tracks the last level for which the popup was shown.
@@ -486,7 +499,6 @@ export default function GameScreen() {
         noveltyShowing.current = true;
         adPauseStart.current = Date.now();
         setShowReveal(false);
-        setNewCategoryForLevel(cat as CategoryType);
         setNoveltyPopup({
           type: 'category',
           title: 'New Category Unlocked!',

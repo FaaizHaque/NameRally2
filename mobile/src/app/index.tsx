@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { navGuard } from '@/lib/nav-guard';
-import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -153,12 +153,19 @@ export default function HomeScreen() {
   const [showHowToPlayModal, setShowHowToPlayModal] = useState(false);
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
   const editInputRef = useRef<TextInput>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const currentUser = useGameStore((s) => s.currentUser);
   const levelProgress = useGameStore((s) => s.levelProgress);
   const setCurrentUser = useGameStore((s) => s.setCurrentUser);
   const loadUser = useGameStore((s) => s.loadUser);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const floatAnim = useSharedValue(0);
 
@@ -342,7 +349,7 @@ export default function HomeScreen() {
             </View>
 
             {/* PROFILE CARD — sits between title and name/play, only for returning users */}
-            {currentUser && (
+            {currentUser && !keyboardVisible && (
               <Animated.View
                 entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
                 style={{ alignItems: 'center', marginTop: 56, opacity: splashDone ? 1 : 0 }}
@@ -475,30 +482,32 @@ export default function HomeScreen() {
                     </Text>
                   </Animated.View>
 
-                  <Animated.View
-                    entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
-                    style={{ opacity: splashDone ? 1 : 0, alignItems: 'center' }}
-                  >
-                    <Pressable onPress={handlePlay}>
-                      <View style={{
-                        alignSelf: 'center',
-                        minWidth: '70%',
-                        backgroundColor: SKETCH_COLORS.ink,
-                        borderRadius: 18, paddingVertical: 20,
-                        paddingHorizontal: 40,
-                        alignItems: 'center', justifyContent: 'center',
-                        flexDirection: 'row', gap: 12,
-                        shadowColor: SKETCH_COLORS.ink,
-                        shadowOffset: { width: 0, height: 8 },
-                        shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
-                      }}>
-                        <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
-                        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
-                          PLAY
-                        </Text>
-                      </View>
-                    </Pressable>
-                  </Animated.View>
+                  {!keyboardVisible && (
+                    <Animated.View
+                      entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
+                      style={{ opacity: splashDone ? 1 : 0, alignItems: 'center' }}
+                    >
+                      <Pressable onPress={handlePlay}>
+                        <View style={{
+                          alignSelf: 'center',
+                          minWidth: '70%',
+                          backgroundColor: SKETCH_COLORS.ink,
+                          borderRadius: 18, paddingVertical: 20,
+                          paddingHorizontal: 40,
+                          alignItems: 'center', justifyContent: 'center',
+                          flexDirection: 'row', gap: 12,
+                          shadowColor: SKETCH_COLORS.ink,
+                          shadowOffset: { width: 0, height: 8 },
+                          shadowOpacity: 0.35, shadowRadius: 16, elevation: 10,
+                        }}>
+                          <Gamepad2 size={26} color={SKETCH_COLORS.amberLight} strokeWidth={2} />
+                          <Text style={{ color: '#fff', fontSize: 24, fontWeight: '900', letterSpacing: 2.5 }}>
+                            PLAY
+                          </Text>
+                        </View>
+                      </Pressable>
+                    </Animated.View>
+                  )}
                 </View>
 
               ) : null}
