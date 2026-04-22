@@ -54,22 +54,25 @@ export default function GameModeScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      setSession(null); // Always clear stale session when returning to mode screen
       setShowSpIntro(false);
       setShowMpIntro(false);
-      loadLevelProgress(); // Refresh lives + 24h auto-reset check on each focus
+      loadLevelProgress();
       return () => { setShowSpIntro(false); setShowMpIntro(false); };
-    }, [loadLevelProgress])
+    }, [loadLevelProgress, setSession])
   );
 
-  // Countdown timer for the no-lives modal
+  // Countdown timer for the no-lives modal — reads livesLastReset fresh each tick
+  const livesLastResetRef = useRef(levelProgress.livesLastReset);
+  useEffect(() => { livesLastResetRef.current = levelProgress.livesLastReset; }, [levelProgress.livesLastReset]);
+
   useEffect(() => {
     if (!showNoLivesModal) return;
     const RESET_MS = 12 * 60 * 60 * 1000;
     const update = () => {
-      const elapsed = Date.now() - (levelProgress.livesLastReset || 0);
+      const elapsed = Date.now() - (livesLastResetRef.current || 0);
       const remaining = Math.max(0, RESET_MS - elapsed);
       if (remaining === 0) {
-        // 24h elapsed while modal was open — auto-reset
         resetLives();
         setShowNoLivesModal(false);
         return;
@@ -82,7 +85,7 @@ export default function GameModeScreen() {
     update();
     const iv = setInterval(update, 1000);
     return () => clearInterval(iv);
-  }, [showNoLivesModal, levelProgress.livesLastReset, resetLives]);
+  }, [showNoLivesModal, resetLives]);
 
   const startGame = useCallback(async () => {
     if (levelProgress.unlockedLevel > MAX_LEVEL) return;
