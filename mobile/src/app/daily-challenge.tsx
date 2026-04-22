@@ -627,19 +627,9 @@ export default function DailyChallengeScreen() {
     return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
   };
 
-  // Loading state
+  // Loading state — render nothing to avoid a flash; the screen populates as soon as data arrives
   if (phase === 'loading' || !challenge) {
-    return (
-      <View className="flex-1">
-        <LinearGradient
-          colors={['#0D1F0D', '#1C3A1C', '#0D1F0D']}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ActivityIndicator size="large" color="#4ADE80" />
-          <Text style={{ color: 'rgba(74,222,128,0.6)', marginTop: 16 }}>Loading today's challenge...</Text>
-        </LinearGradient>
-      </View>
-    );
+    return null;
   }
 
   if (phase === 'error') {
