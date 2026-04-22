@@ -117,6 +117,7 @@ export default function MultiplayerOptionsScreen() {
 
   const handleCreateGame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.tap();
     navGuard(() => router.push('/create-game'));
   };
 

@@ -151,6 +151,7 @@ export default function CreateGameScreen() {
   const handleCreateGame = async () => {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Sounds.navigate();
     try {
       if (isLevelMode && currentLevel) {
         await createGame({
