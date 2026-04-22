@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HaqueGames — Developer Site</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 48px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid #222;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #4ade80;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    main {
+      flex: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      width: 100%;
+    }
+
+    .app-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .app-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      background: #4ade80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .app-info h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #f0f0f0;
+    }
+
+    .app-info p {
+      margin-top: 6px;
+      color: #888;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .app-links {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .app-links a {
+      display: inline-block;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .app-links a:hover { opacity: 0.8; }
+
+    .btn-store {
+      background: #4ade80;
+      color: #0f0f0f;
+    }
+
+    .btn-privacy {
+      background: #2a2a2a;
+      color: #aaa;
+      border: 1px solid #333;
+    }
+
+    section.about {
+      margin-top: 48px;
+    }
+
+    section.about h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    section.about p {
+      color: #888;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #444;
+      font-size: 0.8rem;
+      border-top: 1px solid #1a1a1a;
+    }
+
+    footer a {
+      color: #555;
+      text-decoration: none;
+    }
+
+    footer a:hover { color: #4ade80; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HaqueGames</h1>
+    <p>Mobile games by Faaiz Haque</p>
+  </header>
+
+  <main>
+    <div class="app-card">
+      <div class="app-icon">🎮</div>
+      <div class="app-info">
+        <h2>NPAT — Name Place Animal Thing</h2>
+        <p>
+          A fast-paced multiplayer word game. Race against friends to fill in
+          categories before time runs out.
+        </p>
+        <div class="app-links">
+          <a class="btn-store" href="https://play.google.com/store/apps/details?id=com.haquegames.napt" target="_blank" rel="noopener">Google Play</a>
+          <a class="btn-store" href="https://apps.apple.com/app/id6745228936" target="_blank" rel="noopener">App Store</a>
+          <a class="btn-privacy" href="/privacy-policy.html">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="about">
+      <h2>About</h2>
+      <p>
+        HaqueGames is an indie mobile game studio run by Faaiz Haque.
+        We build simple, fun, social games for iOS and Android.
+        For support or inquiries, reach out via the app store listing.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      &copy; 2025 HaqueGames &nbsp;|&nbsp;
+      <a href="/privacy-policy.html">Privacy Policy</a> &nbsp;|&nbsp;
+      <a href="/app-ads.txt">app-ads.txt</a>
+    </p>
+  </footer>
+
+</body>
+</html>
