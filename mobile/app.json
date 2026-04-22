@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NAPT",
+    "name": "NPAT",
     "slug": "namerally",
     "scheme": "namerally",
     "version": "1.0.0",
@@ -16,7 +16,7 @@
       "bundleIdentifier": "com.haquegames.napt",
       "buildNumber": "110",
       "infoPlist": {
-        "CFBundleDisplayName": "NAPT",
+        "CFBundleDisplayName": "NPAT",
         "NSUserTrackingUsageDescription": "This identifier will be used to show you relevant ads and improve your experience.",
         "UIBackgroundModes": ["audio"]
       }
