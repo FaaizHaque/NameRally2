@@ -3,7 +3,7 @@ import {
   View, Text, Pressable, ScrollView, Modal,
 } from 'react-native';
 import Animated, {
-  FadeIn, FadeInDown, useSharedValue, useAnimatedStyle,
+  FadeInDown, useSharedValue, useAnimatedStyle,
   withSpring, withTiming,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -309,10 +309,9 @@ function StatsSheet({
 
 interface ProfileCardProps {
   levelProgress: LevelProgress;
-  splashDone: boolean;
 }
 
-export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
+export function ProfileCard({ levelProgress }: ProfileCardProps) {
   const [emoji, setEmoji] = useState<string>(DEFAULT_EMOJI);
   const [showStats, setShowStats] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -347,10 +346,7 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
   return (
     <>
       {/* Avatar — prominent, obviously tappable */}
-      <Animated.View
-        entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-        style={{ alignItems: 'center' }}
-      >
+      <View style={{ alignItems: 'center' }}>
         <Pressable
           onPress={handleAvatarPress}
           style={({ pressed }) => ({
@@ -385,7 +381,7 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
             <ChevronDown size={12} color={SKETCH_COLORS.ink} strokeWidth={3} />
           </View>
         </Pressable>
-      </Animated.View>
+      </View>
 
       {/* Stats bottom sheet */}
       <StatsSheet
