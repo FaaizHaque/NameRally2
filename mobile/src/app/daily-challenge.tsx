@@ -602,7 +602,7 @@ export default function DailyChallengeScreen() {
 
   const handleGoHome = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.replace('/');
+    router.back();
   };
 
   const handleExit = () => {
