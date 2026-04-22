@@ -349,17 +349,15 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
       {/* Avatar — prominent, obviously tappable */}
       <Animated.View
         entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-        style={{ alignSelf: 'stretch' }}
+        style={{ alignItems: 'center' }}
       >
         <Pressable
           onPress={handleAvatarPress}
           style={({ pressed }) => ({
-            alignSelf: 'stretch',
             alignItems: 'center',
             transform: [{ scale: pressed ? 0.94 : 1 }],
           })}
         >
-          {/* Avatar circle — independently centered */}
           <View style={{
             width: 88, height: 88, borderRadius: 44,
             backgroundColor: SKETCH_COLORS.paperDark,
@@ -371,7 +369,6 @@ export function ProfileCard({ levelProgress, splashDone }: ProfileCardProps) {
           }}>
             <Text style={{ fontSize: 46 }}>{emoji}</Text>
           </View>
-          {/* Your Stats pill — independently centered */}
           <View style={{
             flexDirection: 'row', alignItems: 'center', gap: 5,
             backgroundColor: SKETCH_COLORS.amber,
