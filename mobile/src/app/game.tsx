@@ -1515,46 +1515,75 @@ export default function GameScreen() {
 
             </ScrollView>
 
-          {/* Submit button — sticky at bottom, always visible regardless of scroll position */}
+          {/* Submit button — keyboard-aware */}
           <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 12, backgroundColor: 'rgba(20,45,88,0.97)', borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.15)' }}>
-            {!allAnswersFilled && !hasDuplicateAnswers && (
-              <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
-                Fill all categories to submit
-              </Text>
-            )}
-            {submitAttempted && hasDuplicateAnswers && (
-              <Text style={{ color: '#f97316', textAlign: 'center', fontSize: 12, fontWeight: '700', marginBottom: 8 }}>
-                Duplicate answers — each category must be unique
-              </Text>
-            )}
-            <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
-              <LinearGradient
-                colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                style={{
-                  borderRadius: 16, paddingVertical: 16,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
-                  shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
-                  shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
-                }}
+            {keyboardVisible && allAnswersFilled ? (
+              /* Keyboard open + all filled: one-tap submit above keyboard */
+              <Pressable
+                onPress={() => { Keyboard.dismiss(); handleStop(); }}
+                disabled={!!session.stopRequested}
+                style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
               >
-                {session.stopRequested
-                  ? <>
-                      <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
-                      <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 17, fontWeight: '800' }}>
-                        {stopCountdown > 0 ? `${stopCountdown}s` : `Ending...`}
-                      </Text>
-                    </>
-                  : <>
-                      <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
-                      <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                        Submit
-                      </Text>
-                    </>
-                }
-              </LinearGradient>
-            </Pressable>
+                <LinearGradient
+                  colors={['#2060b8', '#1a4a98']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={{
+                    borderRadius: 16, paddingVertical: 16,
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    borderWidth: 1.5, borderColor: 'rgba(100,160,255,0.4)',
+                    shadowColor: '#4090e8',
+                    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
+                  }}
+                >
+                  <Check size={22} color="#fff" strokeWidth={3} />
+                  <Text style={{ color: '#fff', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                    Submit Answers!
+                  </Text>
+                </LinearGradient>
+              </Pressable>
+            ) : (
+              /* Keyboard closed: full static button */
+              <>
+                {!allAnswersFilled && !hasDuplicateAnswers && (
+                  <Text style={{ color: 'rgba(144,192,255,0.4)', textAlign: 'center', fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
+                    Fill all categories to submit
+                  </Text>
+                )}
+                {submitAttempted && hasDuplicateAnswers && (
+                  <Text style={{ color: '#f97316', textAlign: 'center', fontSize: 12, fontWeight: '700', marginBottom: 8 }}>
+                    Duplicate answers — each category must be unique
+                  </Text>
+                )}
+                <Pressable onPress={() => { Keyboard.dismiss(); handleStop(); }} disabled={!allAnswersFilled || !!session.stopRequested}>
+                  <LinearGradient
+                    colors={allAnswersFilled ? ['#2060b8', '#1a4a98'] : ['#1a3a6e', '#1a3a6e']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    style={{
+                      borderRadius: 16, paddingVertical: 16,
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      borderWidth: 1.5, borderColor: allAnswersFilled ? 'rgba(100,160,255,0.4)' : 'rgba(99,102,241,0.2)',
+                      shadowColor: allAnswersFilled ? '#4090e8' : 'transparent',
+                      shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
+                    }}
+                  >
+                    {session.stopRequested
+                      ? <>
+                          <ActivityIndicator color={allAnswersFilled ? '#fff' : '#6366f1'} />
+                          <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 17, fontWeight: '800' }}>
+                            {stopCountdown > 0 ? `${stopCountdown}s` : `Ending...`}
+                          </Text>
+                        </>
+                      : <>
+                          <Check size={22} color={allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)'} strokeWidth={3} />
+                          <Text style={{ color: allAnswersFilled ? '#fff' : 'rgba(99,102,241,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                            Submit
+                          </Text>
+                        </>
+                    }
+                  </LinearGradient>
+                </Pressable>
+              </>
+            )}
           </View>
 
           {/* Exit overlay */}
@@ -1937,7 +1966,7 @@ export default function GameScreen() {
                 <Pressable
                   onPress={() => {
                     Keyboard.dismiss();
-                    if (isLevelMode) handleStop();
+                    handleStop();
                   }}
                   style={{
                     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -1956,7 +1985,7 @@ export default function GameScreen() {
                     : <Check size={22} color="#FFF" strokeWidth={3} />
                   }
                   <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                    {isLevelMode ? 'Submit Answers!' : 'Done — tap STOP!'}
+                    {isLevelMode ? 'Submit Answers!' : 'STOP!'}
                   </Text>
                 </Pressable>
               ) : (
