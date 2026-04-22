@@ -345,40 +345,34 @@ export function ProfileCard({ levelProgress }: ProfileCardProps) {
 
   return (
     <>
-      {/* Avatar — prominent, obviously tappable */}
       <View style={{ alignItems: 'center' }}>
         <Pressable
           onPress={handleAvatarPress}
           style={({ pressed }) => ({
-            alignItems: 'center',
-            transform: [{ scale: pressed ? 0.94 : 1 }],
+            transform: [{ scale: pressed ? 0.93 : 1 }],
           })}
         >
+          {/* Avatar circle */}
           <View style={{
-            width: 88, height: 88, borderRadius: 44,
+            width: 100, height: 100, borderRadius: 50,
             backgroundColor: SKETCH_COLORS.paperDark,
             borderWidth: 3, borderColor: SKETCH_COLORS.amber,
             alignItems: 'center', justifyContent: 'center',
             shadowColor: SKETCH_COLORS.amber,
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3, shadowRadius: 12,
+            shadowOpacity: 0.35, shadowRadius: 14,
           }}>
-            <Text style={{ fontSize: 46 }}>{emoji}</Text>
+            <Text style={{ fontSize: 52 }}>{emoji}</Text>
           </View>
+          {/* Tap badge — bottom-right corner */}
           <View style={{
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+            position: 'absolute', bottom: 2, right: 2,
+            width: 26, height: 26, borderRadius: 13,
             backgroundColor: SKETCH_COLORS.amber,
-            paddingHorizontal: 14, paddingVertical: 6,
-            borderRadius: 20, marginTop: 8,
-            shadowColor: SKETCH_COLORS.amber,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.35, shadowRadius: 6,
+            borderWidth: 2, borderColor: SKETCH_COLORS.paper,
+            alignItems: 'center', justifyContent: 'center',
           }}>
-            <Text style={{
-              color: SKETCH_COLORS.ink,
-              fontSize: 12, fontWeight: '900', letterSpacing: 0.4,
-            }}>Your Stats</Text>
-            <ChevronDown size={12} color={SKETCH_COLORS.ink} strokeWidth={3} />
+            <ChevronDown size={13} color={SKETCH_COLORS.ink} strokeWidth={2.5} />
           </View>
         </Pressable>
       </View>
