@@ -345,7 +345,7 @@ export default function HomeScreen() {
             {currentUser && (
               <Animated.View
                 entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-                style={{ alignItems: 'center', marginTop: 20, opacity: splashDone ? 1 : 0 }}
+                style={{ alignItems: 'center', marginTop: 56, opacity: splashDone ? 1 : 0 }}
               >
                 <ProfileCard levelProgress={levelProgress} />
               </Animated.View>

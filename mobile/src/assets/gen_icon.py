@@ -36,11 +36,16 @@ for _ in range(55):
     smudges.append((x, y, sw, sh, op))
 
 # ── Layout ────────────────────────────────────────────────────────────────
-TW, TH  = 200, 200   # tile size
-GAP     = 18
-TILE_Y  = 360        # tile top
-CY      = TILE_Y + TH // 2   # tile center y
-LABEL_Y = TILE_Y + TH + 46   # word label baseline
+TW, TH  = 210, 210   # tile size — bigger for readability
+GAP     = 12
+LABEL_FONT = 52      # word label font size
+LABEL_GAP  = 30      # gap between tile bottom and label baseline
+
+# Vertically centre the whole group
+CONTENT_H = TH + LABEL_GAP + LABEL_FONT
+TILE_Y  = (1024 - CONTENT_H) // 2 - 20  # slight upward nudge so labels have room
+CY      = TILE_Y + TH // 2
+LABEL_Y = TILE_Y + TH + LABEL_GAP + LABEL_FONT // 2
 
 TILES = [
     dict(letter='N', bg='#FFD4D4', stroke='#E07070', ink='#882020', word='Name',   rot=-3),
@@ -139,7 +144,7 @@ for i, t in enumerate(TILES):
         f'fill="white" opacity="0.22"/>'
         # letter
         f'<text x="{cx}" y="{CY}" font-family="\'Helvetica Neue\', Arial, sans-serif" '
-        f'font-size="128" font-weight="900" fill="{t["ink"]}" '
+        f'font-size="138" font-weight="900" fill="{t["ink"]}" '
         f'text-anchor="middle" dominant-baseline="central">{t["letter"]}</text>'
         f'</g>'
     )
@@ -150,8 +155,8 @@ for i, t in enumerate(TILES):
     lines.append(
         f'<text x="{cx}" y="{LABEL_Y}" '
         f'font-family="\'Helvetica Neue\', Arial, sans-serif" '
-        f'font-size="34" font-weight="800" fill="{t["ink"]}" opacity="0.85" '
-        f'text-anchor="middle">{t["word"]}</text>'
+        f'font-size="{LABEL_FONT}" font-weight="900" fill="{t["ink"]}" opacity="0.88" '
+        f'text-anchor="middle" dominant-baseline="central">{t["word"]}</text>'
     )
 
 lines.append('</svg>')

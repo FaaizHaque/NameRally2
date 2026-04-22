@@ -366,7 +366,7 @@ export function ProfileCard({ levelProgress }: ProfileCardProps) {
             <Text style={{ fontSize: 46 }}>{emoji}</Text>
           </View>
           <View style={{
-            flexDirection: 'row', alignItems: 'center', gap: 5,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
             backgroundColor: SKETCH_COLORS.amber,
             paddingHorizontal: 14, paddingVertical: 6,
             borderRadius: 20, marginTop: 8,

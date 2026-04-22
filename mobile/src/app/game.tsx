@@ -1252,23 +1252,44 @@ export default function GameScreen() {
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
 
-                {/* LEFT: Stars + hint cost */}
+                {/* LEFT: Lives */}
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                   {isLevelMode && (
-                    <View style={{ alignItems: 'center', gap: 4 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <Star size={15} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
-                        <Text style={{ color: '#FCD34D', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 }}>
-                          {levelProgress.totalStars}
+                    (levelProgress.lives ?? 3) > 0 ? (
+                      <View style={{ alignItems: 'center', gap: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          {[1, 2, 3].map(i => {
+                            const alive = i <= (levelProgress.lives ?? 3);
+                            return (
+                              <Heart
+                                key={i}
+                                size={17}
+                                color={alive ? '#ef4444' : 'rgba(255,255,255,0.15)'}
+                                fill={alive ? '#ef4444' : 'transparent'}
+                                strokeWidth={alive ? 0 : 1.5}
+                              />
+                            );
+                          })}
+                        </View>
+                        <Text style={{ color: 'rgba(239,68,68,0.55)', fontSize: 11, fontWeight: '700' }}>
+                          Lives
                         </Text>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Lightbulb size={11} color="rgba(253,211,77,0.55)" strokeWidth={1.5} />
-                        <Text style={{ color: 'rgba(253,211,77,0.55)', fontSize: 11, fontWeight: '700' }}>
-                          hint = {HINT_COST}★
-                        </Text>
-                      </View>
-                    </View>
+                    ) : (
+                      <Pressable
+                        onPress={() => { showAd(() => { resetLives(); }, () => {}); }}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, alignItems: 'center', gap: 4 })}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          {[1, 2, 3].map(i => (
+                            <Heart key={i} size={17} color="rgba(255,255,255,0.15)" fill="transparent" strokeWidth={1.5} />
+                          ))}
+                        </View>
+                        <View style={{ backgroundColor: '#ef4444', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
+                          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 }}>WATCH AD</Text>
+                        </View>
+                      </Pressable>
+                    )
                   )}
                 </View>
 
@@ -1293,44 +1314,23 @@ export default function GameScreen() {
                   )}
                 </View>
 
-                {/* RIGHT: Lives */}
+                {/* RIGHT: Stars + hint cost */}
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                   {isLevelMode && (
-                    (levelProgress.lives ?? 3) > 0 ? (
-                      <View style={{ alignItems: 'center', gap: 4 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          {[1, 2, 3].map(i => {
-                            const alive = i <= (levelProgress.lives ?? 3);
-                            return (
-                              <Heart
-                                key={i}
-                                size={17}
-                                color={alive ? '#ef4444' : 'rgba(255,255,255,0.15)'}
-                                fill={alive ? '#ef4444' : 'transparent'}
-                                strokeWidth={alive ? 0 : 1.5}
-                              />
-                            );
-                          })}
-                        </View>
-                        <Text style={{ color: 'rgba(239,68,68,0.55)', fontSize: 11, fontWeight: '700' }}>
-                          lives
+                    <View style={{ alignItems: 'center', gap: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Star size={15} color="#FCD34D" fill="#FCD34D" strokeWidth={1} />
+                        <Text style={{ color: '#FCD34D', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 }}>
+                          {levelProgress.totalStars}
                         </Text>
                       </View>
-                    ) : (
-                      <Pressable
-                        onPress={() => { showAd(() => { resetLives(); }, () => {}); }}
-                        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, alignItems: 'center', gap: 4 })}
-                      >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          {[1, 2, 3].map(i => (
-                            <Heart key={i} size={17} color="rgba(255,255,255,0.15)" fill="transparent" strokeWidth={1.5} />
-                          ))}
-                        </View>
-                        <View style={{ backgroundColor: '#ef4444', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
-                          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 0.5 }}>WATCH AD</Text>
-                        </View>
-                      </Pressable>
-                    )
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Lightbulb size={11} color="rgba(253,211,77,0.55)" strokeWidth={1.5} />
+                        <Text style={{ color: 'rgba(253,211,77,0.55)', fontSize: 11, fontWeight: '700' }}>
+                          Hint = {HINT_COST}★
+                        </Text>
+                      </View>
+                    </View>
                   )}
                 </View>
 
