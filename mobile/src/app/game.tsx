@@ -1400,8 +1400,14 @@ export default function GameScreen() {
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets={true}
           >
-              {session.settings.selectedCategories.map((cat, i) => {
-                const origIndex = i;
+              {[...session.settings.selectedCategories]
+                .sort((a, b) => {
+                  if (a === newCategoryForLevel) return -1;
+                  if (b === newCategoryForLevel) return 1;
+                  return 0;
+                })
+                .map((cat, i) => {
+                const origIndex = session.settings.selectedCategories.indexOf(cat);
                 const answer = localAnswers[cat] || '';
                 const letter = currentLevel.isMultiLetterMode && currentLevel.lettersPerCategory
                   ? (currentLevel.lettersPerCategory[origIndex] || session.currentLetter)
