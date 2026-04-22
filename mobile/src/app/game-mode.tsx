@@ -169,15 +169,15 @@ export default function GameModeScreen() {
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); Sounds.tap(); router.back(); }}
             style={({ pressed }) => ({
-              width: 40, height: 40, borderRadius: 10,
+              width: 52, height: 52, borderRadius: 13,
               backgroundColor: pressed ? 'rgba(28,18,8,0.12)' : 'rgba(28,18,8,0.06)',
               borderWidth: 1.5, borderColor: 'rgba(100,70,20,0.2)',
               alignItems: 'center', justifyContent: 'center',
             })}
           >
-            <ChevronLeft size={20} color="#3C2A10" strokeWidth={2.5} />
+            <ChevronLeft size={26} color="#3C2A10" strokeWidth={2.5} />
           </Pressable>
-          <Text style={{ color: '#1C1208', fontSize: 22, fontWeight: '900', marginLeft: 12, letterSpacing: 0.2 }}>
+          <Text style={{ color: '#1C1208', fontSize: 26, fontWeight: '900', marginLeft: 14, letterSpacing: 0.2 }}>
             Select Mode
           </Text>
         </View>
