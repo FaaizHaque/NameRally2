@@ -161,13 +161,22 @@ export default function HomeScreen() {
   const loadUser = useGameStore((s) => s.loadUser);
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
 
+  const floatAnim = useSharedValue(0);
+  const keyboardAnim = useSharedValue(1);
+
   useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, () => {
+      keyboardAnim.value = withTiming(0, { duration: 200 });
+      setKeyboardVisible(true);
+    });
+    const hide = Keyboard.addListener(hideEvent, () => {
+      keyboardAnim.value = withTiming(1, { duration: 220 });
+      setKeyboardVisible(false);
+    });
     return () => { show.remove(); hide.remove(); };
   }, []);
-
-  const floatAnim = useSharedValue(0);
 
   useEffect(() => {
     // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
@@ -214,18 +223,21 @@ export default function HomeScreen() {
   }, [currentUser?.id]);
 
   const letterStyle0 = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [0, -6]) }, { rotate: '-3deg' }],
+    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [-8, -14]) }, { rotate: '-3deg' }],
   }));
   const letterStyle1 = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [0, 6]) }, { rotate: '2deg' }],
+    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [8, 14]) }, { rotate: '2deg' }],
   }));
   const letterStyle2 = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [0, -6]) }, { rotate: '-2deg' }],
+    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [-12, -6]) }, { rotate: '-2deg' }],
   }));
   const letterStyle3 = useAnimatedStyle(() => ({
-    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [0, 6]) }, { rotate: '3deg' }],
+    transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [4, 10]) }, { rotate: '3deg' }],
   }));
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
+  const keyboardFadeStyle = useAnimatedStyle(() => ({
+    opacity: keyboardAnim.value,
+  }));
 
   // Show tutorial modal if user exists but hasn't explicitly dismissed it yet
   useEffect(() => {
@@ -302,21 +314,21 @@ export default function HomeScreen() {
                 entering={splashDone ? FadeInDown.duration(500) : undefined}
                 style={{ marginBottom: 14, opacity: splashDone ? 1 : 0 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                   {TILES.map((t, index) => (
                     <Animated.View
                       key={t.letter}
                       style={[letterStyles[index], {
-                        width: 58, height: 58, borderRadius: 10,
+                        width: 70, height: 70, borderRadius: 12,
                         backgroundColor: t.bg,
                         justifyContent: 'center', alignItems: 'center',
-                        borderWidth: 2, borderColor: t.border,
+                        borderWidth: 2.5, borderColor: t.border,
                         shadowColor: SKETCH_COLORS.ink,
                         shadowOffset: { width: 2, height: 4 },
                         shadowOpacity: 0.18, shadowRadius: 0, elevation: 5,
                       }]}
                     >
-                      <Text style={{ fontSize: 26, fontWeight: '900', color: t.ink }}>{t.letter}</Text>
+                      <Text style={{ fontSize: 34, fontWeight: '900', color: t.ink }}>{t.letter}</Text>
                     </Animated.View>
                   ))}
                 </View>
@@ -328,11 +340,11 @@ export default function HomeScreen() {
               >
                 {/* Title */}
                 <Text style={{
-                  fontSize: 40,
+                  fontSize: 44,
                   fontWeight: '900',
                   color: SKETCH_COLORS.ink,
                   letterSpacing: -1,
-                  lineHeight: 46,
+                  lineHeight: 50,
                   textAlign: 'center',
                 }}>
                   Name Place{'\n'}Animal Thing
@@ -349,12 +361,17 @@ export default function HomeScreen() {
             </View>
 
             {/* PROFILE CARD — sits between title and name/play, only for returning users */}
-            {currentUser && !keyboardVisible && (
+            {currentUser && (
               <Animated.View
-                entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
-                style={{ alignItems: 'center', marginTop: 56, opacity: splashDone ? 1 : 0 }}
+                style={[keyboardFadeStyle, { alignItems: 'center', marginTop: 56 }]}
+                pointerEvents={keyboardVisible ? 'none' : 'auto'}
               >
-                <ProfileCard levelProgress={levelProgress} />
+                <Animated.View
+                  entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
+                  style={{ opacity: splashDone ? 1 : 0 }}
+                >
+                  <ProfileCard levelProgress={levelProgress} />
+                </Animated.View>
               </Animated.View>
             )}
 
@@ -482,7 +499,10 @@ export default function HomeScreen() {
                     </Text>
                   </Animated.View>
 
-                  {!keyboardVisible && (
+                  <Animated.View
+                    style={[keyboardFadeStyle, { alignItems: 'center' }]}
+                    pointerEvents={keyboardVisible ? 'none' : 'auto'}
+                  >
                     <Animated.View
                       entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
                       style={{ opacity: splashDone ? 1 : 0, alignItems: 'center' }}
@@ -507,7 +527,7 @@ export default function HomeScreen() {
                         </View>
                       </Pressable>
                     </Animated.View>
-                  )}
+                  </Animated.View>
                 </View>
 
               ) : null}
