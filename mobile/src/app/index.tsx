@@ -43,8 +43,6 @@ const TILES = [
 
 // Track if splash was already shown this app session (module-level = survives navigation, resets on full restart)
 let splashAlreadyShown = false;
-const SPLASH_KEY = 'npat_last_splash';
-const SPLASH_INTERVAL_DAYS = 3;
 
 // ─── SPLASH SCREEN ────────────────────────────────────────────────────────────
 // Sequence: logo fades in slowly → holds → tagline gently appears below-right → holds → all fades out
@@ -186,18 +184,6 @@ export default function HomeScreen() {
     });
     loadUser();
     loadLevelProgress();
-    // Check if splash was shown recently; if so, skip it
-    if (!splashAlreadyShown) {
-      AsyncStorage.getItem(SPLASH_KEY).then((lastStr) => {
-        if (lastStr) {
-          const daysSince = (Date.now() - parseInt(lastStr, 10)) / 86400000;
-          if (daysSince < SPLASH_INTERVAL_DAYS) {
-            splashAlreadyShown = true;
-            setSplashDone(true);
-          }
-        }
-      });
-    }
     floatAnim.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2200 }),
@@ -604,7 +590,6 @@ export default function HomeScreen() {
         <SplashScreen fontsLoaded={fontsLoaded} onDone={() => {
           splashAlreadyShown = true;
           setSplashDone(true);
-          AsyncStorage.setItem(SPLASH_KEY, Date.now().toString()).catch(() => {});
         }} />
       )}
 
