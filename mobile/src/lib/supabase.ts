@@ -7,6 +7,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not found. Please add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to your environment variables.');
 }
 
+// TODO post-launch: lock down multiplayer RLS using Supabase anonymous auth so only app-authenticated users can write to game_sessions and players tables
+// TODO post-launch: route daily_challenge_scores inserts through Railway backend to validate scores server-side before writing, preventing direct API abuse
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   realtime: {
     params: {
