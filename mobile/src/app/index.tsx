@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { navGuard } from '@/lib/nav-guard';
-import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Keyboard, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -41,8 +41,18 @@ const TILES = [
   { letter: 'T', bg: '#D0EAFF', border: '#60A8E0', ink: '#205880' },
 ];
 
-// Track if splash was already shown this app session (module-level = survives navigation, resets on full restart)
+// Show splash on cold start and after 30s+ in background (covers iOS suspension-resume).
+// Skip for quick app switches (< 30s background).
 let splashAlreadyShown = false;
+let backgroundedAt: number | null = null;
+AppState.addEventListener('change', (state) => {
+  if (state === 'background') {
+    backgroundedAt = Date.now();
+  } else if (state === 'active' && backgroundedAt !== null) {
+    if (Date.now() - backgroundedAt > 30_000) splashAlreadyShown = false;
+    backgroundedAt = null;
+  }
+});
 
 // ─── SPLASH SCREEN ────────────────────────────────────────────────────────────
 // Sequence: logo fades in slowly → holds → tagline gently appears below-right → holds → all fades out
