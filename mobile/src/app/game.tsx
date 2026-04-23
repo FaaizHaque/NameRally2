@@ -2009,21 +2009,23 @@ export default function GameScreen() {
                   </Text>
                 </Pressable>
               ) : (
-                <View style={{
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  paddingVertical: 8,
-                }}>
-                  <Text style={{ color: P.inkFaint, fontSize: 13, fontWeight: '500', fontStyle: 'italic' }}>
-                    Fill all categories to {gameMode === 'single' ? 'submit' : 'stop'}
-                  </Text>
-                </View>
+                gameMode !== 'multiplayer' ? (
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    paddingVertical: 8,
+                  }}>
+                    <Text style={{ color: P.inkFaint, fontSize: 13, fontWeight: '500', fontStyle: 'italic' }}>
+                      Fill all categories to submit
+                    </Text>
+                  </View>
+                ) : null
               )
             ) : (
               /* Keyboard hidden — show the full action button */
               <>
-                {!allAnswersFilled && (
+                {!allAnswersFilled && gameMode !== 'multiplayer' && (
                   <Text style={[s.stampHint, { fontWeight: '500' }]}>
-                    Fill all categories to {gameMode === 'single' ? 'submit' : 'stop'}
+                    Fill all categories to submit
                   </Text>
                 )}
                 <Pressable
