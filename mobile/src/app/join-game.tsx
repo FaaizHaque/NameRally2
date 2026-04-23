@@ -96,16 +96,15 @@ export default function JoinGameScreen() {
 
           <View style={{ flex: 1, paddingHorizontal: 20, justifyContent: 'center', gap: 0 }}>
 
-            {/* "Enter room code" label — looks like a teacher wrote it */}
-            <View style={{ marginBottom: 6 }}>
+            {/* "Enter room code" label */}
+            <View style={{ marginBottom: 10, alignItems: 'center' }}>
               <Text style={{
-                color: SKETCH_COLORS.inkLight,
-                fontSize: 13,
-                fontWeight: '700',
-                fontStyle: 'italic',
-                marginLeft: 2,
+                color: SKETCH_COLORS.ink,
+                fontSize: 17,
+                fontWeight: '900',
+                textAlign: 'center',
               }}>
-                Enter the 6-character room code:
+                Enter the 6-character room code
               </Text>
             </View>
 
@@ -162,8 +161,14 @@ export default function JoinGameScreen() {
             </View>
 
             {/* Helper note */}
-            <View style={{ marginTop: 8, marginLeft: 4 }}>
-              <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, fontStyle: 'italic' }}>
+            <View style={{
+              marginTop: 10,
+              backgroundColor: '#FEF3A3',
+              borderWidth: 1.5, borderColor: '#C8A030',
+              borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12,
+              alignItems: 'center',
+            }}>
+              <Text style={{ color: '#7A5000', fontSize: 14, fontWeight: '800' }}>
                 Ask your host for the room code
               </Text>
             </View>
@@ -222,7 +227,7 @@ export default function JoinGameScreen() {
             </View>
 
             <View style={{ marginTop: 14, alignItems: 'center' }}>
-              <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 11, fontStyle: 'italic' }}>
+              <Text style={{ color: SKETCH_COLORS.green, fontSize: 14, fontWeight: '800' }}>
                 Players will see you join instantly!
               </Text>
             </View>

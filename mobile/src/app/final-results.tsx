@@ -198,7 +198,7 @@ export default function FinalResultsScreen() {
     // Use replace() in both cases so this screen is removed from the back stack —
     // navigate() pushes a NEW game-mode on top, meaning back would return here.
     if (isLevelMode) router.back();
-    else router.replace('/game-mode');
+    else router.navigate('/game-mode');
   };
 
   const handleRetryLevel = async () => {

@@ -175,7 +175,7 @@ export default function LobbyScreen() {
   const handleLeaveLobby = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    router.replace('/multiplayer-options');
+    router.back();
   };
 
   return (
@@ -502,7 +502,7 @@ export default function LobbyScreen() {
               onPress={async () => {
                 setShowAbandonedModal(false);
                 await leaveGame();
-                router.replace('/multiplayer-options');
+                router.back();
               }}
               style={({ pressed }) => ({
                 width: '100%', paddingVertical: 15, borderRadius: 14,

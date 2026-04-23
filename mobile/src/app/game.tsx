@@ -400,6 +400,7 @@ export default function GameScreen() {
   const [showExitModal,    setShowExitModal]    = useState(false);
   const [showEndGameModal, setShowEndGameModal] = useState(false);
   const [showAbandonedBanner, setShowAbandonedBanner] = useState(false);
+  const [showAbandonedModal,  setShowAbandonedModal]  = useState(false);
   const [stopCountdown,    setStopCountdown]    = useState(5);
   const [showLeaderboard,  setShowLeaderboard]  = useState(false);
   const [usedHints,    setUsedHints]    = useState<Set<CategoryType>>(new Set());
@@ -1048,10 +1049,10 @@ export default function GameScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setShowAbandonedBanner(true);
       setRoundInputDisabled(true);
-      // Give the player a moment to read the banner, then end the round
       setTimeout(() => {
-        handleRoundEnd();
-      }, 2500);
+        setShowAbandonedBanner(false);
+        setShowAbandonedModal(true);
+      }, 2000);
     }
   }, [session?.players.length]);
 
@@ -1179,7 +1180,7 @@ export default function GameScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
     await leaveGame();
-    router.replace('/game-mode');
+    router.navigate('/game-mode');
   };
 
   const handleReplayLevel = async () => {
@@ -2079,6 +2080,42 @@ export default function GameScreen() {
             </Text>
           </View>
         </Animated.View>
+      )}
+
+      {showAbandonedModal && (
+        <View style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(5,10,25,0.88)', alignItems: 'center', justifyContent: 'center',
+          zIndex: 70, paddingHorizontal: 28,
+        }}>
+          <Animated.View entering={ZoomIn.duration(300).springify()} style={{
+            backgroundColor: '#0d1a30', borderRadius: 24, padding: 32, width: '100%',
+            borderWidth: 1.5, borderColor: 'rgba(120,170,255,0.25)',
+            alignItems: 'center', gap: 12,
+          }}>
+            <Text style={{ fontSize: 48 }}>👻</Text>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center' }}>
+              All players have left
+            </Text>
+            <Text style={{ color: 'rgba(160,200,255,0.75)', fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
+              You're the last one standing.{'\n'}No one left to play with.
+            </Text>
+            <Pressable
+              onPress={async () => {
+                setShowAbandonedModal(false);
+                await leaveGame();
+                router.navigate('/multiplayer-options');
+              }}
+              style={({ pressed }) => ({
+                marginTop: 8, width: '100%', paddingVertical: 16, borderRadius: 14,
+                backgroundColor: pressed ? '#1a3060' : '#1e3a7a',
+                alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(100,150,255,0.4)',
+              })}
+            >
+              <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900' }}>Exit Game</Text>
+            </Pressable>
+          </Animated.View>
+        </View>
       )}
 
       {showExitModal && (

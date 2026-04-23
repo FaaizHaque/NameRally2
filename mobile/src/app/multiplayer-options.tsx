@@ -187,7 +187,7 @@ export default function MultiplayerOptionsScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: SKETCH_COLORS.ink, fontSize: 19, fontWeight: '900' }}>Create Game</Text>
-                    <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 12, marginTop: 3, fontStyle: 'italic' }}>
+                    <Text style={{ color: '#C05030', fontSize: 14, marginTop: 4, fontWeight: '700' }}>
                       Host a new game & invite friends
                     </Text>
                   </View>
@@ -211,7 +211,7 @@ export default function MultiplayerOptionsScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: SKETCH_COLORS.ink, fontSize: 19, fontWeight: '900' }}>Join Game</Text>
-                    <Text style={{ color: SKETCH_COLORS.inkFaint, fontSize: 12, marginTop: 3, fontStyle: 'italic' }}>
+                    <Text style={{ color: '#205880', fontSize: 14, marginTop: 4, fontWeight: '700' }}>
                       Enter a code to join a friend's game
                     </Text>
                   </View>
