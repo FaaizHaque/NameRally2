@@ -397,7 +397,7 @@ function SinglePlayerContent() {
             <View className="flex-1">
               <Text className="text-white text-base font-bold mb-1">Points & Stars</Text>
               <Text className="text-white/70 text-sm leading-5">
-                Pass = 1★ · ~75% = 2★ · ~90% = 3★ (thresholds rise with more categories){'\n'}Points accumulate from your best score on each level. Every 100 points earns 5 bonus stars.
+                Pass = 1★ · ~75% = 2★ · ~90% = 3★ (thresholds rise with more categories){'\n'}Points accumulate from your best score on each level. Every 100 points earns 2 bonus stars.
               </Text>
             </View>
           </View>
