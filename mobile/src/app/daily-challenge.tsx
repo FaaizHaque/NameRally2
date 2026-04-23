@@ -102,7 +102,7 @@ const CATEGORY_NAMES: Record<CategoryType, string> = {
   fruits_vegetables: 'Fruits & Vegetables',
 };
 
-type GamePhase = 'loading' | 'error' | 'playing' | 'results' | 'already_completed';
+type GamePhase = 'loading' | 'error' | 'intro' | 'playing' | 'results' | 'already_completed';
 
 export default function DailyChallengeScreen() {
   const router = useRouter();
@@ -117,7 +117,6 @@ export default function DailyChallengeScreen() {
   const [result, setResult] = useState<DailyChallengeResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
-  const [showDcIntro, setShowDcIntro] = useState(false);
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
   const toggleSound = () => {
     const next = !soundOn;
@@ -221,13 +220,11 @@ export default function DailyChallengeScreen() {
           initialAnswers[category] = challengeData.letter;
         });
 
-        // Check if first time — show intro before starting timer
+        // Check if first time — show intro screen before starting timer
         const introShown = await AsyncStorage.getItem('npat_dc_intro_shown');
         if (!introShown) {
           setAnswers(initialAnswers);
-          setPhase('playing'); // show game UI so modal can render on top
-          // gameStartTime stays null — timer won't start until intro dismissed
-          setShowDcIntro(true);
+          setPhase('intro'); // dedicated intro screen — game doesn't start until user taps Let's Play
         } else {
           setAnswers(initialAnswers);
           // Resume persisted start time so timer survives app kills/backgrounding
@@ -259,7 +256,7 @@ export default function DailyChallengeScreen() {
   // Dismiss overlays on screen blur so they never flash during navigation
   useFocusEffect(
     useCallback(() => {
-      return () => { setShowDcIntro(false); setShowExitModal(false); };
+      return () => { setShowExitModal(false); };
     }, [])
   );
 
@@ -605,7 +602,7 @@ export default function DailyChallengeScreen() {
 
   const handleGoHome = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.navigate('/game-mode');
+    router.back();
   };
 
   const handleExit = () => {
@@ -1039,13 +1036,12 @@ export default function DailyChallengeScreen() {
     );
   }
 
-  // Playing state
-  return (
-    <View className="flex-1">
-      {/* Daily Challenge first-time intro */}
-      {showDcIntro && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.78)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, zIndex: 50 }}>
-          <View style={{
+  // First-time intro — full screen, game never starts until user taps
+  if (phase === 'intro') {
+    return (
+      <View style={{ flex: 1 }}>
+        <LinearGradient colors={['#0D1F0D', '#1C3A1C', '#0D2A0D']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+          <Animated.View entering={FadeInUp.duration(400).springify()} style={{
             backgroundColor: '#0D1F0D', borderRadius: 24, padding: 26, width: '100%', maxWidth: 360,
             borderWidth: 1.5, borderColor: 'rgba(74,222,128,0.4)',
             shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.5, shadowRadius: 24,
@@ -1058,7 +1054,7 @@ export default function DailyChallengeScreen() {
               {[
                 'A special mode to further challenge your wits',
                 'Each day a new challenge with 6 random categories',
-                'Finish quickly to top today\'s leaderboard',
+                "Finish quickly to top today's leaderboard",
               ].map((line, i) => (
                 <Text key={i} style={{ color: 'rgba(74,222,128,0.85)', fontSize: 14, lineHeight: 20, textAlign: 'center' }}>
                   {line}
@@ -1073,7 +1069,6 @@ export default function DailyChallengeScreen() {
                 if (challenge) {
                   AsyncStorage.setItem(`npat_dc_start_${challenge.date}`, String(startTime));
                 }
-                setShowDcIntro(false);
                 setGameStartTime(startTime);
                 setTimeElapsed(0);
                 setPhase('playing');
@@ -1085,11 +1080,17 @@ export default function DailyChallengeScreen() {
                 <Text style={{ color: '#071510', fontSize: 16, fontWeight: '900' }}>Let's Play</Text>
               </View>
             </Pressable>
-          </View>
-        </View>
-      )}
+          </Animated.View>
+        </LinearGradient>
+      </View>
+    );
+  }
 
-      {/* Exit confirmation overlay */}
+  // Playing state
+  return (
+    <View className="flex-1">
+
+      {/* Exit confirmation */}
       {showExitModal && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, zIndex: 50 }}>
           <View style={{

@@ -31,7 +31,6 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { navGuard } from '@/lib/nav-guard';
 import { Sounds } from '@/lib/sounds';
 import { useGameStore, AVAILABLE_CATEGORIES, CategoryType } from '@/lib/state/game-store';
 import type { LevelCategoryType } from '@/lib/level-types';
@@ -115,6 +114,7 @@ export default function CreateGameScreen() {
   const insets = useSafeAreaInsets();
 
   const [rounds, setRounds] = useState(5);
+  const [isCreating, setIsCreating] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>([
     'names', 'places', 'animal',
   ]);
@@ -149,7 +149,8 @@ export default function CreateGameScreen() {
   };
 
   const handleCreateGame = async () => {
-    if (!navGuard()) return;
+    if (isCreating) return;
+    setIsCreating(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Sounds.navigate();
     try {
@@ -164,6 +165,7 @@ export default function CreateGameScreen() {
       router.replace('/lobby');
     } catch (error) {
       console.log('Error creating game:', error);
+      setIsCreating(false);
     }
   };
 
