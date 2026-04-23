@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.haquegames.napt",
-      "buildNumber": "110",
+      "buildNumber": "113",
       "infoPlist": {
         "CFBundleDisplayName": "NPAT",
         "NSUserTrackingUsageDescription": "This identifier will be used to show you relevant ads and improve your experience.",
