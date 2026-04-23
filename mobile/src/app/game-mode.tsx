@@ -393,8 +393,8 @@ export default function GameModeScreen() {
                   <View style={{ width: 2.5, height: 12, backgroundColor: '#00B83A', alignSelf: 'flex-end' }} />
                 </View>
 
-                {/* Left: icon + title */}
-                <View style={{ flex: 1, gap: 4 }}>
+                {/* Left: icon + title + badge */}
+                <View style={{ flex: 1, gap: 8 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <View style={{
                       width: 36, height: 36, borderRadius: 10,
@@ -408,17 +408,19 @@ export default function GameModeScreen() {
                       Daily Challenge
                     </Text>
                   </View>
-                </View>
-
-                {/* Right: global leaderboard badge */}
-                <View style={{
-                  flexDirection: 'row', alignItems: 'center', gap: 4,
-                  backgroundColor: 'rgba(0,200,64,0.12)',
-                  borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6,
-                  borderWidth: 1.5, borderColor: '#00C840',
-                }}>
-                  <Globe size={11} color="#00C840" strokeWidth={2.5} />
-                  <Text style={{ color: '#00C840', fontSize: 10, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
+                  {/* Global Leaderboard badge — own row to avoid crowding the title */}
+                  <View style={{ marginLeft: 44 }}>
+                    <View style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 4,
+                      alignSelf: 'flex-start',
+                      backgroundColor: 'rgba(0,200,64,0.12)',
+                      borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5,
+                      borderWidth: 1.5, borderColor: '#00C840',
+                    }}>
+                      <Globe size={11} color="#00C840" strokeWidth={2.5} />
+                      <Text style={{ color: '#00C840', fontSize: 10, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
             </Pressable>
