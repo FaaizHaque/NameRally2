@@ -133,13 +133,13 @@ export default function CreateGameScreen() {
 
   const handleRoundsChange = (delta: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Sounds.tap();
+    Sounds.nudge();
     setRounds((prev) => Math.max(1, Math.min(20, prev + delta)));
   };
 
   const toggleCategory = (categoryId: CategoryType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Sounds.tap();
+    Sounds.nudge();
     setSelectedCategories((prev) => {
       if (prev.includes(categoryId)) {
         if (prev.length <= 1) return prev;

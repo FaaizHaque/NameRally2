@@ -110,6 +110,7 @@ const BG_SOURCE: Record<BackgroundType, number> = {
 export const Sounds = {
   // UI & navigation
   tap:          () => playSound(S.TAP, 0.18),
+  nudge:        () => playSound(S.NAVIGATE, 0.07),
   navigate:     () => playSound(S.NAVIGATE, 0.14),
 
   // Typing in answer field — throttle at the call site
