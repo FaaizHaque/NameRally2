@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { navGuard } from '@/lib/nav-guard';
+import { navGuard, resetNavGuard } from '@/lib/nav-guard';
 import { View, Text, StatusBar, ActivityIndicator, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeInDown, FadeInUp, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle } from 'react-native-reanimated';
@@ -54,10 +54,13 @@ export default function GameModeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setSession(null); // Always clear stale session when returning to mode screen
+      resetNavGuard(); // Ensure navGuard is unlocked whenever this screen is focused
+      setSession(null);
       setShowSpIntro(false);
       setShowMpIntro(false);
-      loadLevelProgress();
+      setShowNoLivesModal(false);
+      setIsStartingGame(false); // Clear any stale starting state
+      loadLevelProgress().finally(() => setLevelLoaded(true));
       return () => { setShowSpIntro(false); setShowMpIntro(false); };
     }, [loadLevelProgress, setSession])
   );

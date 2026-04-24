@@ -32,3 +32,9 @@ export function navGuard(fn?: () => void, lockMs = 700): boolean {
   if (fn) fn();
   return true;
 }
+
+export function resetNavGuard() {
+  if (timer) clearTimeout(timer);
+  locked = false;
+  timer = null;
+}
