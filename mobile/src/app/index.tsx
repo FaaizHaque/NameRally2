@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { navGuard } from '@/lib/nav-guard';
-import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Keyboard, AppState } from 'react-native';
+import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -161,7 +161,6 @@ export default function HomeScreen() {
   const [showHowToPlayModal, setShowHowToPlayModal] = useState(false);
   const [soundOn, setSoundOn] = useState(Sounds.isSoundEnabled());
   const editInputRef = useRef<TextInput>(null);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const currentUser = useGameStore((s) => s.currentUser);
   const levelProgress = useGameStore((s) => s.levelProgress);
@@ -170,22 +169,7 @@ export default function HomeScreen() {
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
 
   const floatAnim = useSharedValue(0);
-  const keyboardAnim = useSharedValue(1);
   const editFadeAnim = useSharedValue(1);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, () => {
-      keyboardAnim.value = withTiming(0, { duration: 200 });
-      setKeyboardVisible(true);
-    });
-    const hide = Keyboard.addListener(hideEvent, () => {
-      keyboardAnim.value = withTiming(1, { duration: 220 });
-      setKeyboardVisible(false);
-    });
-    return () => { show.remove(); hide.remove(); };
-  }, []);
 
   useEffect(() => {
     // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
@@ -233,8 +217,11 @@ export default function HomeScreen() {
   }));
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
   const keyboardFadeStyle = useAnimatedStyle(() => ({
-    opacity: keyboardAnim.value * editFadeAnim.value,
-    transform: [{ scale: interpolate(editFadeAnim.value, [0, 1], [0.96, 1]) }],
+    opacity: editFadeAnim.value,
+    transform: [
+      { translateY: interpolate(editFadeAnim.value, [0, 1], [-8, 0]) },
+      { scale: interpolate(editFadeAnim.value, [0, 1], [0.97, 1]) },
+    ],
   }));
 
   // Show tutorial modal if user exists but hasn't explicitly dismissed it yet
@@ -362,7 +349,7 @@ export default function HomeScreen() {
             {currentUser && (
               <Animated.View
                 style={[keyboardFadeStyle, { alignItems: 'center', marginTop: 56 }]}
-                pointerEvents={keyboardVisible ? 'none' : 'auto'}
+                pointerEvents={editingName ? 'none' : 'auto'}
               >
                 <Animated.View
                   entering={splashDone ? FadeIn.duration(600).delay(100) : undefined}
@@ -469,13 +456,15 @@ export default function HomeScreen() {
                         value={editNameValue}
                         onFocus={() => {
                           setEditingName(true);
-                          editFadeAnim.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.ease) });
+                          editFadeAnim.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.quad) });
                         }}
                         onChangeText={(v) => {
                           setEditNameValue(v);
                         }}
                         onBlur={() => {
-                          editFadeAnim.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.ease) });
+                          // Delay fade-in so elements reappear as the keyboard begins
+                          // descending rather than popping in while it's still up.
+                          editFadeAnim.value = withDelay(120, withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) }));
                           if (editingName && editNameValue.trim().length > 0) {
                             handleSaveName();
                           } else {
@@ -503,7 +492,7 @@ export default function HomeScreen() {
 
                   <Animated.View
                     style={[keyboardFadeStyle, { alignItems: 'center' }]}
-                    pointerEvents={keyboardVisible ? 'none' : 'auto'}
+                    pointerEvents={editingName ? 'none' : 'auto'}
                   >
                     <Animated.View
                       entering={splashDone ? FadeInUp.duration(600).delay(150) : undefined}
