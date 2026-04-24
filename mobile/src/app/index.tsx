@@ -169,7 +169,6 @@ export default function HomeScreen() {
   const loadLevelProgress = useGameStore((s) => s.loadLevelProgress);
 
   const floatAnim = useSharedValue(0);
-  const editFadeAnim = useSharedValue(1);
 
   useEffect(() => {
     // Hide the native Expo splash screen immediately so our custom splash takes over seamlessly
@@ -216,13 +215,6 @@ export default function HomeScreen() {
     transform: [{ translateY: interpolate(floatAnim.value, [0, 1], [4, 10]) }, { rotate: '3deg' }],
   }));
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
-  const keyboardFadeStyle = useAnimatedStyle(() => ({
-    opacity: editFadeAnim.value,
-    transform: [
-      { translateY: interpolate(editFadeAnim.value, [0, 1], [-8, 0]) },
-      { scale: interpolate(editFadeAnim.value, [0, 1], [0.97, 1]) },
-    ],
-  }));
 
   // Show tutorial modal if user exists but hasn't explicitly dismissed it yet
   useEffect(() => {
@@ -348,7 +340,7 @@ export default function HomeScreen() {
             {/* PROFILE CARD — sits between title and name/play, only for returning users */}
             {currentUser && (
               <Animated.View
-                style={[keyboardFadeStyle, { alignItems: 'center', marginTop: 56 }]}
+                style={{ alignItems: 'center', marginTop: 56 }}
                 pointerEvents={editingName ? 'none' : 'auto'}
               >
                 <Animated.View
@@ -456,15 +448,11 @@ export default function HomeScreen() {
                         value={editNameValue}
                         onFocus={() => {
                           setEditingName(true);
-                          editFadeAnim.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.quad) });
                         }}
                         onChangeText={(v) => {
                           setEditNameValue(v);
                         }}
                         onBlur={() => {
-                          // Delay fade-in so elements reappear as the keyboard begins
-                          // descending rather than popping in while it's still up.
-                          editFadeAnim.value = withDelay(120, withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) }));
                           if (editingName && editNameValue.trim().length > 0) {
                             handleSaveName();
                           } else {
@@ -491,7 +479,7 @@ export default function HomeScreen() {
                   </Animated.View>
 
                   <Animated.View
-                    style={[keyboardFadeStyle, { alignItems: 'center' }]}
+                    style={{ alignItems: 'center' }}
                     pointerEvents={editingName ? 'none' : 'auto'}
                   >
                     <Animated.View

@@ -1224,6 +1224,7 @@ export default function GameScreen() {
     const urgentTimer = timeRemaining <= 10;
     return (
       <View style={{ flex: 1, backgroundColor: '#142d58' }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <LinearGradient colors={['#1a3a6e', '#1e4a8a', '#163468']} style={{ flex: 1 }}>
           {/* Header */}
           <View style={{ paddingTop: insets.top + 4, borderBottomWidth: 1, borderBottomColor: 'rgba(99,102,241,0.2)', backgroundColor: 'rgba(13,13,26,0.95)' }}>
@@ -1402,16 +1403,14 @@ export default function GameScreen() {
             </Animated.View>
           )}
 
-          {/* Category rows */}
-          {/* automaticallyAdjustKeyboardInsets is more reliable than KAV+padding
-              for flex-1 scroll views — it natively insets the scroll area when the
-              keyboard appears so every category and the Submit button stay reachable */}
+          {/* Category rows — KAV above shifts the whole layout up so the Submit
+              button stays visible above the keyboard; ScrollView flex:1 absorbs
+              the remaining space. */}
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 8, gap: 8 }}
             showsVerticalScrollIndicator={true}
             keyboardShouldPersistTaps="handled"
-            automaticallyAdjustKeyboardInsets={true}
           >
               {[...session.settings.selectedCategories]
                 .sort((a, b) => {
@@ -1543,29 +1542,31 @@ export default function GameScreen() {
           {/* Submit button — keyboard-aware */}
           <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: insets.bottom + 12, backgroundColor: 'rgba(20,45,88,0.97)', borderTopWidth: 1, borderTopColor: 'rgba(99,102,241,0.15)' }}>
             {keyboardVisible && allAnswersFilled ? (
-              /* Keyboard open + all filled: one-tap submit above keyboard */
+              /* Keyboard open + all filled: prominent stamp-style submit above keyboard */
               <Pressable
                 onPress={() => { Keyboard.dismiss(); handleStop(); }}
                 disabled={!!session.stopRequested}
-                style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+                style={({ pressed }) => ({
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  backgroundColor: '#16A34A',
+                  borderRadius: 14,
+                  paddingVertical: 15, paddingHorizontal: 28,
+                  borderWidth: 2, borderColor: '#0E6E32',
+                  shadowColor: '#16A34A',
+                  shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 14,
+                  elevation: 8,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                  opacity: pressed ? 0.9 : 1,
+                })}
               >
-                <LinearGradient
-                  colors={['#2060b8', '#1a4a98']}
-                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                  style={{
-                    borderRadius: 16, paddingVertical: 16,
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-                    borderWidth: 1.5, borderColor: 'rgba(100,160,255,0.4)',
-                    shadowColor: '#4090e8',
-                    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14,
-                  }}
-                >
-                  <Check size={22} color="#fff" strokeWidth={3} />
-                  <Text style={{ color: '#fff', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
-                    Submit Answers!
-                  </Text>
-                </LinearGradient>
+                <Check size={22} color="#FFF" strokeWidth={3} />
+                <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900', letterSpacing: 0.5 }}>
+                  Submit Answers!
+                </Text>
               </Pressable>
+            ) : keyboardVisible ? (
+              /* Keyboard open, not all filled: compact hint — no giant button behind the keyboard */
+              null
             ) : (
               /* Keyboard closed: full static button */
               <>
@@ -1790,6 +1791,7 @@ export default function GameScreen() {
             );
           })()}
         </LinearGradient>
+        </KeyboardAvoidingView>
       </View>
     );
   }
