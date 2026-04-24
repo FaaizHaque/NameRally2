@@ -1180,7 +1180,7 @@ export default function GameScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
     await leaveGame();
-    router.navigate('/game-mode');
+    router.replace('/game-mode');
   };
 
   const handleReplayLevel = async () => {

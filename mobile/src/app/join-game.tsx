@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +17,8 @@ export default function JoinGameScreen() {
   const joinGame = useGameStore((s) => s.joinGame);
   const error = useGameStore((s) => s.error);
   const setError = useGameStore((s) => s.setError);
+
+  useEffect(() => { setError(null); }, []);
 
   const handleCodeChange = (text: string) => {
     const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
