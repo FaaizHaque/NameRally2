@@ -393,34 +393,32 @@ export default function GameModeScreen() {
                   <View style={{ width: 2.5, height: 12, backgroundColor: '#00B83A', alignSelf: 'flex-end' }} />
                 </View>
 
-                {/* Left: icon + title + badge */}
-                <View style={{ flex: 1, gap: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View style={{
-                      width: 36, height: 36, borderRadius: 10,
-                      backgroundColor: 'rgba(0,184,58,0.12)',
-                      borderWidth: 1.5, borderColor: 'rgba(0,184,58,0.45)',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <CalendarDays size={17} color="#00C840" strokeWidth={2} />
-                    </View>
-                    <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
-                      Daily Challenge
-                    </Text>
+                {/* Left: icon + title */}
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    backgroundColor: 'rgba(0,184,58,0.12)',
+                    borderWidth: 1.5, borderColor: 'rgba(0,184,58,0.45)',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <CalendarDays size={17} color="#00C840" strokeWidth={2} />
                   </View>
-                  {/* Global Leaderboard badge — own row to avoid crowding the title */}
-                  <View style={{ marginLeft: 44 }}>
-                    <View style={{
-                      flexDirection: 'row', alignItems: 'center', gap: 4,
-                      alignSelf: 'flex-start',
-                      backgroundColor: 'rgba(0,200,64,0.12)',
-                      borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5,
-                      borderWidth: 1.5, borderColor: '#00C840',
-                    }}>
-                      <Globe size={11} color="#00C840" strokeWidth={2.5} />
-                      <Text style={{ color: '#00C840', fontSize: 10, fontWeight: '900', letterSpacing: 0.3 }}>Global Leaderboard</Text>
-                    </View>
-                  </View>
+                  <Text style={{ color: '#00C840', fontSize: 22, fontWeight: '900', letterSpacing: -0.3 }}>
+                    Daily Challenge
+                  </Text>
+                </View>
+
+                {/* Right: Global Leaderboard badge */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 5,
+                  backgroundColor: 'rgba(0,200,64,0.15)',
+                  borderRadius: 20, paddingHorizontal: 10, paddingVertical: 7,
+                  borderWidth: 1.5, borderColor: '#00C840',
+                }}>
+                  <Globe size={12} color="#00C840" strokeWidth={2.5} />
+                  <Text style={{ color: '#00C840', fontSize: 11, fontWeight: '900', letterSpacing: 0.2 }}>
+                    Global
+                  </Text>
                 </View>
               </View>
             </Pressable>

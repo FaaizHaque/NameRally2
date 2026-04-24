@@ -171,6 +171,7 @@ export default function HomeScreen() {
 
   const floatAnim = useSharedValue(0);
   const keyboardAnim = useSharedValue(1);
+  const editFadeAnim = useSharedValue(1);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -232,7 +233,8 @@ export default function HomeScreen() {
   }));
   const letterStyles = [letterStyle0, letterStyle1, letterStyle2, letterStyle3];
   const keyboardFadeStyle = useAnimatedStyle(() => ({
-    opacity: keyboardAnim.value,
+    opacity: keyboardAnim.value * editFadeAnim.value,
+    transform: [{ scale: interpolate(editFadeAnim.value, [0, 1], [0.96, 1]) }],
   }));
 
   // Show tutorial modal if user exists but hasn't explicitly dismissed it yet
@@ -465,11 +467,15 @@ export default function HomeScreen() {
                           paddingVertical: 0,
                         }}
                         value={editNameValue}
+                        onFocus={() => {
+                          setEditingName(true);
+                          editFadeAnim.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.ease) });
+                        }}
                         onChangeText={(v) => {
                           setEditNameValue(v);
-                          setEditingName(true);
                         }}
                         onBlur={() => {
+                          editFadeAnim.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.ease) });
                           if (editingName && editNameValue.trim().length > 0) {
                             handleSaveName();
                           } else {
