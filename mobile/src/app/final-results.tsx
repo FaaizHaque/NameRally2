@@ -193,12 +193,11 @@ export default function FinalResultsScreen() {
     if (!navGuard()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await leaveGame();
-    // Level mode stack: [home → game-mode → final-results] — back() pops correctly.
-    // Multiplayer stack: [home → game-mode → create-game → game → round-results → final-results]
-    // Use replace() in both cases so this screen is removed from the back stack —
-    // navigate() pushes a NEW game-mode on top, meaning back would return here.
+    // Level mode stack:   [home → game-mode → final-results] — back() lands at game-mode.
+    // Multiplayer stack:  [home → game-mode → multiplayer-options → final-results]
+    // dismiss(2) pops both final-results and multiplayer-options, landing at game-mode.
     if (isLevelMode) router.back();
-    else router.replace('/game-mode');
+    else router.dismiss(2);
   };
 
   const handleRetryLevel = async () => {

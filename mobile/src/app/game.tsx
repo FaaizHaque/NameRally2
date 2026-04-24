@@ -1180,7 +1180,11 @@ export default function GameScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShowExitModal(false);
     await leaveGame();
-    router.replace('/game-mode');
+    // Single player stack: [home → game-mode → game] — back() lands at game-mode.
+    // Multiplayer stack:   [home → game-mode → multiplayer-options → game] — dismiss(2) skips
+    // multiplayer-options and lands at game-mode.
+    if (gameMode === 'multiplayer') router.dismiss(2);
+    else router.back();
   };
 
   const handleReplayLevel = async () => {
@@ -2104,7 +2108,7 @@ export default function GameScreen() {
               onPress={async () => {
                 setShowAbandonedModal(false);
                 await leaveGame();
-                router.navigate('/multiplayer-options');
+                router.dismiss(2);
               }}
               style={({ pressed }) => ({
                 marginTop: 8, width: '100%', paddingVertical: 16, borderRadius: 14,
