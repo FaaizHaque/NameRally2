@@ -114,7 +114,7 @@ export interface RoundResult {
   roundNumber: number;
   letter: string;
   playerScores: Record<string, number>;
-  answers: Record<string, Record<CategoryType, { answer: string; score: number; isValid: boolean; hasBonus?: boolean }>>;
+  answers: Record<string, Record<CategoryType, { answer: string; score: number; isValid: boolean; hasBonus?: boolean; isDuplicate?: boolean }>>;
 }
 
 export interface GameSession {
@@ -1248,15 +1248,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     const roundScores: Record<string, number> = {};
     const roundAnswerDetails: Record<
       string,
-      Record<CategoryType, { answer: string; score: number; isValid: boolean }>
+      Record<CategoryType, { answer: string; score: number; isValid: boolean; hasBonus?: boolean; isDuplicate?: boolean }>
     > = {};
 
     for (const player of updatedSession.players) {
       let playerRoundScore = 0;
       const playerAnswerDetails: Record<
         CategoryType,
-        { answer: string; score: number; isValid: boolean; hasBonus?: boolean }
-      > = {} as Record<CategoryType, { answer: string; score: number; isValid: boolean; hasBonus?: boolean }>;
+        { answer: string; score: number; isValid: boolean; hasBonus?: boolean; isDuplicate?: boolean }
+      > = {} as Record<CategoryType, { answer: string; score: number; isValid: boolean; hasBonus?: boolean; isDuplicate?: boolean }>;
+
+      // Track normalized answers already used by this player to detect within-player dupes
+      const seenNormalizedAnswers = new Map<string, CategoryType>();
 
       updatedSession.settings.selectedCategories.forEach((cat) => {
         const rawAnswer = player.currentRoundAnswers[cat]?.toLowerCase().trim() || '';
@@ -1265,7 +1268,19 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         let score = 0;
         let hasBonus = false;
-        if (isValidCategoryAnswer) {
+        let isDuplicate = false;
+
+        // Check for within-player duplicate: same normalized answer already used in another category
+        if (isValidCategoryAnswer && rawAnswer) {
+          const normalized = normalizeAnswerForScoring(rawAnswer, cat);
+          if (seenNormalizedAnswers.has(normalized)) {
+            isDuplicate = true;
+          } else {
+            seenNormalizedAnswers.set(normalized, cat);
+          }
+        }
+
+        if (isValidCategoryAnswer && !isDuplicate) {
           // Use normalized answer to count shared players (so "orange" and "oranges" share points)
           const normalizedAnswer = playerNormalizedAnswers.get(player.visibleId)?.get(cat) || rawAnswer;
           const sameAnswerPlayers = answerCounts[cat][normalizedAnswer]?.length || 0;
@@ -1290,8 +1305,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         playerAnswerDetails[cat] = {
           answer: player.currentRoundAnswers[cat] || '',
           score,
-          isValid: isValidCategoryAnswer,
+          isValid: isValidCategoryAnswer && !isDuplicate,
           hasBonus,
+          isDuplicate,
         };
       });
 

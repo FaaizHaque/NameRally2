@@ -366,6 +366,7 @@ export default function FinalResultsScreen() {
                     const score = answerData?.score || 0;
                     const isValid = answerData?.isValid || false;
                     const hasBonus = answerData?.hasBonus || false;
+                    const isDuplicate = answerData?.isDuplicate || false;
                     const isEmpty = !answer || answer.length <= 1;
                     const mc = MODERN_CAT_COLORS[category] || { bg: '#1a3a6e', border: 'rgba(80,160,255,0.6)', icon: '#90c0ff' };
 
@@ -377,7 +378,7 @@ export default function FinalResultsScreen() {
                           flexDirection: 'row', alignItems: 'center',
                           padding: 10, borderRadius: 10,
                           backgroundColor: mc.bg,
-                          borderWidth: 1.5, borderColor: isValid ? mc.border : '#2a1010',
+                          borderWidth: 1.5, borderColor: isDuplicate ? '#7c2d00' : isValid ? mc.border : '#2a1010',
                         }}
                       >
                         <View style={{ width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 10, backgroundColor: mc.border + '20' }}>
@@ -393,6 +394,11 @@ export default function FinalResultsScreen() {
                               <View style={{ backgroundColor: '#2a2010', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, flexDirection: 'row', alignItems: 'center', gap: 2, borderWidth: 1, borderColor: '#f59e0b' }}>
                                 <Sparkles size={9} color="#fcd34d" fill="#fcd34d" strokeWidth={2} />
                                 <Text style={{ color: '#fcd34d', fontSize: 9, fontWeight: '800' }}>+2</Text>
+                              </View>
+                            )}
+                            {isDuplicate && (
+                              <View style={{ backgroundColor: '#2a1a00', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, borderWidth: 1, borderColor: '#f97316' }}>
+                                <Text style={{ color: '#f97316', fontSize: 9, fontWeight: '800' }}>DUPE</Text>
                               </View>
                             )}
                           </View>
