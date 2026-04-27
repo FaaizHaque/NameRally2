@@ -759,6 +759,8 @@ export const getHintAsync = async (
   // Helper to check if hint is valid (starts with letter AND passes constraint AND not already used)
   const isValidHint = (hint: string): boolean => {
     if (!hint.toUpperCase().startsWith(letterUpper)) return false;
+    // Reject the bare letter itself (e.g. "WA" as a hint for letter "WA")
+    if (hint.trim().length <= letterUpper.length) return false;
     if (isCategoryName(hint, category)) return false;
     if (excludedValues?.has(hint.toUpperCase())) return false;
     return passesConstraint(hint);
