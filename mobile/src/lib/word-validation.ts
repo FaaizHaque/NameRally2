@@ -772,11 +772,23 @@ export const getHintAsync = async (
       console.log(`[Hint] Checking local data for ${category}/${letterUpper}...`);
       const supabaseHints = await getHintsLocally(category, letter, 100);
       if (supabaseHints.length > 0) {
-        // Sort by commonality: shorter words first (more likely common), then by length and alphabetically
+        // Sort by recognizability tier rather than raw length.
+        // "Shorter = more common" is a bad heuristic — "Wad" is shorter than
+        // "Warsaw" but far less recognisable. Instead, prefer the sweet-spot
+        // length (5-10 chars) which covers the most well-known words in every
+        // category, then fall back to slightly outside that range, and push
+        // very short (barely-longer-than-the-letter) and very long words last.
+        const recognizabilityTier = (h: string): number => {
+          const len = h.trim().length;
+          if (len >= 5 && len <= 10) return 0;  // best: "Warsaw", "Walrus", "Walmart"
+          if (len >= 4 && len <= 14) return 1;  // good: "Wolf", "Washington DC"
+          if (len >= 3 && len <= 16) return 2;  // borderline
+          return 3;                              // very short stubs or very long
+        };
         const sortedByCommonality = [...supabaseHints].sort((a, b) => {
-          // Prefer shorter words (more likely to be common/known)
-          if (a.length !== b.length) return a.length - b.length;
-          // Same length, use alphabetical for consistency
+          const tierDiff = recognizabilityTier(a) - recognizabilityTier(b);
+          if (tierDiff !== 0) return tierDiff;
+          // Within the same tier, alphabetical for deterministic results
           return a.localeCompare(b);
         });
 
