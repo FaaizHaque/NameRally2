@@ -740,7 +740,8 @@ export const isHintAvailable = (category: CategoryType, letter: string): boolean
 export const getHintAsync = async (
   category: CategoryType,
   letter: string,
-  constraint?: LevelConstraintCheck | null
+  constraint?: LevelConstraintCheck | null,
+  excludedValues?: Set<string>
 ): Promise<string | null> => {
   const letterUpper = letter.toUpperCase();
   console.log(`[Hint] Getting hint for category=${category}, letter=${letterUpper}, constraint=${constraint?.type || 'none'}${constraint?.value ? `=${constraint.value}` : ''}`);
@@ -755,14 +756,11 @@ export const getHintAsync = async (
     return result.passes;
   };
 
-  // Helper to check if hint is valid (starts with letter AND passes constraint)
+  // Helper to check if hint is valid (starts with letter AND passes constraint AND not already used)
   const isValidHint = (hint: string): boolean => {
-    if (!hint.toUpperCase().startsWith(letterUpper)) {
-      return false;
-    }
-    if (isCategoryName(hint, category)) {
-      return false;
-    }
+    if (!hint.toUpperCase().startsWith(letterUpper)) return false;
+    if (isCategoryName(hint, category)) return false;
+    if (excludedValues?.has(hint.toUpperCase())) return false;
     return passesConstraint(hint);
   };
 

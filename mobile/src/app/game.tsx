@@ -325,7 +325,7 @@ const CategoryRow = React.memo(({
               }}
               autoCapitalize="characters"
               autoCorrect={false}
-              editable={!usedHint && !inputDisabled}
+              editable={!inputDisabled}
               underlineColorAndroid="transparent"
             />
           </View>
@@ -929,7 +929,11 @@ export default function GameScreen() {
     setLoadingHints(p => new Set(p).add(category));
     try {
       const letter = getLetterForCategory(i);
-      const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null);
+      // Exclude all answers already filled in (manual or hinted) so no two categories get the same hint word
+      const excludedValues = new Set(
+        Object.values(localAnswers).filter(Boolean).map(v => v!.trim().toUpperCase())
+      );
+      const hint = await getHintAsync(category, letter, currentLevel?.constraint as LevelConstraintCheck | null, excludedValues);
       if (hint && hint.toUpperCase().startsWith(letter.toUpperCase())) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Sounds.hint();
