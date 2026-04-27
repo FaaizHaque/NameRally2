@@ -6,6 +6,13 @@ import { validateWithFallback, validateConstraint, LevelConstraintCheck } from '
 import type { LevelData, LevelProgress } from '../level-types';
 import { calculateStars, didPassLevel } from '../level-types';
 
+// Words that must NEVER be collapsed with their apparent singular/plural form.
+// Add pairs here when two distinct things only differ by a trailing 's'.
+// e.g. "IB" (horror video game) and "IBS" (health condition) are completely unrelated.
+const NORMALIZATION_EXCEPTIONS = new Set([
+  'ibs', // IBS (Irritable Bowel Syndrome) ≠ IB (video game)
+]);
+
 // Helper function to normalize answer for shared points (singular/plural treated as same)
 const normalizeAnswerForScoring = (answer: string, category: CategoryType): string => {
   // Strip all internal spaces so "water melon" == "watermelon", "New York" == "newyork"
@@ -17,6 +24,9 @@ const normalizeAnswerForScoring = (answer: string, category: CategoryType): stri
   if (!normalizePluralCategories.includes(category)) {
     return w;
   }
+
+  // Never collapse known exception pairs that only differ by trailing 's'
+  if (NORMALIZATION_EXCEPTIONS.has(w)) return w;
 
   // Convert plural to singular for comparison
   if (w.endsWith('ies') && w.length > 4) {
